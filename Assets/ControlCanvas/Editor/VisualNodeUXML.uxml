@@ -1,0 +1,22 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/ControlCanvas/Editor/Node.uss?fileID=7433441132597879392&amp;guid=a34cce0996ec8514588a1af158e7885b&amp;type=3#Node" />
+    <ui:VisualElement name="node-border">
+        <ui:VisualElement name="title">
+            <ui:Label name="title-label" text="289bd32534ef2654d93dc931908cc938" class="unity-text-element unity-label" />
+            <ui:VisualElement name="title-button-container">
+                <ui:VisualElement name="collapse-button">
+                    <ui:VisualElement name="icon" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="contents">
+            <ui:VisualElement name="divider" class="horizontal" />
+            <ui:VisualElement name="top">
+                <ui:VisualElement name="input" />
+                <ui:VisualElement name="divider" class="vertical" />
+                <ui:VisualElement name="output" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="selection-border" />
+</ui:UXML>
