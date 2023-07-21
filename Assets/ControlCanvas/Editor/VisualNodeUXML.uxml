@@ -18,5 +18,5 @@
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
-    <ui:VisualElement name="selection-border" />
+    <ui:VisualElement name="selection-border" picking-mode="Ignore" />
 </ui:UXML>
