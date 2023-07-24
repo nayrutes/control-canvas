@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f8e7eef07b8641b496065692db6cc9d8, type: 3}
-  m_Name: ControlCanvasSO1
+  m_Name: ControlCanvasSO
   m_EditorClassIdentifier: 
   NodesCC:
   - Name: 
     Guid: 289bd32534ef2654d93dc931908cc938
     Position: {x: -139, y: 169}
-    Size: {x: 278, y: 126}
-    NodeType: 1
+    Size: {x: 0, y: 0}
+    NodeType: 0
   - Name: 
     Guid: 8347b9d85fcdb0149b3ce3b27e5bcfc9
     Position: {x: 260, y: 232}
-    Size: {x: 272, y: 126}
+    Size: {x: 0, y: 0}
     NodeType: 0
   EdgesCC:
   - Guid: 44b01a80d9fd6834db09d58042b51fd2
@@ -30,9 +30,3 @@ MonoBehaviour:
   blackboard:
     moveToPosition: {x: 0, y: 0, z: 0}
     moveToObject: {fileID: 0}
-  selectedNode:
-    Name: 
-    Guid: 289bd32534ef2654d93dc931908cc938
-    Position: {x: -139, y: 169}
-    Size: {x: 278, y: 126}
-    NodeType: 1

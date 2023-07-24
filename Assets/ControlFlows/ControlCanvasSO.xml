@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CanvasData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Nodes>
+    <Node>
+      <Name />
+      <Guid>289bd32534ef2654d93dc931908cc938</Guid>
+      <Position>
+        <x>-139</x>
+        <y>169</y>
+      </Position>
+      <Size>
+        <x>0</x>
+        <y>0</y>
+      </Size>
+    </Node>
+    <Node>
+      <Name />
+      <Guid>8347b9d85fcdb0149b3ce3b27e5bcfc9</Guid>
+      <Position>
+        <x>260</x>
+        <y>232</y>
+      </Position>
+      <Size>
+        <x>0</x>
+        <y>0</y>
+      </Size>
+    </Node>
+  </Nodes>
+  <Edges>
+    <Edge>
+      <Guid>44b01a80d9fd6834db09d58042b51fd2</Guid>
+      <StartNodeGuid>8347b9d85fcdb0149b3ce3b27e5bcfc9</StartNodeGuid>
+      <EndNodeGuid>289bd32534ef2654d93dc931908cc938</EndNodeGuid>
+    </Edge>
+  </Edges>
+</CanvasData>

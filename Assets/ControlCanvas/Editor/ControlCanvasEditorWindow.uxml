@@ -1,5 +1,9 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
     <Style src="project://database/Assets/ControlCanvas/Editor/ControlCanvasEditorWindow.uss?fileID=7433441132597879392&amp;guid=24e120904362257489f087502f8446b2&amp;type=3#ControlCanvasEditorWindow" />
+    <uie:Toolbar>
+        <uie:ToolbarButton text="Save XML" display-tooltip-when-elided="true" name="save-button" />
+        <uie:ToolbarButton text="Load XML" display-tooltip-when-elided="true" name="load-button" />
+    </uie:Toolbar>
     <ControlCanvas.Editor.SplitView fixed-pane-initial-dimension="300">
         <ui:VisualElement name="left-panel" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">
             <ControlCanvas.Editor.SplitView orientation="Vertical" fixed-pane-initial-dimension="244">
@@ -10,6 +14,7 @@
                 </ui:VisualElement>
                 <ui:VisualElement name="blackboard-container" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">
                     <ui:Label tabindex="-1" text="Blackboard" display-tooltip-when-elided="true" />
+                    <ui:IMGUIContainer name="blackboardView" />
                 </ui:VisualElement>
             </ControlCanvas.Editor.SplitView>
         </ui:VisualElement>
