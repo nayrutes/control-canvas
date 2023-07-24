@@ -19,6 +19,10 @@ public class ControlCanvasEditorWindow : EditorWindow
 
     private ControlGraphView graphView;
     private InspectorView inspectorView;
+    private IMGUIContainer blackboardView;
+    
+    public SerializedObject canvasObject;
+    private SerializedProperty blackboardProperty;
 
     [MenuItem("Window/UI Toolkit/ControlCanvasEditorWindow")]
     public static void OpenWindow()
@@ -46,6 +50,8 @@ public class ControlCanvasEditorWindow : EditorWindow
 
         graphView = root.Q<ControlGraphView>();
         inspectorView = root.Q<InspectorView>();
+        inspectorView.SetEditorWindow(this);
+
         var objectField = root.Q<ObjectField>("currentCanvas");
         if(objectField == null)
         {
@@ -61,22 +67,22 @@ public class ControlCanvasEditorWindow : EditorWindow
 
         objectField.RegisterValueChangedCallback((evt) =>
         {
-            if (evt.newValue is not ControlCanvasSO canvasSO)
-            {
-                m_ControlCanvasSO = null;
-                m_ControlCanvasSO_dataPath = "";
-            }
-            else
-            {
-                m_ControlCanvasSO = canvasSO;
-                m_ControlCanvasSO_dataPath = AssetDatabase.GetAssetPath(m_ControlCanvasSO);
-            }
-            inspectorView.SetCurrentCanvas(m_ControlCanvasSO);
-            graphView.PopulateView(m_ControlCanvasSO);
+            OnControlCanvasChanged(evt.newValue as ControlCanvasSO);
         });
-        inspectorView.SetCurrentCanvas(m_ControlCanvasSO);
-        graphView.PopulateView(m_ControlCanvasSO);
+        OnControlCanvasChanged(m_ControlCanvasSO);
         graphView.OnSelectionChanged += inspectorView.OnSelectionChanged;
+        
+        
+        blackboardView = root.Q<IMGUIContainer>("blackboardView");
+        blackboardView.onGUIHandler = () =>
+        {
+            if (m_ControlCanvasSO != null)
+            {
+                canvasObject.Update();
+                EditorGUILayout.PropertyField(blackboardProperty);
+                canvasObject.ApplyModifiedProperties();
+            }
+        };
         
         // if (m_ControlCanvasSO != null)
         // {
@@ -86,6 +92,36 @@ public class ControlCanvasEditorWindow : EditorWindow
         // {
         //     graphView.ClerView();
         // }
+    }
+
+    public void OnControlCanvasChanged(ControlCanvasSO canvasSO)
+    {
+        
+        if (canvasSO == null)
+        {
+            m_ControlCanvasSO = null;
+            m_ControlCanvasSO_dataPath = "";
+        }
+        else
+        {
+            m_ControlCanvasSO = canvasSO;
+            m_ControlCanvasSO_dataPath = AssetDatabase.GetAssetPath(m_ControlCanvasSO);
+        }
+        inspectorView.SetCurrentCanvas(m_ControlCanvasSO);
+        graphView.PopulateView(m_ControlCanvasSO);
+        if(m_ControlCanvasSO != null)
+        {
+            canvasObject = new SerializedObject(m_ControlCanvasSO);
+            blackboardProperty = canvasObject.FindProperty("blackboard");
+        }
+    }
+    
+    
+    public enum NodeType
+    {
+        State,
+        Behaviour,
+        Decision
     }
 
 }

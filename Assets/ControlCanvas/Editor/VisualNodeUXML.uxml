@@ -9,7 +9,11 @@
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="contents">
+        <ui:VisualElement name="contents" style="background-color: rgb(76, 76, 76);">
+            <ui:VisualElement name="divider" class="horizontal" />
+            <ui:Label tabindex="-1" text="This is a description" display-tooltip-when-elided="true" name="description" />
+            <ui:EnumField label="Type" type="ControlCanvasEditorWindow+NodeType, Assembly-CSharp-Editor" name="type-enum" />
+            <ui:VisualElement name="dynamic-content" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);" />
             <ui:VisualElement name="divider" class="horizontal" />
             <ui:VisualElement name="top">
                 <ui:VisualElement name="input" />

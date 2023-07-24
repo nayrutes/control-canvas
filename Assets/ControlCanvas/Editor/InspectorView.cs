@@ -1,4 +1,5 @@
 using System;
+using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
@@ -7,12 +8,17 @@ namespace ControlCanvas.Editor
     public class InspectorView : VisualElement
     {
         private ControlCanvasSO mControlCanvasSo;
+        
+        private ControlCanvasEditorWindow mControlCanvasEditorWindow;
+        private SerializedProperty selectedNodeProperty;
 
         public new class UxmlFactory : UxmlFactory<InspectorView, InspectorElement.UxmlTraits>
         {
         
         }
 
+        
+        
         public void OnSelectionChanged(SelectedChangedArgs args)
         {
             Clear();
@@ -35,6 +41,7 @@ namespace ControlCanvas.Editor
             // }
             
             
+            
         }
 
         private void AddInspectorElement(ScrollView scrollView, object selectedObject)
@@ -45,6 +52,7 @@ namespace ControlCanvas.Editor
             }else if(selectedObject is VisualNode visualNode)
             {
                 scrollView.Add(CreateNodeInspector(visualNode.node));
+                
             }
         }
 
@@ -56,12 +64,33 @@ namespace ControlCanvas.Editor
             var nameField = new TextField("Name") { value = node.Name };
             nameField.RegisterValueChangedCallback(evt => node.Name = evt.newValue);
             container.Add(nameField);
+
+            var imguiContainer = new IMGUIContainer();
+            imguiContainer.onGUIHandler = () =>
+            {
+                if (selectedNodeProperty != null)
+                {
+                    mControlCanvasEditorWindow.canvasObject.Update();
+                    EditorGUILayout.PropertyField(selectedNodeProperty);
+                    mControlCanvasEditorWindow.canvasObject.ApplyModifiedProperties();
+                }
+            };
+            container.Add(imguiContainer);
+            
+            mControlCanvasSo.selectedNode = node;
+            selectedNodeProperty = mControlCanvasEditorWindow.canvasObject.FindProperty("selectedNode");
+            
             return container;
         }
 
         public void SetCurrentCanvas(ControlCanvasSO mControlCanvasSo)
         {
             this.mControlCanvasSo = mControlCanvasSo;
+        }
+
+        public void SetEditorWindow(ControlCanvasEditorWindow controlCanvasEditorWindow)
+        {
+            mControlCanvasEditorWindow = controlCanvasEditorWindow;
         }
     }
 }

@@ -11,6 +11,15 @@ namespace ControlCanvas.Editor
         public List<ControlCanvas.Editor.Node> NodesCC = new List<Node>();
         public List<ControlCanvas.Editor.Edge> EdgesCC = new List<Edge>();
 
+        public Blackboard blackboard = new Blackboard();
+
+        public Node selectedNode;
+        
+        public void SetSelectedNode(Node node)
+        {
+            selectedNode = node;
+        }
+        
         public ControlCanvas.Editor.Node CreateNode()
         {
             ControlCanvas.Editor.Node node = new ControlCanvas.Editor.Node();
@@ -31,11 +40,13 @@ namespace ControlCanvas.Editor
             edge.StartNodeGuid = inputNode.Guid;
             edge.EndNodeGuid = outputNode.Guid;
             EdgesCC.Add(edge);
+            EditorUtility.SetDirty(this);
         }
 
         public void DeleteEdge(ControlCanvas.Editor.Edge edge)
         {
             EdgesCC.Remove(edge);
+            EditorUtility.SetDirty(this);
         }
     }
 }

@@ -15,10 +15,15 @@ MonoBehaviour:
   NodesCC:
   - Name: 
     Guid: 289bd32534ef2654d93dc931908cc938
-    Position: {x: 191, y: 34}
-    Size: {x: 278, y: 77}
+    Position: {x: -139, y: 200}
+    Size: {x: 278, y: 126}
+    NodeType: 1
   - Name: 
     Guid: 8347b9d85fcdb0149b3ce3b27e5bcfc9
-    Position: {x: 430, y: 228}
-    Size: {x: 272, y: 77}
-  EdgesCC: []
+    Position: {x: 260, y: 232}
+    Size: {x: 272, y: 126}
+    NodeType: 0
+  EdgesCC:
+  - Guid: 44b01a80d9fd6834db09d58042b51fd2
+    StartNodeGuid: 8347b9d85fcdb0149b3ce3b27e5bcfc9
+    EndNodeGuid: 289bd32534ef2654d93dc931908cc938

@@ -14,6 +14,8 @@ namespace ControlCanvas.Editor
         public Port portIn;
         public Port portOut;
 
+        private VisualElement m_DynamicContent;
+        
         public VisualNode(Node node) : base("Assets/ControlCanvas/Editor/VisualNodeUXML.uxml")
         {
             //this.UseDefaultStyling();
@@ -35,8 +37,25 @@ namespace ControlCanvas.Editor
             });
 
             CreatePorts();
+
+            m_DynamicContent = this.Q<VisualElement>("dynamic-content");
+            this.Q<EnumField>("type-enum").RegisterValueChangedCallback(OnTypeChanged);
+            this.Q<EnumField>("type-enum").value = node.NodeType;
+            SetNewType(node.NodeType);
         }
 
+        private void OnTypeChanged(ChangeEvent<Enum> evt)
+        {
+            SetNewType((ControlCanvasEditorWindow.NodeType)evt.newValue);
+        }
+        
+        private void SetNewType(ControlCanvasEditorWindow.NodeType type)
+        {
+            node.NodeType = type;
+            m_DynamicContent.Clear();
+            m_DynamicContent.Add(new Label($"This is a {type} node"));
+        }
+        
         public void CreatePorts()
         {
             portIn = InstantiatePort(Orientation.Horizontal, Direction.Input, Port.Capacity.Multi, typeof(bool));
