@@ -12,49 +12,21 @@ namespace ControlCanvas.Editor.ReactiveInspector
 {
     public class ReactiveInspectorWindow : EditorWindow
     {
-        // Create a dictionary to map types to functions that create UIElements
-        private static
-            Dictionary<Type, Action<FieldInfo, object, VisualElement, Dictionary<VisualElement, IDisposable>>>
-            fieldHandlers =
-                new Dictionary<Type, Action<FieldInfo, object, VisualElement, Dictionary<VisualElement, IDisposable>>>
-                {
-                    { typeof(int), AddField<int, IntegerField> },
-                    { typeof(float), AddField<float, FloatField> },
-                    { typeof(bool), AddField<bool, Toggle> },
-                    { typeof(string), AddField<string, TextField> },
-                    // { typeof(int[]), AddArrayField<int, IntegerField> },
-                    // { typeof(float[]), AddArrayField<float, FloatField> },
-                    // { typeof(bool[]), AddArrayField<bool, Toggle> },
-                    // { typeof(string[]), AddArrayField<string, TextField> },
-                    // Add more types as needed...
-                };
-
-        private static Dictionary<Type,Type> typeToBaseFieldType = new Dictionary<Type, Type>
+        private static Dictionary<Type, Func<VisualElement>> _fieldTypeToUIField = new Dictionary<Type, Func<VisualElement>>()
         {
-            {typeof(int), typeof(IntegerField)},
-            {typeof(float), typeof(FloatField)},
-            {typeof(bool), typeof(Toggle)},
-            {typeof(string), typeof(TextField)},
-            // {typeof(int[]), typeof(IntegerField)},
-            // {typeof(float[]), typeof(FloatField)},
-            // {typeof(bool[]), typeof(Toggle)},
-            // {typeof(string[]), typeof(TextField)},
-        }; 
-
-        private static Dictionary<Type,Func<object, string, VisualElement >> typeToCreateBaseFieldType = new ()
-        {
-            {typeof(int), AddField<int,IntegerField>},
-            {typeof(float), AddField<float,FloatField>},
-            {typeof(bool), AddField<bool,Toggle>},
-            {typeof(string), AddField<string,TextField>},
-            
-        }; 
+            {typeof(int), () => AddBaseField<int, IntegerField>()},
+            {typeof(string), () => AddBaseField<string, TextField>()},
+            {typeof(float), () => AddBaseField<float, FloatField>()},
+            {typeof(bool), () => AddBaseField<bool, Toggle>()},
+        };
         
-        // Create a dictionary to store the ReactiveProperties
-        private Dictionary<VisualElement, IDisposable>
-            reactiveProperties = new Dictionary<VisualElement, IDisposable>();
-
-        [SerializeField] protected VisualTreeAsset uxmlTreeView;
+        private static Dictionary<Type, Action<string, object, VisualElement>> _fieldTypeToLinkUIField = new ()
+        {
+            {typeof(int), LinkBaseField<int, IntegerField>},
+            {typeof(string), LinkBaseField<string, TextField>},
+            {typeof(float), LinkBaseField<float, FloatField>},
+            {typeof(bool), LinkBaseField<bool, Toggle>},
+        };
 
         [MenuItem("Window/Test ReactiveInspectorWindow")]
         public static void ShowWindow()
@@ -70,434 +42,121 @@ namespace ControlCanvas.Editor.ReactiveInspector
             // Create a DataContainer and add it to the root
             DataContainer dataContainer = new DataContainer();
             root.Clear();
-            VisualElement holder = AddFieldsToRoot(dataContainer);
-            root.Add(holder);
+            root.Add(GetGenericInspector(dataContainer));
         }
 
-        private void OnDestroy()
+
+        private static VisualElement GetGenericInspector(object obj)
         {
-            // Dispose all ReactiveProperties
-            foreach (var reactiveProperty in reactiveProperties)
-            {
-                reactiveProperty.Value.Dispose();
-            }
+            var type = obj.GetType();
+            var name = type.Name;
+            VisualElement visualElement = AddGenericField(type, name);
+            LinkGenericField(obj, type, name, visualElement);
+            return visualElement;
         }
-
-        private VisualElement AddFieldsToRoot(object obj)
+        
+        private static VisualElement AddGenericField(Type t, string name)
         {
-            VisualElement holder = new VisualElement();
-
-            if (obj == null)
+            VisualElement element;
+            if (_fieldTypeToUIField.TryGetValue(t, out var handler))
             {
-                //Debug.Log("Null object");
-                holder.Add(new Label($"Null object"));
-                return holder;
+                var uiField = handler();
+                uiField.name = name;
+                element = uiField;
+            }else if (t.IsArray)
+            {
+                Debug.Log("Adding Array not implemented yet");
+                element = new Label("Array not implemented yet");
             }
-            
-            Type type = obj.GetType();
-            
-            if(type.IsArray)
+            else if(t.IsClass)
             {
-                //Debug.Log("Array type");
-                holder.Add(new Label($"Array of type {type}"));
+                var foldout = new Foldout();
+                foldout.text = name;
+                foldout.name = name;
                 
-                Type elementType = type.GetElementType();
-                if (elementType == null)
-                {
-                    holder.Add(new Label($"Element Type is null"));
-                }
-                else if (elementType.IsArray)
-                {
-                    //Process jaggedArrays
-                    // foreach (var element in array)
-                    // {
-                    //     arrayElement.Add(ProcessArray(element));  // Recurse into sub-arrays
-                    // }
-                    holder.Add(new Label($"Jagged Array not supported"));
-                }
-                else
-                {
-                    //Process non-jagged arrays
-                    return AddArrayField(obj);
-                }
-                
-                
-            }else if (type.IsPrimitive)
-            {
-                Debug.Log("Primitive type");
-            }else if (type.IsClass)
-            {
-                FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+                FieldInfo[] fields = t.GetFields(BindingFlags.Public | BindingFlags.Instance);
                 foreach (var field in fields)
                 {
-                    if (field.FieldType.IsPrimitive || field.FieldType == typeof(string))
-                    {
-                        holder.Add(ChooseField(field, obj));
-                    }else if (field.FieldType.IsClass)
-                    {
-                        var foldout = new Foldout();
-                        foldout.text = field.Name;
-                        foldout.Add(AddFieldsToRoot(field.GetValue(obj)));
-                        holder.Add(foldout);
-                    }
-                    else
-                    {
-                        Debug.Log($"Inner Type {field.FieldType} not supported");
-                    }
+                    var uiField = AddGenericField(field.FieldType, field.Name);
+                    foldout.Add(uiField);
                 }
-            }
-            else
+                element = foldout;
+            }else
             {
-                Debug.Log($"Type {type} not supported");
+                Debug.Log("Type not implemented yet: " + t);
+                element = new Label("Type not implemented yet: " + t);
             }
-            return holder;
-        }
 
-        private VisualElement ChooseField(FieldInfo field, object objectHolder)
-        {
-            if (typeToCreateBaseFieldType.TryGetValue(field.FieldType, out var baseFieldType))
-            {
-                return baseFieldType(field.GetValue(objectHolder), field.Name);
-            }
-            return new Label("No field type found");
+            return element;
         }
-
-        public VisualElement ProcessArray(object obj)
-        {
-            Type type = obj.GetType();
-            if (obj is Array array)
-            {
-                VisualElement arrayElement = new VisualElement();
-                if (type.GetElementType().IsArray)
-                {
-                    //Process jaggedArrays
-                    foreach (var element in array)
-                    {
-                        arrayElement.Add(ProcessArray(element));  // Recurse into sub-arrays
-                    }
-                }
-                else
-                {
-                    //Process non-jagged arrays
-                    return AddArrayField(obj);
-                }
-                
-                return arrayElement;
-            }
-            else
-            {
-                // Process non-array element
-                
-                
-                
-                //Console.WriteLine(obj);
-                return AddField(obj);
-            }
-            //
-            // if (field.FieldType.IsArray)
-            // {
-            //     //ProcessArray(field.GetValue(obj));
-            //     AddArrayField(fieldObject);
-            // }
-            // else
-            // {
-            //     AddField(fieldObject);
-            // }
-        }
-
-        private static TField AddField<T, TField>(object fieldObject, string label)
+        
+        private static TField AddBaseField<T, TField>()
             where TField : BaseField<T>, new()
         {
-            //T value = (T)fieldInfo.GetValue(holderObject);
-            
-            //Type type = fieldObject.GetType();
-            //Type type = fieldInfo.Name.GetType();
-            var uiField = new TField { label = $"{label}", value = (T)fieldObject };
+            var uiField = new TField { };
             return uiField;
         }
-        
-        private static TField AddField<T, TField>()
-            where TField : BaseField<T>, new()
+
+        private static void LinkGenericField(object fieldObject, Type fieldObjectType, string fieldName, VisualElement uiField)
         {
-            var uiField = new TField {};
-            return uiField;
-        }
-        private static TField LinkField<T, TField>(string label, object fieldObject)
-            where TField : BaseField<T>, new()
-        {
-            var uiField = new TField { label = $"{label}", value = (T)fieldObject };
-            return uiField;
-        }
-        
-        private VisualElement AddField(object fieldObject)
-        {
-            Type type = fieldObject.GetType();
-            if (typeToCreateBaseFieldType.TryGetValue(type, out var baseFieldType))
+            if (uiField == null)
             {
-                VisualElement uiField = baseFieldType(fieldObject, "?");
-                //var uiField = new TField { label = field.Name, value = value };
-                
-                //TODO readd Not using for testing now 
-                // var reactiveProperty = new ReactiveProperty<object>(fieldObject);
-                // reactiveProperty.Subscribe(x => uiField.value = x);
-                // uiField.RegisterValueChangedCallback(evt => reactiveProperty.Value = evt.newValue);
-                //
-                // // Store the ReactiveProperty in the dictionary
-                // reactiveProperties[uiField] = reactiveProperty;
-
-                return uiField;
-            }
-            return new Label($"No handler for fieldObject with type {type}.");
-        }
-        private static void AddField<T, TField>(FieldInfo field, object obj, VisualElement root,
-            Dictionary<VisualElement, IDisposable> reactiveProperties)
-            where TField : BaseField<T>, new()
-        {
-            // Get the value of the field
-            T value = (T)field.GetValue(obj);
-
-            // Create a UIElement for the field
-            var uiField = new TField { label = field.Name, value = value };
-            var reactiveProperty = new ReactiveProperty<T>(value);
-            reactiveProperty.Subscribe(x => uiField.value = x);
-            uiField.RegisterValueChangedCallback(evt => reactiveProperty.Value = evt.newValue);
-
-            // Add the field to the root
-            root.Add(uiField);
-
-            // Store the ReactiveProperty in the dictionary
-            reactiveProperties[uiField] = reactiveProperty;
-        }
-
-        
-        private VisualElement AddArrayField(object fieldObject)
-        {
-            Type type = fieldObject.GetType();
-            Type elementType = type.GetElementType();
-            Array array = (Array)fieldObject;
-
-            int id = 0;
-            int depth = 0;
-            int maxDepth = 10;
-            List<TreeViewItemData<object>> treeViewData = GetTreeViewItemData(array, depth, maxDepth, ref id);
-            
-            // Foldout foldout = new Foldout
-            // {
-            //     text = "Header"
-            // };
-
-            var treeView = new TreeView();
-            //foldout.Add(treeView);
-            treeView.fixedItemHeight = 20;
-            treeView.showAlternatingRowBackgrounds = AlternatingRowBackground.ContentOnly;
-            
-            treeView.SetRootItems(treeViewData);
-            treeView.makeItem = () =>
-            {
-                // typeToBaseFieldType.TryGetValue(elementType, out var t);
-                // return (BaseField<object>)t.Instantiate();
-                //return AddField(null);
-                return new Label("Test");
-            };
-            treeView.bindItem = (VisualElement element, int index) =>
-            {
-                if (element is BaseField<object> field)
-                {
-                    field.value = treeView.GetItemDataForIndex<object>(index);
-                    field.label = $"[{index}]";
-                }else if (element is Label label)
-                {
-                    label.text = $"[{index}]   {treeView.GetItemDataForIndex<object>(index)}";
-                }
-                else
-                {
-                    Debug.LogError("Element is not a BaseField<object>");
-                }
-            };
-            treeView.Rebuild();
-            return treeView;
-
-        }
-        
-        
-        
-        
-        // private int Depth(object obj, VisualElement root, FieldInfo field, int depth, int maxDepth)
-        // {
-        //     if (field.FieldType.IsPrimitive || fieldHandlers.ContainsKey(field.FieldType)) //Allow custom types
-        //     {
-        //         // Check if we have a handler for this type
-        //         if (fieldHandlers.TryGetValue(field.FieldType, out var handler))
-        //         {
-        //             // Call the handler to add the field to the root
-        //             handler(field, obj, root, reactiveProperties);
-        //         }
-        //         else
-        //         {
-        //             // If we don't have a handler, log a warning and add a label to the root
-        //             Debug.LogWarning($"No handler for type {field.FieldType}.");
-        //             root.Add(new Label($"No handler for field {field.Name} with type {field.FieldType}."));
-        //         }
-        //     }
-        //     else if (field.FieldType.IsArray)
-        //     {
-        //         
-        //         // Get the type of the elements of the array
-        //         Type elementType = field.FieldType.GetElementType();
-        //
-        //         //Detect jagged arrays and recurse
-        //         if (elementType != null && elementType.IsArray)
-        //         {
-        //             var arrayFieldValue = field.GetValue(obj) as Array;
-        //             if (arrayFieldValue != null)
-        //             {
-        //                 foreach (var array in arrayFieldValue)
-        //                 {
-        //                     //depth = Depth(array, root, field., depth, maxDepth);
-        //                 }
-        //             }
-        //         }
-        //         //Handle MultiDimensional Arrays and normal arrays
-        //         else// if (field.FieldType.GetArrayRank() > 1)
-        //         {
-        //             AddArrayField(field, obj, root, reactiveProperties, fieldHandlers);
-        //         }
-        //         
-        //     }
-        //     else
-        //     {
-        //         if (depth < maxDepth)
-        //         {
-        //             depth++;
-        //             // If the field is not a primitive, recursively call AddFieldsToRoot
-        //             AddFieldsToRoot(field.GetValue(obj), root);
-        //         }
-        //         else
-        //         {
-        //             root.Add(new Label($"Max depth reached for field {field.Name} with type {field.FieldType}."));
-        //         }
-        //     }
-        //
-        //     return depth;
-        // }
-
-
-        private static void AddArrayField(FieldInfo field, object o, VisualElement root, Dictionary<VisualElement, IDisposable> disposables, Dictionary<Type, Action<FieldInfo, object, VisualElement, Dictionary<VisualElement, IDisposable>>> dictionary)
-        {
-            int id_depth = 0;
-            int id_maxDepth = 8;
-            Array array = (Array)field.GetValue(o);
-
-            if (array == null)
-            {
-                root.Add(new Label($"Field {field.Name} with type {field.FieldType} is null."));
+                Debug.LogError($"UIField {fieldName} is null");
                 return;
             }
 
-            int id = 0;
-            List<TreeViewItemData<object>> treeViewData = GetTreeViewItemData(array, id_depth, id_maxDepth, ref id);
-            //IList<TreeViewItemData<PlanetsWindow.IPlanetOrGroup>> treeViewData = PlanetsWindow.treeRoots;
-
-            // List<TreeViewItemData<object>> rootData = new List<TreeViewItemData<object>>()
-            // {
-            //     new TreeViewItemData<object>(id, "Root", treeViewData)
-            // };
-
-            Foldout foldout = new Foldout
+            Type t = fieldObjectType;//fieldObject.GetType();
+            if (_fieldTypeToLinkUIField.TryGetValue(t, out var handler))
             {
-                text = field.Name
-            };
-
-            var treeView = new TreeView();
-            foldout.Add(treeView);
-            
-            // VisualElement holder = new VisualElement();
-            // VisualTreeAsset visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/ControlCanvas/Editor/ReactiveInspector/GenericTreeView.uxml");
-            // var templateContainer = visualTree.Instantiate();
-            // holder.Add(templateContainer);
-            // visualTree.CloneTree(holder);
-            //
-            //
-            // TreeView treeView = holder.Q<TreeView>();
-
-
-            //treeView.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/ControlCanvas/Editor/ReactiveInspector/ReactiveInspectorWindow.uss"));
-            treeView.fixedItemHeight = 20;
-            treeView.showAlternatingRowBackgrounds = AlternatingRowBackground.ContentOnly;
-            
-            treeView.SetRootItems(treeViewData);
-            treeView.makeItem = () =>
+                handler(fieldName, fieldObject, uiField);
+            }else if (t.IsArray)
             {
-                typeToBaseFieldType.TryGetValue(field.FieldType, out var type);
-                return (BaseField<object>)type.Instantiate();
-            };
-            treeView.bindItem = (VisualElement element, int index) =>
-            {
-                if (element is BaseField<object> field)
-                {
-                    field.value = treeView.GetItemDataForIndex<object>(index);
-                    field.label = $"[{index}]";
-                }else
-                {
-                    Debug.LogError("Element is not a BaseField<object>");
-                }
-            };
-            
-            // treeView.makeItem = () => new TField { };
-            // treeView.bindItem = (VisualElement element, int index) =>
-            // {
-            //     if (element is TField)
-            //     {
-            //         (element as TField).value = treeView.GetItemDataForIndex<T>(index);
-            //         (element as TField).label = $"[{index}]";
-            //     }else
-            //     {
-            //         Debug.LogError("Element is not a TField");
-            //     }
-            // };
-
-            // treeView.makeItem = () => new Label();
-            // treeView.bindItem = (VisualElement element, int index) => (element as Label).text = treeView.GetItemDataForIndex<PlanetsWindow.IPlanetOrGroup>(index).name;
-
-            treeView.Rebuild();
-            //root.Add(holder);
-            root.Add(foldout);
-        }
-
-        private static void AddArrayField<T, TField>(FieldInfo field, object obj, VisualElement root,
-            Dictionary<VisualElement, IDisposable> reactiveProperties)
-            where TField : BaseField<T>, new()
-        {
-            // Convert the array and any sub arrays to a list of TreeViewItemData
-            
-        }
-
-        private static List<TreeViewItemData<object>> GetTreeViewItemData(Array array, int id_depth, int id_maxDepth,
-            ref int id)
-        {
-            List<TreeViewItemData<object>> treeViewData = new List<TreeViewItemData<object>>();
-
-            if (id_depth > id_maxDepth)
-            {
-                //treeViewData.Add(new TreeViewItemData<object>(id_depth, "Max Depth Reached"));
-                //return treeViewData;
-                return null;
+                Debug.Log("Linking Array not implemented yet");
+                //TODO test this
+                // var array = (Array) fieldObject;
+                // for (int i = 0; i < array.Length; i++)
+                // {
+                //     var uiFieldChild = uiField.Q(fieldName);
+                //     LinkGenericField(array.GetValue(i), i.ToString(), uiFieldChild);
+                // }
             }
-
-            foreach (var item in array)
+            else if(t.IsClass)
             {
-                if (item is Array subArray)
+                if (fieldObject == null)
                 {
-                    var subTree = GetTreeViewItemData(subArray, id_depth + 1, id_maxDepth, ref id);
-                    treeViewData.Add(new TreeViewItemData<object>(id++, item, subTree));
+                    Debug.LogWarning($"Field {fieldName} is null");
+                    return;
                 }
-                else
+                FieldInfo[] fields = t.GetFields(BindingFlags.Public | BindingFlags.Instance);
+                foreach (FieldInfo fieldInfo in fields)
                 {
-                    treeViewData.Add(new TreeViewItemData<object>(id++, item));
+                    var uiFieldChild = uiField.Q(fieldInfo.Name);
+                    LinkGenericField(fieldInfo.GetValue(fieldObject), fieldInfo.FieldType, fieldInfo.Name, uiFieldChild);
                 }
             }
-
-            return treeViewData;
+            else
+            {
+                Debug.LogError($"Linking Type {t} not implemented yet");
+            }
+        }
+        
+        private static void LinkBaseField<T, TField>(string label, object fieldObject, VisualElement uiField)
+            where TField : BaseField<T>
+        {
+            if (uiField is TField field)
+            {
+                field.label = label;
+                if (fieldObject == null)
+                {
+                    //Instantiate default value
+                    fieldObject = default(T);
+                }
+                field.value = (T)fieldObject;
+            }
+            else
+            {
+                Debug.LogError($"UIField is not of type {typeof(TField)}");
+            }
         }
     }
 
@@ -507,30 +166,30 @@ namespace ControlCanvas.Editor.ReactiveInspector
         public string testString;
         public float testFloat;
         public bool testBool;
-        public int[] testIntArray;
-        public string[] testStringArray = new[] { "a", "b", "c" };
-        public float[] testFloatArray;
-        public bool[] testBoolArray = new[] { true, false, true, false, true, false };
-        public int[,] testInt2DArray = new int[2, 2] { { 1, 2 }, { 3, 4 } };
-        public int[][] testIntJaggedArray = new int[2][] { new int[2] { 1, 2 }, new int[2] { 3, 4 } };
-        public string[][] testStringJaggedArray = new string[2][] { new string[2] { "a", "b" }, new string[2] { "c", "d" } };
+        // public int[] testIntArray;
+        // public string[] testStringArray = new[] { "a", "b", "c" };
+        // public float[] testFloatArray;
+        // public bool[] testBoolArray = new[] { true, false, true, false, true, false };
+        // public int[,] testInt2DArray = new int[2, 2] { { 1, 2 }, { 3, 4 } };
+        // public int[][] testIntJaggedArray = new int[2][] { new int[2] { 1, 2 }, new int[2] { 3, 4 } };
+        // public string[][] testStringJaggedArray = new string[2][] { new string[2] { "a", "b" }, new string[2] { "c", "d" } };
 
         public DataContainer2 testContainer2 = new DataContainer2()
         {
             testInt2 = 2
         };
         
-        public DataContainer2[] testContainer2Array = new DataContainer2[2]
-        {
-            new DataContainer2()
-            {
-                testInt2 = 3
-            },
-            new DataContainer2()
-            {
-                testInt2 = 4
-            }
-        };
+        // public DataContainer2[] testContainer2Array = new DataContainer2[2]
+        // {
+        //     new DataContainer2()
+        //     {
+        //         testInt2 = 3
+        //     },
+        //     new DataContainer2()
+        //     {
+        //         testInt2 = 4
+        //     }
+        // };
     }
 
     public class DataContainer2
