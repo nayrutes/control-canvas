@@ -9,7 +9,7 @@ using UnityEngine.UIElements;
 
 namespace ControlCanvas.Editor.ReactiveInspector
 {
-    public class IDeaDump
+    public class IdeaDump
     {
         private static
             Dictionary<Type, Action<FieldInfo, object, VisualElement, Dictionary<VisualElement, IDisposable>>>
@@ -207,7 +207,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
                 VisualElement uiField = baseFieldType(fieldObject, "?");
                 //var uiField = new TField { label = field.Name, value = value };
                 
-                //TODO readd Not using for testing now 
+                //Not using for testing now 
                 // var reactiveProperty = new ReactiveProperty<object>(fieldObject);
                 // reactiveProperty.Subscribe(x => uiField.value = x);
                 // uiField.RegisterValueChangedCallback(evt => reactiveProperty.Value = evt.newValue);
