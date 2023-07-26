@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -15,6 +16,13 @@ namespace ControlCanvas.Editor.ReactiveInspector
             {typeof(string), () => AddBaseField<string, TextField>()},
             {typeof(float), () => AddBaseField<float, FloatField>()},
             {typeof(bool), () => AddBaseField<bool, Toggle>()},
+        };
+        private static Dictionary<Type, Func<VisualElement>> _fieldTypeToUIFieldWithReadonly = new Dictionary<Type, Func<VisualElement>>()
+        {
+            {typeof(int), () => AddBaseFieldReadOnly<int, IntegerField>()},
+            {typeof(string), () => AddBaseFieldReadOnly<string, TextField>()},
+            {typeof(float), () => AddBaseFieldReadOnly<float, FloatField>()},
+            {typeof(bool), () => AddBaseFieldReadOnly<bool, Toggle>()},
         };
         
         private static Dictionary<Type, Action<string, object, VisualElement>> _fieldTypeToLinkUIField = new ()
@@ -39,11 +47,11 @@ namespace ControlCanvas.Editor.ReactiveInspector
             // Create a DataContainer and add it to the root
             DataContainer dataContainer = new DataContainer();
             root.Clear();
-            root.Add(GetGenericInspector(dataContainer));
+            root.Add(CreateGenericInspector(dataContainer));
         }
 
 
-        private static VisualElement GetGenericInspector(object obj)
+        private static VisualElement CreateGenericInspector(object obj)
         {
             var type = obj.GetType();
             var name = type.Name;
@@ -52,19 +60,22 @@ namespace ControlCanvas.Editor.ReactiveInspector
             return visualElement;
         }
         
-        private static VisualElement AddGenericField(Type t, string name)
+        private static VisualElement AddGenericField(Type t, string name, bool onlyRead = false)
         {
             VisualElement element;
-            if (_fieldTypeToUIField.TryGetValue(t, out var handler))
+            if (!onlyRead && _fieldTypeToUIField.TryGetValue(t, out var handler))
             {
                 var uiField = handler();
                 uiField.name = name;
                 element = uiField;
-            }else if (t.IsArray)
+            }else if(onlyRead && _fieldTypeToUIFieldWithReadonly.TryGetValue(t, out var handler2))
             {
-                //Debug.Log("Adding Array not implemented yet");
-                //element = new Label("Array not implemented yet");
-                
+                var uiField = handler2();
+                uiField.name = name;
+                element = uiField;
+            }
+            else if (t.IsArray)
+            {
                 Type elementType = t.GetElementType();
                 if (elementType == null)
                 {
@@ -108,24 +119,23 @@ namespace ControlCanvas.Editor.ReactiveInspector
             foldout.name = s;
             
             var treeView = new TreeView();
-            treeView.virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight;
-            //treeView.fixedItemHeight = 20;
-            // if (elementType.IsClass)
+            // if (elementType.IsPrimitive || elementType == typeof(string))
             // {
-            //     treeView.fixedItemHeight = 80;
+            //     treeView.virtualizationMethod = CollectionVirtualizationMethod.FixedHeight;
+            //     treeView.fixedItemHeight = 20;
             // }
-            
+            // else
+            {
+                treeView.virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight;
+            }
             treeView.showAlternatingRowBackgrounds = AlternatingRowBackground.All;
             treeView.name = s+"-TreeView";
-            treeView.makeItem = () => AddGenericField(elementType, s+"-Item");
+            treeView.makeItem = () => AddGenericField(elementType, s+"-Item", true);
             
             foldout.Add(treeView);
             return foldout;
         }
 
-
-        
-        
         private static TField AddBaseField<T, TField>()
             where TField : BaseField<T>, new()
         {
@@ -133,22 +143,78 @@ namespace ControlCanvas.Editor.ReactiveInspector
             return uiField;
         }
 
+
+        private static TreeViewEntry<TValueType, TField> AddBaseFieldReadOnly<TValueType, TField>() where TField : BaseField<TValueType>, new()
+        {
+            var addBaseFieldReadOnly = new TreeViewEntry<TValueType, TField>();
+            addBaseFieldReadOnly.Label = "Not-Linked TreeViewEntry";
+            return addBaseFieldReadOnly;
+        }
+        
+        public class TreeViewEntry<TValueType,TField> : VisualElement where TField : BaseField<TValueType>, new()
+        {
+            public bool OnlyRead
+            {
+                get
+                {
+                    return _onlyRead;
+                }
+                set
+                {
+                    _onlyRead = value;
+                    baseField.SetEnabled(!_onlyRead);
+                    baseField.visible = !_onlyRead;
+                    baseField.style.display =  _onlyRead ? DisplayStyle.None : DisplayStyle.Flex;
+                    labelField.SetEnabled(_onlyRead);
+                    labelField.visible = _onlyRead;
+                    labelField.style.display =  _onlyRead ? DisplayStyle.Flex : DisplayStyle.None;
+                }
+            }
+
+            public string Label
+            {
+                get => labelField.text;
+                set
+                {
+                    labelField.text = value;
+                    baseField.label = value;
+                }
+            }
+
+            public TValueType Value
+            {
+                get => baseField.value;
+                set => baseField.value = value;
+            }
+
+            private BaseField<TValueType> baseField;
+            private Label labelField;
+            private bool _onlyRead;
+
+            public TreeViewEntry()
+            {
+                baseField = AddBaseField<TValueType,TField>();
+                labelField = new Label();
+                Add(labelField);
+                Add(baseField);
+                OnlyRead = false;
+            }
+        }
+        
         private static void LinkGenericField(object fieldObject, Type fieldObjectType, string fieldName, VisualElement uiField)
         {
             if (uiField == null)
             {
-                Debug.LogError($"UIField {fieldName} is null");
+                Debug.LogWarning($"UIField {fieldName} is null");
                 return;
             }
 
-            Type t = fieldObjectType;//fieldObject.GetType();
+            Type t = fieldObjectType;
             if (_fieldTypeToLinkUIField.TryGetValue(t, out var handler))
             {
                 handler(fieldName, fieldObject, uiField);
             }else if (t.IsArray)
             {
-                //Debug.Log("Linking Array not implemented yet");
-
                 if (fieldObject == null)
                 {
                     Debug.LogWarning($"FieldArray {fieldName} is null");
@@ -170,6 +236,12 @@ namespace ControlCanvas.Editor.ReactiveInspector
             }
             else if(t.IsClass)
             {
+                //TODO this is hacky and wrong
+                // if (fieldObject is Entry entry)
+                // {
+                //     fieldObject = entry.value;
+                // }
+                
                 if (fieldObject == null)
                 {
                     Debug.LogWarning($"Field {fieldName} is null");
@@ -179,7 +251,17 @@ namespace ControlCanvas.Editor.ReactiveInspector
                 foreach (FieldInfo fieldInfo in fields)
                 {
                     var uiFieldChild = uiField.Q(fieldInfo.Name);
-                    LinkGenericField(fieldInfo.GetValue(fieldObject), fieldInfo.FieldType, fieldInfo.Name, uiFieldChild);
+                    if (fieldObject is Entry entry)
+                    {
+                        var oldValue = entry.value;
+                        entry.value = fieldInfo.GetValue(oldValue);
+                        LinkGenericField(entry, fieldInfo.FieldType, fieldInfo.Name, uiFieldChild);
+                    }
+                    else
+                    {
+                        LinkGenericField(fieldInfo.GetValue(fieldObject), fieldInfo.FieldType, fieldInfo.Name, uiFieldChild);                        
+                    }
+                    
                 }
             }
             else
@@ -195,7 +277,8 @@ namespace ControlCanvas.Editor.ReactiveInspector
             int id = 0;
             int depth = 0;
             int maxDepth = 10;
-            List<TreeViewItemData<object>> treeViewData = GetTreeViewItemData(array, depth, maxDepth, ref id);
+            //List<TreeViewItemData<object>> treeViewData = GetTreeViewItemData(array, depth, maxDepth, ref id);
+            List<TreeViewItemData<Entry>> treeViewData = ConvertArrayToTreeView(array);
 
             if (uiField is TreeView treeView)
             {
@@ -203,9 +286,13 @@ namespace ControlCanvas.Editor.ReactiveInspector
                 
                 treeView.bindItem = (VisualElement e, int index) =>
                 {
-                    object entry = treeView.GetItemDataForIndex<object>(index);
-                    
-                    LinkGenericField(entry, fieldObjectType, fieldName + index, e);
+                    Entry entry = treeView.GetItemDataForIndex<Entry>(index);
+                    //string name = entry.name;
+                    // if (entry.value == null)
+                    // {
+                    //     name = $"Found null value at index {index}";
+                    // }
+                    LinkGenericField(entry, fieldObjectType, "", e);
                 };
                 treeView.Rebuild();
             }
@@ -216,9 +303,14 @@ namespace ControlCanvas.Editor.ReactiveInspector
         }
         
         private static void LinkBaseField<T, TField>(string label, object fieldObject, VisualElement uiField)
-            where TField : BaseField<T>
+            where TField : BaseField<T>, new()
         {
-            if (uiField is TField field)
+            if(fieldObject is Entry entry)
+            {
+                fieldObject = entry.value;
+                label = entry.name + " " + label;
+            }
+            if (uiField is BaseField<T> field)
             {
                 field.label = label;
                 if (fieldObject == null)
@@ -227,42 +319,116 @@ namespace ControlCanvas.Editor.ReactiveInspector
                     fieldObject = default(T);
                 }
                 field.value = (T)fieldObject;
+            }else if (uiField is TreeViewEntry<T, TField> fieldRo)
+            {
+                fieldRo.Label = label;
+                
+                
+                if (fieldObject == null)
+                {
+                    fieldRo.OnlyRead = true;
+                    fieldRo.Value = default(T);
+                }
+                else
+                {
+                    fieldRo.OnlyRead = false;
+                    fieldRo.Value = (T)fieldObject;
+                }
             }
             else
             {
                 Debug.LogError($"UIField is not of type {typeof(TField)}");
             }
         }
-        
-        private static List<TreeViewItemData<object>> GetTreeViewItemData(Array array, int id_depth, int id_maxDepth,
-            ref int id)
+
+        public struct Entry
         {
-            List<TreeViewItemData<object>> treeViewData = new List<TreeViewItemData<object>>();
+            public string name;
+            public object value;
+        }
+        
+        public static List<TreeViewItemData<Entry>> ConvertArrayToTreeView(Array array)
+        {
+            int id = 0;
+            return ConvertArrayToTreeViewRecursive(array, new int[0], ref id, 0).children.ToList();
+        }
 
-            if (id_depth > id_maxDepth)
+        private static TreeViewItemData<Entry> ConvertArrayToTreeViewRecursive(Array array, int[] indices, ref int id,
+            int index)
+        {
+            if (indices.Length == array.Rank)
             {
-                //treeViewData.Add(new TreeViewItemData<object>(id_depth, "Max Depth Reached"));
-                //return treeViewData;
-                return null;
+                
+                // We've reached a leaf node.
+                object data = array.GetValue(indices);
+                return new TreeViewItemData<Entry>(id++, new Entry(){name=$"[{index}]", value = data}, new List<TreeViewItemData<Entry>>());
             }
-
-            foreach (var item in array)
+            else
             {
-                if (item is Array subArray)
+                // We're at an internal node. Generate the children.
+                List<TreeViewItemData<Entry>> children = new List<TreeViewItemData<Entry>>();
+                for (int i = 0; i < array.GetLength(indices.Length); i++)
                 {
-                    var subTree = GetTreeViewItemData(subArray, id_depth + 1, id_maxDepth, ref id);
-                    treeViewData.Add(new TreeViewItemData<object>(id++, item, subTree));
+                    int[] newIndices = new int[indices.Length + 1];
+                    Array.Copy(indices, newIndices, indices.Length);
+                    newIndices[newIndices.Length - 1] = i;
+                    children.Add(ConvertArrayToTreeViewRecursive(array, newIndices, ref id, i));
+                }
+                return new TreeViewItemData<Entry>(id++, new Entry(){name=$">{indices.Length-1}", value = null}, children);
+            }
+        }
+
+        
+        public static TreeViewItemData<object> ConvertArrayToTreeViewInefficient(Array array)
+        {
+            TreeViewItemData<object> root = new TreeViewItemData<object>(0, null, new List<TreeViewItemData<object>>());
+            List<TreeViewItemData<object>> currentNodes = new List<TreeViewItemData<object>>() { root };
+
+            int rank = array.Rank;
+            int arrayLength = array.Length;
+            int[] indices = new int[rank];
+            for (int i = 0; i < arrayLength; i++)
+            {
+                object data = array.GetValue(indices);
+                TreeViewItemData<object> newNode = new TreeViewItemData<object>(indices[indices.Length - 1], data, new List<TreeViewItemData<object>>());
+
+                List<TreeViewItemData<object>> newChildren = new List<TreeViewItemData<object>>(currentNodes[indices.Length - 1].children);
+                newChildren.Add(newNode);
+                TreeViewItemData<object> newParent = new TreeViewItemData<object>(currentNodes[indices.Length - 1].id, currentNodes[indices.Length - 1].data, newChildren);
+
+                if (indices.Length < currentNodes.Count)
+                {
+                    currentNodes[indices.Length] = newNode;
+                    currentNodes[indices.Length - 1] = newParent;
                 }
                 else
                 {
-                    treeViewData.Add(new TreeViewItemData<object>(id++, item));
+                    currentNodes.Add(newNode);
+                }
+
+                for (int j = rank - 1; j >= 0; j--)
+                {
+                    indices[j]++;
+                    if (indices[j] < array.GetLength(j))
+                    {
+                        break;
+                    }
+
+                    indices[j] = 0;
+                    if (j > 0)
+                    {
+                        currentNodes[j] = currentNodes[j - 1];
+                    }
                 }
             }
 
-            return treeViewData;
+            return root;
         }
+        
     }
 
+    
+    
     public class DataContainer
     {
         public int testInt;
@@ -273,7 +439,9 @@ namespace ControlCanvas.Editor.ReactiveInspector
         public string[] testStringArray = new[] { "a", "b", "c" };
         public float[] testFloatArray;
         public bool[] testBoolArray = new[] { true, false, true, false, true, false };
-        // public int[,] testInt2DArray = new int[2, 2] { { 1, 2 }, { 3, 4 } };
+        public int[,] testInt2DArray = new int[3, 3] { { 1, 2, 12 }, { 3, 4, 34 }, { 5, 6, 56 } };
+        public int[,,] testInt3DArray = new int[2, 2, 2] { { { 1, 2 }, { 3, 4 } }, { { 5, 6 }, { 7, 8 } } };
+        
         // public int[][] testIntJaggedArray = new int[2][] { new int[2] { 1, 2 }, new int[2] { 3, 4 } };
         // public string[][] testStringJaggedArray = new string[2][] { new string[2] { "a", "b" }, new string[2] { "c", "d" } };
 
