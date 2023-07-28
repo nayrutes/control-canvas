@@ -16,6 +16,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
         }
 
         private DataContainer dataContainer;
+        private DataContainer2 dataContainerSwap;
         GenericViewModel genericViewModel;
         private CompositeDisposable _compositeDisposable = new CompositeDisposable();
         private CompositeDisposable _viewDisposableCollection = new();
@@ -24,6 +25,10 @@ namespace ControlCanvas.Editor.ReactiveInspector
         {
             VisualElement root = rootVisualElement;
             dataContainer = new DataContainer();
+            dataContainerSwap = new DataContainer2
+            {
+                testInt2 = 1337
+            };
             ReloadView();
             
             genericViewModel = GenericViewModel.GetViewModel(dataContainer);
@@ -48,13 +53,19 @@ namespace ControlCanvas.Editor.ReactiveInspector
             root.Add(new Button(ReloadView) { text = "Reload View" });
             root.Add(new Button(ReloadData) { text = "Reload Data" });
             root.Add(new Button(SaveData) { text = "Save Data" });
+            root.Add(new Button(SwapSubContainer) { text = "Swap Sub Container" });
             //GenericViewModel genericViewModel = GenericViewModel.GetViewModel(dataContainer);
             //genericViewModel.Log();
             _viewDisposableCollection.Dispose();
             _viewDisposableCollection = new CompositeDisposable();
             root.Add(GenericField.CreateGenericInspector(dataContainer, _viewDisposableCollection));
         }
-        
+
+        private void SwapSubContainer()
+        {
+            (dataContainer.testContainer2, dataContainerSwap) = (dataContainerSwap, dataContainer.testContainer2);
+        }
+
         //LoadFromDataContainer
         private void ReloadData()
         {

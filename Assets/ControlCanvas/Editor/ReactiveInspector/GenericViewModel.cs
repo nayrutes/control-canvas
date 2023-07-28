@@ -43,6 +43,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
         
         private Dictionary<string, FieldInfo> _nameToFieldInfo = new Dictionary<string, FieldInfo>();
 
+        
         private void CreateBinding(object o)
         {
             var type = o.GetType();
@@ -200,8 +201,9 @@ namespace ControlCanvas.Editor.ReactiveInspector
                 // var newReactiveProperty = new ReactiveProperty<object>();
                 // _fieldInfoToReactiveProperty.Add(entryName, newReactiveProperty);
                 // return newReactiveProperty;
-                
-                throw new Exception($"ReactiveProperty for {entryName} on {_name} not found");
+
+                return null;
+                //throw new Exception($"ReactiveProperty for {entryName} on {_name} not found");
             }
         }
 

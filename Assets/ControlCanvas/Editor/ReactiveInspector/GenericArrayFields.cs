@@ -63,6 +63,51 @@ namespace ControlCanvas.Editor.ReactiveInspector
             }
         }
 
+        public class ClassFieldFoldoutAdapter<TValueType> : IExtendedBaseField<TValueType>
+        {
+            private Foldout _foldout;
+            private TValueType _value;
+            private bool _onlyRead;
+
+            public TValueType Value
+            {
+                get { return _value;}
+                set { _value = value; }
+            }
+
+            public bool OnlyRead
+            {
+                get => _onlyRead;
+                set
+                {
+                    _foldout.contentContainer.SetEnabled(value);
+                    _onlyRead = value;
+                }
+            }
+
+            public string Label
+            {
+                get => _foldout.text;
+                set => _foldout.text = value;
+            }
+
+            public ClassFieldFoldoutAdapter(Foldout foldout, TValueType value)
+            {
+                _foldout = foldout;
+                _value = value;
+            }
+            
+            public BaseField<TValueType> GetBaseField()
+            {
+                return null;
+            }
+            
+            public Foldout GetFoldout()
+            {
+                return _foldout;
+            }
+        }
+        
         internal class TreeViewEntry<TValueType, TField> : VisualElement, IExtendedBaseField<TValueType> 
             where TField : BaseField<TValueType>, new()
         {

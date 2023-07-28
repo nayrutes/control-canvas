@@ -98,10 +98,10 @@ namespace ControlCanvas.Editor.ReactiveInspector
             }
             else if (t.IsClass)
             {
-                LinkClass(visualElement, t, obj, disposableCollection);
+                LinkClass(entry, visualElement, disposableCollection);
             }else if(t.IsEnum)
             {
-                GenericSimpleFields.LinkEnumField(entry, visualElement);
+                GenericSimpleFields.LinkEnumField(entry, visualElement, disposableCollection);
             }
             else
             {
@@ -110,13 +110,63 @@ namespace ControlCanvas.Editor.ReactiveInspector
             
         }
 
-        private static void LinkClass(VisualElement visualElement, Type t, object obj,
-            ICollection<IDisposable> disposableCollection)
+        private static void LinkClass(Entry entry, VisualElement visualElement, ICollection<IDisposable> disposableCollection)
         {
+            object obj = entry.value;
+            
+            //visual element should be a foldout?
+            if (visualElement is Foldout foldout)
+            {
+                GenericArrayFields.ClassFieldFoldoutAdapter<object> adapter = new GenericArrayFields.ClassFieldFoldoutAdapter<object>(foldout, obj);
+                GenericSimpleFields.SetUpReactive(adapter, entry, disposableCollection);
+                SetUpReactiveClass(adapter, entry, disposableCollection);
+                
+            }else
+            {
+                // Handle the case where the VisualElement is not compatible with IValue
+                Debug.LogError($"VisualElement is not of type {typeof(Foldout)}");
+            }
+            
+        }
+
+        private static void SetUpReactiveClass(GenericArrayFields.ClassFieldFoldoutAdapter<object> adapter, Entry entry, ICollection<IDisposable> disposableCollection)
+        {
+            ReactiveProperty<object> rp = entry.reactiveLink?.viewModel.GetReactiveProperty(entry.name);
+            if (rp != null)
+            {
+                adapter.GetFoldout().RegisterValueChangedCallback(evt =>
+                {
+                    //TODO use foldout to lazy load?
+                });
+                
+                rp.Subscribe(obj =>
+                {
+                    //TODO Bug: don't depend on the method parameters
+                    //TODO Test if it working now
+                    entry.value = obj;
+                    
+                    LinkClassSubFields(adapter, entry, disposableCollection);
+                }).AddTo(disposableCollection);
+            }
+            else
+            {
+                LinkClassSubFields(adapter, entry, disposableCollection);
+            }
+        }
+        
+        private static void LinkClassSubFields(GenericArrayFields.ClassFieldFoldoutAdapter<object> adapter, Entry entry, ICollection<IDisposable> disposableCollection)
+        {
+            Type t = entry.intendedType;
             FieldInfo[] fields = t.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            var parentViewModel = entry.reactiveLink?.viewModel;
+            object obj = entry.value;
+            
+            var viewModel = GenericViewModel.GetViewModel(obj);
+            //parentViewModel?.SetChildViewModel(entry.name, viewModel);//Is this even needed?
+            
             foreach (FieldInfo fieldInfo in fields)
             {
-                var uiFieldChild = visualElement.Q(fieldInfo.Name);
+                var uiFieldChild = adapter.GetFoldout().Q(fieldInfo.Name);
                 object objectValue = fieldInfo.GetValue(obj);
                 if (obj is Entry innerEntry)
                 {
@@ -124,7 +174,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
                     return;
                 }
 
-                Entry entryChild = new Entry(fieldInfo.Name, objectValue, fieldInfo.FieldType, GenericViewModel.GetViewModel(obj));
+                Entry entryChild = new Entry(fieldInfo.Name, objectValue, fieldInfo.FieldType, viewModel);
                 LinkGenericEntry(entryChild, uiFieldChild, disposableCollection);
                 
             }

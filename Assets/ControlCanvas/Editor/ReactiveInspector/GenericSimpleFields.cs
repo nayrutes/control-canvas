@@ -74,12 +74,13 @@ namespace ControlCanvas.Editor.ReactiveInspector
             }
         }
 
-        private static void SetUpReactive<T>(GenericArrayFields.IExtendedBaseField<T> adapter, Entry entry,
+        public static void SetUpReactive<T>(GenericArrayFields.IExtendedBaseField<T> adapter, Entry entry,
             ICollection<IDisposable> disposableCollection)
         {
             adapter.Label = entry.name;
             ReactiveProperty<object> rp = entry.reactiveLink?.viewModel.GetReactiveProperty(entry.name);
 
+            //Handle viewmodel existing (two way binding)
             if (rp != null)
             {
                 adapter.GetBaseField().RegisterValueChangedCallback(evt =>
@@ -87,24 +88,27 @@ namespace ControlCanvas.Editor.ReactiveInspector
                     rp.Value = evt.newValue;
                 });
                 adapter.Value = (T)rp.Value;
-
-                //TODO: Add a way to unsubscribe
+                
                 rp.Subscribe(value =>
                 {
                     adapter.Value = (T)value;
                 }).AddTo(disposableCollection);
             }
+            //Handle no viewmodel
             else
             {
-                adapter.GetBaseField().SetEnabled(false);
+                //Read only on Reload View
+                adapter.GetBaseField()?.SetEnabled(false);
                 object someValue = entry.value;
                 if (someValue == null)
                 {
                     //Instantiate default value
                     someValue = default(T);
                 }
-
+                Debug.Log($"Setting value {someValue} to {adapter.Label}");
                 adapter.Value = (T)someValue;
+                
+                //TODO: One way binding (writing to data container)
             }
         }
 
@@ -131,7 +135,8 @@ namespace ControlCanvas.Editor.ReactiveInspector
         //     return uiField;
         // }
 
-        public static void LinkEnumField(Entry entry, VisualElement uiField)
+        public static void LinkEnumField(Entry entry, VisualElement uiField,
+            ICollection<IDisposable> disposableCollection)
         {
             var obj = entry.value;
             var name = entry.name;
@@ -142,20 +147,41 @@ namespace ControlCanvas.Editor.ReactiveInspector
                 throw new ArgumentException("Type must be an enum", nameof(type));
             }
 
-
-            if (uiField is EnumField field)
+            if (uiField is GenericArrayFields.IExtendedBaseField<Enum> valueElement)
             {
-                field.Init((Enum)obj);
+                // Now you can use valueElement as IValue<TValueType>
+                ((EnumField)valueElement.GetBaseField()).Init((Enum)obj);
+                SetUpReactive(valueElement, entry, disposableCollection);
             }
-            else if (uiField is GenericArrayFields.TreeViewEntry<Enum, EnumField> fieldRo)
+            else if (uiField is EnumField enumField)
             {
-                fieldRo.Label = name;
-                fieldRo.Value = (Enum)obj;
+                // If it's a BaseField, wrap it in an adapter
+                enumField.Init((Enum)obj);
+                GenericArrayFields.IExtendedBaseField<Enum> adapter = new GenericArrayFields.BaseFieldAdapter<Enum>(enumField);
+                SetUpReactive(adapter, entry, disposableCollection);
             }
             else
             {
-                Debug.LogError($"UIField is not of type {typeof(EnumField)}");
+                // Handle the case where the VisualElement is not compatible with IValue
+                Debug.LogError($"UIField {type} is not of type {typeof(EnumField)}");
             }
+            
+            
+            
+
+            // if (uiField is EnumField field)
+            // {
+            //     field.Init((Enum)obj);
+            // }
+            // else if (uiField is GenericArrayFields.TreeViewEntry<Enum, EnumField> fieldRo)
+            // {
+            //     fieldRo.Label = name;
+            //     fieldRo.Value = (Enum)obj;
+            // }
+            // else
+            // {
+            //     Debug.LogError($"UIField is not of type {typeof(EnumField)}");
+            // }
         }
     }
 }
