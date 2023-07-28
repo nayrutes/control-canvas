@@ -1,4 +1,8 @@
-﻿using UnityEditor;
+﻿using System;
+using System.Collections.Generic;
+using UniRx;
+using UnityEditor;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace ControlCanvas.Editor.ReactiveInspector
@@ -11,14 +15,57 @@ namespace ControlCanvas.Editor.ReactiveInspector
             GetWindow<ReactiveInspectorWindow>("My Custom Inspector");
         }
 
+        private DataContainer dataContainer;
+        GenericViewModel genericViewModel;
+        private CompositeDisposable _compositeDisposable = new CompositeDisposable();
+        private CompositeDisposable _viewDisposableCollection = new();
+
         private void OnEnable()
         {
             VisualElement root = rootVisualElement;
-            DataContainer dataContainer = new DataContainer();
-            GenericViewModel genericViewModel = GenericViewModel.GetViewModel(dataContainer);
-            genericViewModel.Log();
+            dataContainer = new DataContainer();
+            ReloadView();
+            
+            genericViewModel = GenericViewModel.GetViewModel(dataContainer);
+            genericViewModel.DataChanged.Subscribe(b =>
+            {
+                string title = b ? "My Custom Inspector *" : "My Custom Inspector";
+                titleContent = new GUIContent(title);
+            }).AddTo(_compositeDisposable);
+        }
+
+        private void OnDisable()
+        {
+            _compositeDisposable.Dispose();
+            genericViewModel?.Dispose();
+        }
+
+        private void ReloadView()
+        {
+            VisualElement root = rootVisualElement;
             root.Clear();
-            root.Add(GenericField.CreateGenericInspector(dataContainer));
+            
+            root.Add(new Button(ReloadView) { text = "Reload View" });
+            root.Add(new Button(ReloadData) { text = "Reload Data" });
+            root.Add(new Button(SaveData) { text = "Save Data" });
+            //GenericViewModel genericViewModel = GenericViewModel.GetViewModel(dataContainer);
+            //genericViewModel.Log();
+            _viewDisposableCollection.Dispose();
+            _viewDisposableCollection = new CompositeDisposable();
+            root.Add(GenericField.CreateGenericInspector(dataContainer, _viewDisposableCollection));
+        }
+        
+        //LoadFromDataContainer
+        private void ReloadData()
+        {
+            GenericViewModel.ReloadViewModel(dataContainer);
+        }
+
+
+        //SaveToDataContainer
+        private void SaveData()
+        {
+            GenericViewModel.SaveDataFromViewModel(dataContainer);
         }
     }
 
@@ -35,8 +82,9 @@ namespace ControlCanvas.Editor.ReactiveInspector
     public class DataContainer
     {
         public int testInt;
+        public int testInt2 = 42;
         public string testString;
-        public float testFloat;
+        public float testFloat = 1.993f;
         public bool testBool;
         public int[] testIntArray;
         public string[] testStringArray = new[] { "a", "b", "c" };
@@ -66,6 +114,25 @@ namespace ControlCanvas.Editor.ReactiveInspector
                 testInt2 = 4
             }
         };
+        
+        public void LogData()
+        {
+            Debug.Log($"testInt: {testInt}");
+            Debug.Log($"testInt2: {testInt2}");
+            Debug.Log($"testString: {testString}");
+            Debug.Log($"testFloat: {testFloat}");
+            Debug.Log($"testBool: {testBool}");
+            Debug.Log($"testIntArray: {testIntArray}");
+            Debug.Log($"testStringArray: {testStringArray}");
+            Debug.Log($"testFloatArray: {testFloatArray}");
+            Debug.Log($"testBoolArray: {testBoolArray}");
+            Debug.Log($"testInt2DArray: {testInt2DArray}");
+            Debug.Log($"testInt3DArray: {testInt3DArray}");
+            Debug.Log($"TestEnumTest1: {TestEnumTest1}");
+            Debug.Log($"AnotherTestEnumTest2: {AnotherTestEnumTest2}");
+            Debug.Log($"testContainer2: {testContainer2}");
+            Debug.Log($"testContainer2Array: {testContainer2Array}");
+        }
     }
 
     public class DataContainer2

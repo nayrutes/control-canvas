@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
+using UniRx;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -7,13 +9,13 @@ namespace ControlCanvas.Editor.ReactiveInspector
 {
     public static class GenericField
     {
-        public static VisualElement CreateGenericInspector(object obj)
+        public static VisualElement CreateGenericInspector(object obj, ICollection<IDisposable> disposableCollection)
         {
             var type = obj.GetType();
             var name = type.Name;
             VisualElement visualElement = AddGenericField(type, name);
-            Entry entry = new Entry(name, obj, type);
-            LinkGenericEntry(entry, visualElement);
+            Entry entry = new Entry(name, obj, type, GenericViewModel.GetViewModel(obj));
+            LinkGenericEntry(entry, visualElement, disposableCollection);
             return visualElement;
         }
 
@@ -76,9 +78,9 @@ namespace ControlCanvas.Editor.ReactiveInspector
             return element;
         }
 
-        internal static void LinkGenericEntry(Entry entry, VisualElement visualElement)
+        internal static void LinkGenericEntry(Entry entry, VisualElement visualElement,
+            ICollection<IDisposable> disposableCollection)
         {
-            string name = entry.name;
             object obj = entry.value;
             // if (obj == null)
             // {
@@ -89,17 +91,17 @@ namespace ControlCanvas.Editor.ReactiveInspector
             Type t = entry.intendedType;
             if (GenericSimpleFields.FieldTypeToLinkUIField.TryGetValue(t, out var handler))
             {
-                handler(name, obj, visualElement);
+                handler(entry, visualElement, disposableCollection);
             }else if (t.IsArray)
             {
-                LinkArray(entry, visualElement);
+                LinkArray(entry, visualElement, disposableCollection);
             }
             else if (t.IsClass)
             {
-                LinkClass(visualElement, t, obj);
+                LinkClass(visualElement, t, obj, disposableCollection);
             }else if(t.IsEnum)
             {
-                GenericSimpleFields.LinkEnumField(obj, t, name, visualElement);
+                GenericSimpleFields.LinkEnumField(entry, visualElement);
             }
             else
             {
@@ -108,7 +110,8 @@ namespace ControlCanvas.Editor.ReactiveInspector
             
         }
 
-        private static void LinkClass(VisualElement visualElement, Type t, object obj)
+        private static void LinkClass(VisualElement visualElement, Type t, object obj,
+            ICollection<IDisposable> disposableCollection)
         {
             FieldInfo[] fields = t.GetFields(BindingFlags.Public | BindingFlags.Instance);
             foreach (FieldInfo fieldInfo in fields)
@@ -121,65 +124,13 @@ namespace ControlCanvas.Editor.ReactiveInspector
                     return;
                 }
 
-                Entry entryChild = new Entry(fieldInfo.Name, objectValue, fieldInfo.FieldType);
-                LinkGenericEntry(entryChild, uiFieldChild);
+                Entry entryChild = new Entry(fieldInfo.Name, objectValue, fieldInfo.FieldType, GenericViewModel.GetViewModel(obj));
+                LinkGenericEntry(entryChild, uiFieldChild, disposableCollection);
                 
-                // if (fieldInfo.FieldType.IsClass)
-                // {
-                //     Entry entryChild = new Entry(fieldInfo.Name, objectValue);
-                //     LinkGenericEntry(entryChild, uiFieldChild);
-                // }
-                // else
-                // {
-                //     LinkGenericEntry(objectValue, fieldInfo, uiFieldChild);
-                // }
-
-
-                // if (obj is Entry entry)
-                // {
-                //     var oldValue = entry.value;
-                //     entry.value = fieldInfo.GetValue(oldValue);
-                //     LinkGenericField(entry, fieldInfo.FieldType, fieldInfo.Name, uiFieldChild);
-                // }
-                // else
-                // {
-                //     LinkGenericField(fieldInfo.GetValue(obj), fieldInfo.FieldType, fieldInfo.Name,
-                //         uiFieldChild);
-                // }
             }
         }
 
-        // internal static void LinkGenericField(object fieldObject, FieldInfo fieldInfo, VisualElement uiField)
-        // {
-        //     if (uiField == null)
-        //     {
-        //         Debug.LogWarning($"UIField for {fieldInfo.Name} is null");
-        //         return;
-        //     }
-        //
-        //     Type t = fieldObjectType;
-        //     if (GenericSimpleFields.FieldTypeToLinkUIField.TryGetValue(t, out var handler))
-        //     {
-        //         handler(fieldName, fieldObject, uiField);
-        //     }
-        //     else if (t.IsArray)
-        //     {
-        //         LinkArray(fieldObject, uiField, t);
-        //     }
-        //     else if (t.IsClass)
-        //     {
-        //         Debug.LogError("Object linking - wrong method called");
-        //     }else if(t.IsEnum)
-        //     {
-        //         GenericSimpleFields.LinkEnumField(fieldObject, t, fieldName, uiField);
-        //     }
-        //     else
-        //     {
-        //         Debug.LogError($"Linking Type {t} not implemented yet");
-        //     }
-        // }
-
-        private static void LinkArray(Entry entry, VisualElement uiField)
+        private static void LinkArray(Entry entry, VisualElement uiField, ICollection<IDisposable> disposableCollection)
         {
             object fieldObject = entry.value;
             if (fieldObject == null)
@@ -199,7 +150,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
             }
             else
             {
-                GenericArrayFields.LinkArrayField(array, entry.name, uiField.Q<TreeView>());
+                GenericArrayFields.LinkArrayField(array, entry.name, uiField.Q<TreeView>(), disposableCollection);
             }
         }
     }
@@ -209,12 +160,28 @@ namespace ControlCanvas.Editor.ReactiveInspector
         public string name;
         public object value;
         public Type intendedType;
-
-        public Entry(string name, object value, Type intendedType)
+        public ReactiveLink? reactiveLink;
+        
+        public Entry(string name, object value, Type intendedType, ReactiveLink link = default)
         {
             this.name = name;
             this.value = value;
             this.intendedType = intendedType;
+            reactiveLink = null;
         }
+        public Entry(string name, object value, Type intendedType, GenericViewModel viewModel)
+        {
+            this.name = name;
+            this.value = value;
+            this.intendedType = intendedType;
+            reactiveLink = new ReactiveLink(){viewModel = viewModel};
+        }
+    }
+
+    public struct ReactiveLink
+    {
+        public GenericViewModel viewModel;
+        public ReactiveCollection<object> collection;
+        public ReactiveProperty<object> property;
     }
 }

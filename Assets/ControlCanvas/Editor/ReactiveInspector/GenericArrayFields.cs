@@ -26,7 +26,45 @@ namespace ControlCanvas.Editor.ReactiveInspector
                 //{ typeof(Enum), () => AddBaseFieldReadOnly<Enum, EnumField>() },
             };
 
-        internal class TreeViewEntry<TValueType, TField> : VisualElement where TField : BaseField<TValueType>, new()
+        public interface IExtendedBaseField<TValueType>
+        {
+            TValueType Value { get; set; }
+            bool OnlyRead { get; set; }
+            string Label { get; set; }
+
+            public BaseField<TValueType> GetBaseField();
+        }
+
+        public class BaseFieldAdapter<TValueType> : IExtendedBaseField<TValueType>
+        {
+            private BaseField<TValueType> _baseField;
+
+            public bool OnlyRead { get; set; }
+            public string Label
+            {
+                get { return _baseField.label; }
+                set { _baseField.label = value; }
+            }
+
+            public BaseField<TValueType> GetBaseField()
+            {
+                return _baseField;
+            }
+
+            public BaseFieldAdapter(BaseField<TValueType> baseField)
+            {
+                _baseField = baseField;
+            }
+
+            public TValueType Value
+            {
+                get { return _baseField.value; }
+                set { _baseField.value = value; }
+            }
+        }
+
+        internal class TreeViewEntry<TValueType, TField> : VisualElement, IExtendedBaseField<TValueType> 
+            where TField : BaseField<TValueType>, new()
         {
             public bool OnlyRead
             {
@@ -53,6 +91,11 @@ namespace ControlCanvas.Editor.ReactiveInspector
                 }
             }
 
+            public BaseField<TValueType> GetBaseField()
+            {
+                return baseField;
+            }
+
             public TValueType Value
             {
                 get => baseField.value;
@@ -63,6 +106,8 @@ namespace ControlCanvas.Editor.ReactiveInspector
             private Label labelField;
             private bool _onlyRead;
 
+            public BaseField<TValueType> BaseField => baseField;
+
             public TreeViewEntry()
             {
                 baseField = GenericSimpleFields.AddBaseField<TValueType, TField>();
@@ -71,6 +116,8 @@ namespace ControlCanvas.Editor.ReactiveInspector
                 Add(baseField);
                 OnlyRead = false;
             }
+
+            //public TValueType Value { get; set; }
         }
 
         internal static VisualElement AddArrayField(Type elementType, string s)
@@ -97,7 +144,8 @@ namespace ControlCanvas.Editor.ReactiveInspector
             return foldout;
         }
 
-        internal static void LinkArrayField(Array array, string fieldName, VisualElement uiField)
+        internal static void LinkArrayField(Array array, string fieldName, VisualElement uiField,
+            ICollection<IDisposable> disposableCollection)
         {
             //Array array = (Array)fieldObject;
             // int id = 0;
@@ -121,7 +169,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
                     // }
                     
                     //GenericField.LinkGenericField(entry, fieldObjectType, "", e);
-                    GenericField.LinkGenericEntry(entry, e);
+                    GenericField.LinkGenericEntry(entry, e, disposableCollection);
                 };
                 treeView.Rebuild();
             }
