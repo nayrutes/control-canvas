@@ -15,6 +15,8 @@ namespace ControlCanvas.Editor.ReactiveInspector
         {
             VisualElement root = rootVisualElement;
             DataContainer dataContainer = new DataContainer();
+            GenericViewModel genericViewModel = GenericViewModel.GetViewModel(dataContainer);
+            genericViewModel.Log();
             root.Clear();
             root.Add(GenericField.CreateGenericInspector(dataContainer));
         }
