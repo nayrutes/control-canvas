@@ -14,7 +14,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
                 { typeof(string), () => AddBaseField<string, TextField>() },
                 { typeof(float), () => AddBaseField<float, FloatField>() },
                 { typeof(bool), () => AddBaseField<bool, Toggle>() },
-                { typeof(Enum), () => AddBaseField<Enum, EnumField>() },
+                //{ typeof(Enum), () => AddBaseField<Enum, EnumField>() },
             };
 
 
@@ -24,7 +24,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
             { typeof(string), LinkBaseField<string, TextField> },
             { typeof(float), LinkBaseField<float, FloatField> },
             { typeof(bool), LinkBaseField<bool, Toggle> },
-            { typeof(Enum), LinkBaseField<Enum, EnumField> },
+            //{ typeof(Enum), LinkBaseField<Enum, EnumField> },
         };
 
         internal static TField AddBaseField<T, TField>()

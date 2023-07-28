@@ -23,7 +23,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
                 { typeof(string), () => AddBaseFieldReadOnly<string, TextField>() },
                 { typeof(float), () => AddBaseFieldReadOnly<float, FloatField>() },
                 { typeof(bool), () => AddBaseFieldReadOnly<bool, Toggle>() },
-                { typeof(Enum), () => AddBaseFieldReadOnly<Enum, EnumField>() },
+                //{ typeof(Enum), () => AddBaseFieldReadOnly<Enum, EnumField>() },
             };
 
         internal class TreeViewEntry<TValueType, TField> : VisualElement where TField : BaseField<TValueType>, new()
@@ -97,10 +97,9 @@ namespace ControlCanvas.Editor.ReactiveInspector
             return foldout;
         }
 
-        internal static void LinkArrayField(object fieldObject, Type fieldObjectType, string fieldName,
-            VisualElement uiField)
+        internal static void LinkArrayField(Array array, string fieldName, VisualElement uiField)
         {
-            Array array = (Array)fieldObject;
+            //Array array = (Array)fieldObject;
             // int id = 0;
             // int depth = 0;
             // int maxDepth = 10;
@@ -120,7 +119,9 @@ namespace ControlCanvas.Editor.ReactiveInspector
                     // {
                     //     name = $"Found null value at index {index}";
                     // }
-                    GenericField.LinkGenericField(entry, fieldObjectType, "", e);
+                    
+                    //GenericField.LinkGenericField(entry, fieldObjectType, "", e);
+                    GenericField.LinkGenericEntry(entry, e);
                 };
                 treeView.Rebuild();
             }
@@ -143,7 +144,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
             {
                 // We've reached a leaf node.
                 object data = array.GetValue(indices);
-                return new TreeViewItemData<Entry>(id++, new Entry() { name = $"[{index}]", value = data },
+                return new TreeViewItemData<Entry>(id++, new Entry($"[{index}]", data, array.GetType().GetElementType()),
                     new List<TreeViewItemData<Entry>>());
             }
             else
@@ -158,7 +159,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
                     children.Add(ConvertArrayToTreeViewRecursive(array, newIndices, ref id, i));
                 }
 
-                return new TreeViewItemData<Entry>(id++, new Entry() { name = $">{indices.Length - 1}", value = null },
+                return new TreeViewItemData<Entry>(id++, new Entry($">{indices.Length - 1}", null, array.GetType().GetElementType()),
                     children);
             }
         }
