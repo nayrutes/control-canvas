@@ -26,144 +26,6 @@ namespace ControlCanvas.Editor.ReactiveInspector
                 //{ typeof(Enum), () => AddBaseFieldReadOnly<Enum, EnumField>() },
             };
 
-        public interface IExtendedBaseField<TValueType>
-        {
-            TValueType Value { get; set; }
-            bool OnlyRead { get; set; }
-            string Label { get; set; }
-
-            public BaseField<TValueType> GetBaseField();
-        }
-
-        public class BaseFieldAdapter<TValueType> : IExtendedBaseField<TValueType>
-        {
-            private BaseField<TValueType> _baseField;
-
-            public bool OnlyRead { get; set; }
-            public string Label
-            {
-                get { return _baseField.label; }
-                set { _baseField.label = value; }
-            }
-
-            public BaseField<TValueType> GetBaseField()
-            {
-                return _baseField;
-            }
-
-            public BaseFieldAdapter(BaseField<TValueType> baseField)
-            {
-                _baseField = baseField;
-            }
-
-            public TValueType Value
-            {
-                get { return _baseField.value; }
-                set { _baseField.value = value; }
-            }
-        }
-
-        public class ClassFieldFoldoutAdapter<TValueType> : IExtendedBaseField<TValueType>
-        {
-            private Foldout _foldout;
-            private TValueType _value;
-            private bool _onlyRead;
-
-            public TValueType Value
-            {
-                get { return _value;}
-                set { _value = value; }
-            }
-
-            public bool OnlyRead
-            {
-                get => _onlyRead;
-                set
-                {
-                    _foldout.contentContainer.SetEnabled(value);
-                    _onlyRead = value;
-                }
-            }
-
-            public string Label
-            {
-                get => _foldout.text;
-                set => _foldout.text = value;
-            }
-
-            public ClassFieldFoldoutAdapter(Foldout foldout, TValueType value)
-            {
-                _foldout = foldout;
-                _value = value;
-            }
-            
-            public BaseField<TValueType> GetBaseField()
-            {
-                return null;
-            }
-            
-            public Foldout GetFoldout()
-            {
-                return _foldout;
-            }
-        }
-        
-        internal class TreeViewEntry<TValueType, TField> : VisualElement, IExtendedBaseField<TValueType> 
-            where TField : BaseField<TValueType>, new()
-        {
-            public bool OnlyRead
-            {
-                get { return _onlyRead; }
-                set
-                {
-                    _onlyRead = value;
-                    baseField.SetEnabled(!_onlyRead);
-                    baseField.visible = !_onlyRead;
-                    baseField.style.display = _onlyRead ? DisplayStyle.None : DisplayStyle.Flex;
-                    labelField.SetEnabled(_onlyRead);
-                    labelField.visible = _onlyRead;
-                    labelField.style.display = _onlyRead ? DisplayStyle.Flex : DisplayStyle.None;
-                }
-            }
-
-            public string Label
-            {
-                get => labelField.text;
-                set
-                {
-                    labelField.text = value;
-                    baseField.label = value;
-                }
-            }
-
-            public BaseField<TValueType> GetBaseField()
-            {
-                return baseField;
-            }
-
-            public TValueType Value
-            {
-                get => baseField.value;
-                set => baseField.value = value;
-            }
-
-            private BaseField<TValueType> baseField;
-            private Label labelField;
-            private bool _onlyRead;
-
-            public BaseField<TValueType> BaseField => baseField;
-
-            public TreeViewEntry()
-            {
-                baseField = GenericSimpleFields.AddBaseField<TValueType, TField>();
-                labelField = new Label();
-                Add(labelField);
-                Add(baseField);
-                OnlyRead = false;
-            }
-
-            //public TValueType Value { get; set; }
-        }
 
         internal static VisualElement AddArrayField(Type elementType, string s)
         {
@@ -212,7 +74,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
                     // {
                     //     name = $"Found null value at index {index}";
                     // }
-                    
+
                     //GenericField.LinkGenericField(entry, fieldObjectType, "", e);
                     GenericField.LinkGenericEntry(entry, e, disposableCollection);
                 };
@@ -237,7 +99,8 @@ namespace ControlCanvas.Editor.ReactiveInspector
             {
                 // We've reached a leaf node.
                 object data = array.GetValue(indices);
-                return new TreeViewItemData<Entry>(id++, new Entry($"[{index}]", data, array.GetType().GetElementType()),
+                return new TreeViewItemData<Entry>(id++,
+                    new Entry($"[{index}]", data, array.GetType().GetElementType()),
                     new List<TreeViewItemData<Entry>>());
             }
             else
@@ -252,9 +115,67 @@ namespace ControlCanvas.Editor.ReactiveInspector
                     children.Add(ConvertArrayToTreeViewRecursive(array, newIndices, ref id, i));
                 }
 
-                return new TreeViewItemData<Entry>(id++, new Entry($">{indices.Length - 1}", null, array.GetType().GetElementType()),
+                return new TreeViewItemData<Entry>(id++,
+                    new Entry($">{indices.Length - 1}", null, array.GetType().GetElementType()),
                     children);
             }
         }
+    }
+
+    internal class TreeViewEntry<TValueType, TField> : VisualElement, IExtendedBaseField<TValueType>
+        where TField : BaseField<TValueType>, new()
+    {
+        public bool OnlyRead
+        {
+            get { return _onlyRead; }
+            set
+            {
+                _onlyRead = value;
+                baseField.SetEnabled(!_onlyRead);
+                baseField.visible = !_onlyRead;
+                baseField.style.display = _onlyRead ? DisplayStyle.None : DisplayStyle.Flex;
+                labelField.SetEnabled(_onlyRead);
+                labelField.visible = _onlyRead;
+                labelField.style.display = _onlyRead ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+        }
+
+        public string Label
+        {
+            get => labelField.text;
+            set
+            {
+                labelField.text = value;
+                baseField.label = value;
+            }
+        }
+
+        public BaseField<TValueType> GetBaseField()
+        {
+            return baseField;
+        }
+
+        public TValueType Value
+        {
+            get => baseField.value;
+            set => baseField.value = value;
+        }
+
+        private BaseField<TValueType> baseField;
+        private Label labelField;
+        private bool _onlyRead;
+
+        public BaseField<TValueType> BaseField => baseField;
+
+        public TreeViewEntry()
+        {
+            baseField = GenericSimpleFields.AddBaseField<TValueType, TField>();
+            labelField = new Label();
+            Add(labelField);
+            Add(baseField);
+            OnlyRead = false;
+        }
+
+        //public TValueType Value { get; set; }
     }
 }

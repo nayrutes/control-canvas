@@ -56,7 +56,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
             ICollection<IDisposable> disposableCollection)
             where TField : BaseField<T>, new()
         {
-            if (visualElement is GenericArrayFields.IExtendedBaseField<T> valueElement)
+            if (visualElement is IExtendedBaseField<T> valueElement)
             {
                 // Now you can use valueElement as IValue<TValueType>
                 SetUpReactive(valueElement, entry, disposableCollection);
@@ -64,7 +64,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
             else if (visualElement is BaseField<T> baseField)
             {
                 // If it's a BaseField, wrap it in an adapter
-                GenericArrayFields.IExtendedBaseField<T> adapter = new GenericArrayFields.BaseFieldAdapter<T>(baseField);
+                IExtendedBaseField<T> adapter = new BaseFieldAdapter<T>(baseField);
                 SetUpReactive(adapter, entry, disposableCollection);
             }
             else
@@ -74,25 +74,19 @@ namespace ControlCanvas.Editor.ReactiveInspector
             }
         }
 
-        public static void SetUpReactive<T>(GenericArrayFields.IExtendedBaseField<T> adapter, Entry entry,
+        public static void SetUpReactive<T>(IExtendedBaseField<T> adapter, Entry entry,
             ICollection<IDisposable> disposableCollection)
         {
             adapter.Label = entry.name;
-            ReactiveProperty<object> rp = entry.reactiveLink?.viewModel.GetReactiveProperty(entry.name);
+            ReactiveProperty<object> rp = entry.viewModel?.GetReactiveProperty(entry.name);
 
             //Handle viewmodel existing (two way binding)
             if (rp != null)
             {
-                adapter.GetBaseField().RegisterValueChangedCallback(evt =>
-                {
-                    rp.Value = evt.newValue;
-                });
+                adapter.GetBaseField().RegisterValueChangedCallback(evt => { rp.Value = evt.newValue; });
                 adapter.Value = (T)rp.Value;
-                
-                rp.Subscribe(value =>
-                {
-                    adapter.Value = (T)value;
-                }).AddTo(disposableCollection);
+
+                rp.Subscribe(value => { adapter.Value = (T)value; }).AddTo(disposableCollection);
             }
             //Handle no viewmodel
             else
@@ -105,9 +99,10 @@ namespace ControlCanvas.Editor.ReactiveInspector
                     //Instantiate default value
                     someValue = default(T);
                 }
+
                 Debug.Log($"Setting value {someValue} to {adapter.Label}");
                 adapter.Value = (T)someValue;
-                
+
                 //TODO: One way binding (writing to data container)
             }
         }
@@ -147,7 +142,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
                 throw new ArgumentException("Type must be an enum", nameof(type));
             }
 
-            if (uiField is GenericArrayFields.IExtendedBaseField<Enum> valueElement)
+            if (uiField is IExtendedBaseField<Enum> valueElement)
             {
                 // Now you can use valueElement as IValue<TValueType>
                 ((EnumField)valueElement.GetBaseField()).Init((Enum)obj);
@@ -157,7 +152,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
             {
                 // If it's a BaseField, wrap it in an adapter
                 enumField.Init((Enum)obj);
-                GenericArrayFields.IExtendedBaseField<Enum> adapter = new GenericArrayFields.BaseFieldAdapter<Enum>(enumField);
+                IExtendedBaseField<Enum> adapter = new BaseFieldAdapter<Enum>(enumField);
                 SetUpReactive(adapter, entry, disposableCollection);
             }
             else
@@ -165,9 +160,7 @@ namespace ControlCanvas.Editor.ReactiveInspector
                 // Handle the case where the VisualElement is not compatible with IValue
                 Debug.LogError($"UIField {type} is not of type {typeof(EnumField)}");
             }
-            
-            
-            
+
 
             // if (uiField is EnumField field)
             // {
@@ -182,6 +175,35 @@ namespace ControlCanvas.Editor.ReactiveInspector
             // {
             //     Debug.LogError($"UIField is not of type {typeof(EnumField)}");
             // }
+        }
+    }
+
+    public class BaseFieldAdapter<TValueType> : IExtendedBaseField<TValueType>
+    {
+        private BaseField<TValueType> _baseField;
+
+        public bool OnlyRead { get; set; }
+
+        public string Label
+        {
+            get { return _baseField.label; }
+            set { _baseField.label = value; }
+        }
+
+        public BaseField<TValueType> GetBaseField()
+        {
+            return _baseField;
+        }
+
+        public BaseFieldAdapter(BaseField<TValueType> baseField)
+        {
+            _baseField = baseField;
+        }
+
+        public TValueType Value
+        {
+            get { return _baseField.value; }
+            set { _baseField.value = value; }
         }
     }
 }
