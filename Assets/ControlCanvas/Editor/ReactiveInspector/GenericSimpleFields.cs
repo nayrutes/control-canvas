@@ -83,10 +83,20 @@ namespace ControlCanvas.Editor.ReactiveInspector
             //Handle viewmodel existing (two way binding)
             if (rp != null)
             {
-                adapter.GetBaseField().RegisterValueChangedCallback(evt => { rp.Value = evt.newValue; });
+                void NewFunction(ChangeEvent<T> evt)
+                {
+                    rp.Value = evt.newValue;
+                }
+
+                adapter.GetBaseField().RegisterValueChangedCallback(NewFunction);
                 adapter.Value = (T)rp.Value;
 
                 rp.Subscribe(value => { adapter.Value = (T)value; }).AddTo(disposableCollection);
+                
+                rp.Subscribe(_ => { }, () =>
+                {
+                    adapter.GetBaseField().UnregisterValueChangedCallback(NewFunction);
+                }).AddTo(disposableCollection);
             }
             //Handle no viewmodel
             else

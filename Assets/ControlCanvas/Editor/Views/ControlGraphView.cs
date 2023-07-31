@@ -1,18 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ControlCanvas.Editor.ViewModels;
+using UniRx;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace ControlCanvas.Editor
+namespace ControlCanvas.Editor.Views
 {
-    public class ControlGraphView : GraphView
+    public class ControlGraphView : GraphView, IView<GraphViewModel>
     {
-        private ControlCanvasSO currentCanvas;
+        //private ControlCanvasSO currentCanvas;
         private bool _ignoreChanges;
-        
+        private GraphViewModel viewModel;
+
         //Selected Objects changed
         public event Action<SelectedChangedArgs> OnSelectionChanged; 
 
@@ -34,8 +37,6 @@ namespace ControlCanvas.Editor
             
             var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/ControlCanvas/Editor/ControlCanvasEditorWindow.uss");
             styleSheets.Add(styleSheet);
-            graphViewChanged += OnGraphViewChanged;
-            OnSelectionChanged += OnSelectionChangedHandler;
         }
 
         private void OnSelectionChangedHandler(SelectedChangedArgs obj)
@@ -47,9 +48,23 @@ namespace ControlCanvas.Editor
             }
         }
 
+        public void SetViewModel(GraphViewModel viewModel)
+        {
+            this.viewModel = viewModel;
+            
+            graphViewChanged += OnGraphViewChanged;
+            OnSelectionChanged += OnSelectionChangedHandler;
+
+            this.viewModel.CanvasViewModel.canvasDataContainer.Subscribe(x =>
+            {
+                PopulateView();
+            });
+        }
+
         ~ControlGraphView()
         {
             graphViewChanged -= OnGraphViewChanged;
+            OnSelectionChanged -= OnSelectionChangedHandler;
         }
 
         private GraphViewChange OnGraphViewChanged(GraphViewChange graphviewchange)
@@ -72,9 +87,9 @@ namespace ControlCanvas.Editor
             {
                 foreach (var edge in graphviewchange.edgesToCreate)
                 {
-                    if (edge.input.node is VisualNode inputNode && edge.output.node is VisualNode outputNode)
+                    if (edge.input.node is VisualNodeView inputNode && edge.output.node is VisualNodeView outputNode)
                     {
-                        currentCanvas.CreateEdge(inputNode.node, outputNode.node);
+                        viewModel.CreateEdge(inputNode.nodeViewModel, outputNode.nodeViewModel);
                     }
                 }
             }
@@ -87,15 +102,15 @@ namespace ControlCanvas.Editor
             {
                 foreach (var element in graphviewchange.elementsToRemove)
                 {
-                    if (element is VisualNode node)
+                    if (element is VisualNodeView node)
                     {
-                        currentCanvas.DeleteNode(node.node);
+                        viewModel.DeleteNode(node.nodeViewModel);
                     }
                     else if (element is UnityEditor.Experimental.GraphView.Edge edge)
                     {
-                        if (edge.input.node is VisualNode inputNode && edge.output.node is VisualNode outputNode)
+                        if (edge.input.node is VisualNodeView inputNode && edge.output.node is VisualNodeView outputNode)
                         {
-                            currentCanvas.DeleteEdge(currentCanvas.EdgesCC.Find(x => x.StartNodeGuid == inputNode.node.Guid && x.EndNodeGuid == outputNode.node.Guid));
+                            viewModel.DeleteEdge(viewModel.Edges.Find(x => x.StartNodeGuid == inputNode.nodeViewModel.Guid.Value && x.EndNodeGuid == outputNode.nodeViewModel.Guid.Value));
                         }
                     }
                 }
@@ -104,21 +119,21 @@ namespace ControlCanvas.Editor
             return graphviewchange;
         }
 
-        public void PopulateView(ControlCanvasSO mControlCanvasSo)
+        public void PopulateView()
         {
-            currentCanvas = mControlCanvasSo;
+            
             ClerView();
-            if(currentCanvas == null)
+            if(viewModel == null)
                 return;
-            foreach (var node in mControlCanvasSo.NodesCC)
+            foreach (var node in viewModel.Nodes)
             {
                 CreateVisualNode(node);
             }
 
-            foreach (var edge in mControlCanvasSo.EdgesCC)
+            foreach (var edge in viewModel.Edges)
             {
-                var startNode = nodes.ToList().Find(x => x is VisualNode node && node.node.Guid == edge.StartNodeGuid);
-                var endNode = nodes.ToList().Find(x => x is VisualNode node && node.node.Guid == edge.EndNodeGuid);
+                var startNode = nodes.ToList().Find(x => x is VisualNodeView node && node.nodeViewModel.Guid.Value == edge.StartNodeGuid);
+                var endNode = nodes.ToList().Find(x => x is VisualNodeView node && node.nodeViewModel.Guid.Value == edge.EndNodeGuid);
                 if (startNode != null && endNode != null)
                 {
                     var edgeGV = new UnityEditor.Experimental.GraphView.Edge();
@@ -131,20 +146,21 @@ namespace ControlCanvas.Editor
             }
         }
 
-        void CreateVisualNode(Node node)
+        void CreateVisualNode(NodeViewModel nodeViewModel)
         {
-            VisualNode visualNode = new VisualNode(node);
-            AddElement(visualNode);
+            VisualNodeView visualNodeView = new VisualNodeView();
+            visualNodeView.SetViewModel(nodeViewModel);
+            AddElement(visualNodeView);
         }
         
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
             //base.BuildContextualMenu(evt);
-            if (currentCanvas == null)
-            {
-                evt.menu.AppendAction("No Canvas selected", a => {}, DropdownMenuAction.AlwaysDisabled);
-                return;
-            }
+            // if (currentCanvas == null)
+            // {
+            //     evt.menu.AppendAction("No Canvas selected", a => {}, DropdownMenuAction.AlwaysDisabled);
+            //     return;
+            // }
             evt.menu.AppendAction("Create Node", (a) => CreateNode(), DropdownMenuAction.AlwaysEnabled);
         }
 
@@ -157,7 +173,7 @@ namespace ControlCanvas.Editor
 
         private void CreateNode()
         {
-            var node = currentCanvas.CreateNode();
+            var node = viewModel.CreateNode();
             CreateVisualNode(node);
         }
 

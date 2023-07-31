@@ -1,6 +1,6 @@
 using System;
 
-namespace ControlCanvas.Editor
+namespace ControlCanvas.Editor.deprecated
 {
     [Serializable]
     public class Edge

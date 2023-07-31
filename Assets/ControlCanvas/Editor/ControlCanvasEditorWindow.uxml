@@ -10,7 +10,7 @@
                 <ui:VisualElement name="inspector-container" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">
                     <uie:ObjectField label="ControlCanvas" binding-path="m_ControlCanvasSO" name="currentCanvas" />
                     <ui:Label tabindex="-1" text="Inspector" display-tooltip-when-elided="true" />
-                    <ControlCanvas.Editor.InspectorView />
+                    <ControlCanvas.Editor.Views.InspectorView />
                 </ui:VisualElement>
                 <ui:VisualElement name="blackboard-container" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">
                     <ui:Label tabindex="-1" text="Blackboard" display-tooltip-when-elided="true" />
@@ -19,7 +19,7 @@
             </ControlCanvas.Editor.SplitView>
         </ui:VisualElement>
         <ui:VisualElement name="right-panel" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">
-            <ControlCanvas.Editor.ControlGraphView focusable="true" style="flex-grow: 1;" />
+            <ControlCanvas.Editor.Views.ControlGraphView focusable="true" style="flex-grow: 1;" />
         </ui:VisualElement>
     </ControlCanvas.Editor.SplitView>
 </ui:UXML>

@@ -6,8 +6,10 @@ namespace ControlCanvas.Serialization
 {
     [Serializable]
     [XmlRoot("CanvasData")]
-    public class ControlCanvasData
+    public class CanvasData
     {
+        public string Name;
+        
         [XmlArray("Nodes"), XmlArrayItem("Node")]
         public List<NodeData> Nodes = new List<NodeData>();
         

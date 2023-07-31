@@ -1,41 +1,42 @@
 using System.Collections.Generic;
+using ControlCanvas.Serialization;
 using UnityEditor;
 using UnityEngine;
 
-namespace ControlCanvas.Editor
+namespace ControlCanvas.Editor.deprecated
 {
     [CreateAssetMenu(menuName = "ControlCanvas/ControlCanvasSO", order = 0, fileName = "ControlCanvasSO")]
     public class ControlCanvasSO : ScriptableObject
     {
         public List<UnityEditor.Experimental.GraphView.Node> NodesGV;
-        public List<ControlCanvas.Editor.Node> NodesCC = new List<Node>();
-        public List<ControlCanvas.Editor.Edge> EdgesCC = new List<Edge>();
+        public List<NodeData> NodesCC = new List<NodeData>();
+        public List<Edge> EdgesCC = new List<Edge>();
 
         public Blackboard blackboard = new Blackboard();
 
-        public Node selectedNode;
+        public NodeData selectedNode;
         
-        public void SetSelectedNode(Node node)
+        public void SetSelectedNode(NodeData node)
         {
             selectedNode = node;
         }
         
-        public ControlCanvas.Editor.Node CreateNode()
+        public NodeData CreateNode()
         {
-            ControlCanvas.Editor.Node node = new ControlCanvas.Editor.Node();
+            NodeData node = new NodeData();
             node.Guid = GUID.Generate().ToString();
             NodesCC.Add(node);
             return node;
         }
 
-        public void DeleteNode(ControlCanvas.Editor.Node node)
+        public void DeleteNode(NodeData node)
         {
             NodesCC.Remove(node);
         }
 
-        public void CreateEdge(Node inputNode, Node outputNode)
+        public void CreateEdge(NodeData inputNode, NodeData outputNode)
         {
-            ControlCanvas.Editor.Edge edge = new ControlCanvas.Editor.Edge();
+            Edge edge = new Edge();
             edge.Guid = GUID.Generate().ToString();
             edge.StartNodeGuid = inputNode.Guid;
             edge.EndNodeGuid = outputNode.Guid;
@@ -43,7 +44,7 @@ namespace ControlCanvas.Editor
             EditorUtility.SetDirty(this);
         }
 
-        public void DeleteEdge(ControlCanvas.Editor.Edge edge)
+        public void DeleteEdge(Edge edge)
         {
             EdgesCC.Remove(edge);
             EditorUtility.SetDirty(this);
