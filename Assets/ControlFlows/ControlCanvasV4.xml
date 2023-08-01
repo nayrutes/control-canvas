@@ -12,6 +12,7 @@
         <x>281</x>
         <y>126</y>
       </Size>
+      <nodeType>Decision</nodeType>
     </Node>
     <Node>
       <Name />
@@ -24,6 +25,7 @@
         <x>276</x>
         <y>126</y>
       </Size>
+      <nodeType>State</nodeType>
     </Node>
   </Nodes>
   <Edges>

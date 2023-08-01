@@ -8,8 +8,6 @@ namespace ControlCanvas.Editor.ViewModels
 {
     public class NodeViewModel : BaseViewModel<NodeData>
     {
-        //public ReactiveProperty<NodeData> nodeData { get; private set; } = new ReactiveProperty<NodeData>();
-
         public ReactiveProperty<string> Name { get; } = new ReactiveProperty<string>();
         public ReactiveProperty<string> Guid { get; } = new ReactiveProperty<string>();
         public ReactiveProperty<SerializableVector2> Position { get; set; } = new ReactiveProperty<SerializableVector2>();
@@ -23,58 +21,26 @@ namespace ControlCanvas.Editor.ViewModels
         //[NonSerialized]
         public ControlAgent controlAgent;
 
-        public ReactiveProperty<ControlCanvasEditorWindow.NodeType> NodeType = new();
+        public ReactiveProperty<NodeType> NodeType = new();
 
-        public NodeViewModel()
+        public NodeViewModel(NodeData nodeData) : base(nodeData)
+        {
+            
+        }
+
+        public NodeViewModel() : base()
+        {
+            
+        }
+
+
+        protected override NodeData CreateData()
         {
             NodeData newData = new();
             newData.name = "New Node";
             newData.guid = System.Guid.NewGuid().ToString();
-            //newData.Guid = GUID.Generate().ToString();
-            
-            DataProperty.Value = newData;
-            Initialize();
+            return newData;
         }
-
-        public NodeViewModel(NodeData node)
-        {
-            DataProperty.Value = node;
-            Initialize();
-        }
-
-        public void Initialize()
-        {
-            //DataProperty.Subscribe(LoadDataInternal).AddTo(disposables);
-            
-            AutoBindReactivePropertiesToDataFields();
-            
-            // SetupDataSaving(Name, nameof(DataProperty.Value.name));
-            // SetupDataSaving(Guid, nameof(DataProperty.Value.guid));
-            // SetupDataSaving(Position, nameof(DataProperty.Value.position));
-            // SetupDataSaving(Size, nameof(DataProperty.Value.size));
-        }
-
         
-        
-        // public override void Dispose()
-        // {
-        //     disposables.Dispose();
-        // }
-
-        // protected override void SaveDataInternal(NodeData nodeData)
-        // {
-        //     nodeData.name = Name.Value;
-        //     nodeData.guid = Guid.Value;
-        //     nodeData.position = Position.Value;
-        //     nodeData.size = Size.Value;
-        // }
-        //
-        // protected override void LoadDataInternal(NodeData nodeData)
-        // {
-        //     Name.Value = nodeData.name;
-        //     Guid.Value = nodeData.guid;
-        //     Position.Value = nodeData.position;
-        //     Size.Value = nodeData.size;
-        // }
     }
 }

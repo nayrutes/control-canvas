@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using ControlCanvas.Editor.ViewModels;
+using ControlCanvas.Serialization;
 using UniRx;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -34,14 +35,14 @@ namespace ControlCanvas.Editor.Views
 
         private void OnTypeChanged(ChangeEvent<Enum> evt)
         {
-            SetNewType((ControlCanvasEditorWindow.NodeType)evt.newValue);
+            nodeViewModel.NodeType.Value = (NodeType)evt.newValue;
         }
         
-        private void SetNewType(ControlCanvasEditorWindow.NodeType type)
+        private void SetNewType(NodeType type)
         {
-            nodeViewModel.NodeType.Value = type;
             m_DynamicContent.Clear();
             m_DynamicContent.Add(new Label($"This is a {type} node"));
+            this.Q<EnumField>("type-enum").SetValueWithoutNotify(type);
         }
         
         public void CreatePorts()
