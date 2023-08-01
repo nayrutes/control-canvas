@@ -1,14 +1,21 @@
 ﻿using System;
+using System.Xml.Serialization;
+
+//using UnityEngine.Serialization;
 
 namespace ControlCanvas.Serialization
 {
     [Serializable]
     public class NodeData
     {
-        public string Name;
-        public string Guid;
-        public SerializableVector2 Position;
-        public SerializableVector2 Size;
+        [XmlElement("Name")]
+        public string name;
+        [XmlElement("Guid")]
+        public string guid;
+        [XmlElement("Position")]
+        public SerializableVector2 position;
+        [XmlElement("Size")]
+        public SerializableVector2 size;
 
         // NonSerialized fields will not be included in the XML
         // public Blackboard blackboardCanvas;

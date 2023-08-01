@@ -12,6 +12,11 @@ namespace ControlCanvas.Editor.ViewModels
             this.canvasViewModel = canvasViewModel;
         }
 
+        public void Dispose()
+        {
+            
+        }
+        
         public List<EdgeViewModel> Edges=> canvasViewModel.EdgeViewModels.ToList();
         public IEnumerable<NodeViewModel> Nodes => canvasViewModel.NodeViewModels;
         public CanvasViewModel CanvasViewModel => canvasViewModel;

@@ -8,7 +8,7 @@
         <ui:VisualElement name="left-panel" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">
             <ControlCanvas.Editor.SplitView orientation="Vertical" fixed-pane-initial-dimension="244">
                 <ui:VisualElement name="inspector-container" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">
-                    <uie:ObjectField label="ControlCanvas" binding-path="m_ControlCanvasSO" name="currentCanvas" />
+                    <uie:ObjectField label="ControlCanvas" name="currentCanvas" />
                     <ui:Label tabindex="-1" text="Inspector" display-tooltip-when-elided="true" />
                     <ControlCanvas.Editor.Views.InspectorView />
                 </ui:VisualElement>

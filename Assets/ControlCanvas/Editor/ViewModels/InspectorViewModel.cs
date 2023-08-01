@@ -28,6 +28,11 @@ namespace ControlCanvas.Editor.ViewModels
             //selectedObject.Subscribe( OnSelectedObjectChanged ).AddTo(disposables);
         }
 
+        public void Dispose()
+        {
+            
+        }
+        
         public void OnSelectionChanged(SelectedChangedArgs args, CanvasData canvasData)
         {
             if (args.Selectables.Count == 0)

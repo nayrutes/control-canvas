@@ -17,10 +17,15 @@ namespace ControlCanvas.Editor.ViewModels
             this.edgeData.Value = edgeData;
         }
 
+        // protected override void Dispose(bool dispose)
+        // {
+        //     
+        // }
+        
         public EdgeViewModel(NodeViewModel from, NodeViewModel to)
         {
-            edgeData.Value.StartNodeGuid = from.nodeData.Value.Guid;
-            edgeData.Value.EndNodeGuid = to.nodeData.Value.Guid;
+            edgeData.Value.StartNodeGuid = from.DataProperty.Value.guid;
+            edgeData.Value.EndNodeGuid = to.DataProperty.Value.guid;
         }
 
         protected override void LoadDataInternal(EdgeData data)

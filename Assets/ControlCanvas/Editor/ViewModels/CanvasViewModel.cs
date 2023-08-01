@@ -8,7 +8,7 @@ namespace ControlCanvas.Editor.ViewModels
     public class CanvasViewModel : BaseViewModel<CanvasData>
     {
         public ReactiveProperty<CanvasData> canvasDataContainer;
-        CompositeDisposable disposables = new ();
+        //CompositeDisposable disposables = new ();
         public GraphViewModel GraphViewModel { get; private set; }
 
         public InspectorViewModel InspectorViewModel { get; private set; }
@@ -40,11 +40,16 @@ namespace ControlCanvas.Editor.ViewModels
             InspectorViewModel = new InspectorViewModel();
         }
         
-        public void Terminate()
+        // public override void Dispose()
+        // {
+        //     disposables.Dispose();
+        // }
+
+        protected override void Dispose(bool disposing)
         {
-            disposables.Dispose();
             canvasDataContainer.Dispose();
         }
+        
         
         // public void LoadCanvasData(CanvasData canvasData)
         // {
@@ -87,7 +92,7 @@ namespace ControlCanvas.Editor.ViewModels
             data.Nodes.Clear();
             NodeViewModels.ToList().ForEach(nodeViewModel =>
             {
-                data.Nodes.Add(nodeViewModel.nodeData.Value);
+                data.Nodes.Add(nodeViewModel.DataProperty.Value);
             });
             
             data.Edges.Clear();
@@ -100,6 +105,7 @@ namespace ControlCanvas.Editor.ViewModels
 
         public void SerializeData(string path)
         {
+            
             XMLHelper.SerializeToXML(path, canvasDataContainer.Value);
         }
 

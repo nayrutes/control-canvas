@@ -76,10 +76,10 @@ namespace ControlCanvas.Editor.Views
             {
                 foreach (var element in graphviewchange.movedElements)
                 {
-                    // if (element is VisualNode node)
-                    // {
-                    //     currentCanvas.NodesCC.Find(x => x.Guid == node.node.Guid).Position = node.GetPosition().position;
-                    // }
+                    if (element is VisualNodeView node)
+                    {
+                        //viewModel.Nodes.ToList().Find(x => x.Guid.Value == node.nodeViewModel.Guid.Value).Position.Value = node.GetPosition().position;
+                    }
                 }
             }
 

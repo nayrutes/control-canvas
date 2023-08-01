@@ -24,7 +24,7 @@ namespace ControlCanvas.Editor.deprecated
         public NodeData CreateNode()
         {
             NodeData node = new NodeData();
-            node.Guid = GUID.Generate().ToString();
+            node.guid = GUID.Generate().ToString();
             NodesCC.Add(node);
             return node;
         }
@@ -38,8 +38,8 @@ namespace ControlCanvas.Editor.deprecated
         {
             Edge edge = new Edge();
             edge.Guid = GUID.Generate().ToString();
-            edge.StartNodeGuid = inputNode.Guid;
-            edge.EndNodeGuid = outputNode.Guid;
+            edge.StartNodeGuid = inputNode.guid;
+            edge.EndNodeGuid = outputNode.guid;
             EdgesCC.Add(edge);
             EditorUtility.SetDirty(this);
         }

@@ -1,18 +1,21 @@
-﻿using ControlCanvas.Serialization;
+﻿using System;
+using System.Reflection;
+using ControlCanvas.Serialization;
+using PlasticPipe.Server;
 using UniRx;
 
 namespace ControlCanvas.Editor.ViewModels
 {
     public class NodeViewModel : BaseViewModel<NodeData>
     {
-        public ReactiveProperty<NodeData> nodeData { get; private set; } = new ReactiveProperty<NodeData>();
+        //public ReactiveProperty<NodeData> nodeData { get; private set; } = new ReactiveProperty<NodeData>();
 
         public ReactiveProperty<string> Name { get; } = new ReactiveProperty<string>();
         public ReactiveProperty<string> Guid { get; } = new ReactiveProperty<string>();
         public ReactiveProperty<SerializableVector2> Position { get; set; } = new ReactiveProperty<SerializableVector2>();
         public ReactiveProperty<SerializableVector2> Size { get; set; } = new ReactiveProperty<SerializableVector2>();
 
-        CompositeDisposable disposables = new();
+        
 
         //[NonSerialized]
         public Blackboard blackboardCanvas;
@@ -24,45 +27,54 @@ namespace ControlCanvas.Editor.ViewModels
 
         public NodeViewModel()
         {
-            Initialize();
             NodeData newData = new();
-            newData.Name = "New Node";
-            newData.Guid = System.Guid.NewGuid().ToString();
+            newData.name = "New Node";
+            newData.guid = System.Guid.NewGuid().ToString();
             //newData.Guid = GUID.Generate().ToString();
             
-            nodeData.Value = newData;
+            DataProperty.Value = newData;
+            Initialize();
         }
 
         public NodeViewModel(NodeData node)
         {
+            DataProperty.Value = node;
             Initialize();
-            nodeData.Value = node;
         }
 
         public void Initialize()
         {
-            nodeData.SkipLatestValueOnSubscribe().Subscribe(LoadDataInternal).AddTo(disposables);
+            //DataProperty.Subscribe(LoadDataInternal).AddTo(disposables);
+            
+            AutoBindReactivePropertiesToDataFields();
+            
+            // SetupDataSaving(Name, nameof(DataProperty.Value.name));
+            // SetupDataSaving(Guid, nameof(DataProperty.Value.guid));
+            // SetupDataSaving(Position, nameof(DataProperty.Value.position));
+            // SetupDataSaving(Size, nameof(DataProperty.Value.size));
         }
 
-        public void Terminate()
-        {
-            disposables.Dispose();
-        }
+        
+        
+        // public override void Dispose()
+        // {
+        //     disposables.Dispose();
+        // }
 
-        protected override void SaveDataInternal(NodeData nodeData)
-        {
-            nodeData.Name = Name.Value;
-            nodeData.Guid = Guid.Value;
-            nodeData.Position = Position.Value;
-            nodeData.Size = Size.Value;
-        }
-
-        protected override void LoadDataInternal(NodeData nodeData)
-        {
-            Name.Value = nodeData.Name;
-            Guid.Value = nodeData.Guid;
-            Position.Value = nodeData.Position;
-            Size.Value = nodeData.Size;
-        }
+        // protected override void SaveDataInternal(NodeData nodeData)
+        // {
+        //     nodeData.name = Name.Value;
+        //     nodeData.guid = Guid.Value;
+        //     nodeData.position = Position.Value;
+        //     nodeData.size = Size.Value;
+        // }
+        //
+        // protected override void LoadDataInternal(NodeData nodeData)
+        // {
+        //     Name.Value = nodeData.name;
+        //     Guid.Value = nodeData.guid;
+        //     Position.Value = nodeData.position;
+        //     Size.Value = nodeData.size;
+        // }
     }
 }
