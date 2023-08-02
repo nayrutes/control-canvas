@@ -21,7 +21,7 @@ namespace ControlCanvas.Editor.ViewModels
         public ReactiveCollection<NodeData> NodeDatas { get; private set; } = new();
         public ReactiveCollection<EdgeData> EdgeDatas { get; private set; } = new();
 
-        public ReactiveProperty<ReactiveCollection<NodeData>> Nodes { get; private set; } = new();
+        //public ReactiveProperty<ReactiveCollection<NodeData>> Nodes { get; private set; } = new();
         public ReactiveProperty<ReactiveCollection<EdgeData>> Edges { get; private set; } = new();
 
         public ReactiveCollection<NodeViewModel> NodeViewModels { get; private set; } = new();
@@ -45,7 +45,10 @@ namespace ControlCanvas.Editor.ViewModels
         {
             GraphViewModel = new GraphViewModel(this);
             InspectorViewModel = new InspectorViewModel();
-            Nodes.Subscribe(x =>
+            string fieldName = "Nodes";
+            var rp = GetReactiveProperty<ReactiveProperty<ReactiveCollection<NodeData>>>(fieldName);
+            //bool test = rp == Nodes;
+            rp.Subscribe(x =>
             {
                 Debug.Log("Nodes changed");
                 NodeViewModels.Clear();

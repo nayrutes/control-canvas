@@ -168,10 +168,10 @@ namespace ControlCanvas.Editor.ViewModels
                     Type
                         reactivePropertyValueType; // = dataField.Value.FieldType;//typeof(ReactiveProperty<>).GetGenericArguments()[0];
 
-                    if (fieldType.IsArray)
+                    if (fieldType.IsCollection())
                     {
                         //reactivePropertyValueType = fieldType.GetElementType();
-                        Type elementType = fieldType.GetElementType();
+                        Type elementType = fieldType.GetInnerType();
                         if (!reactiveCollectionTypeCache.TryGetValue(elementType, out reactivePropertyValueType))
                         {
                             reactivePropertyValueType = typeof(ReactiveCollection<>).MakeGenericType(elementType);
@@ -312,6 +312,19 @@ namespace ControlCanvas.Editor.ViewModels
             {
                 Debug.LogError($"Could not find reactive property for {propertyName}");
                 return null;
+            }
+        }
+
+        protected TType GetReactiveProperty<TType>(string fieldName)
+        {
+            if(DataFieldToReactivePropertyName.TryGetValue(fieldName, out var reactivePropertyName))
+            {
+                return (TType)GetReactiveProperty(reactivePropertyName);
+            }
+            else
+            {
+                Debug.LogError($"Could not find reactive property for {fieldName}");
+                return default;
             }
         }
 
