@@ -1,4 +1,5 @@
 ﻿using ControlCanvas.Editor.ViewModels;
+using ControlCanvas.Editor.ViewModels.Base;
 
 namespace ControlCanvas.Editor.Views
 {

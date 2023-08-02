@@ -1,4 +1,5 @@
-﻿using ControlCanvas.Serialization;
+﻿using ControlCanvas.Editor.ViewModels.Base;
+using ControlCanvas.Serialization;
 
 namespace ControlCanvas.Editor.ViewModels
 {

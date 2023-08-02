@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using ControlCanvas.Editor.ViewModels.Base;
 
 namespace ControlCanvas.Editor.ViewModels
 {

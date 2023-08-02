@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Editor.Views;
 using ControlCanvas.Serialization;
 using UniRx;
@@ -86,7 +87,6 @@ namespace ControlCanvas.Editor.ViewModels
                 }).AddTo(disposables);
             }).AddTo(disposables);
         }
-
 
         protected override CanvasData CreateData()
         {

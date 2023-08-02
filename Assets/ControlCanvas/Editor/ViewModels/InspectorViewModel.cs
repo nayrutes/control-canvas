@@ -1,4 +1,5 @@
 ﻿using System;
+using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Editor.Views;
 using ControlCanvas.Serialization;
 using UniRx;
