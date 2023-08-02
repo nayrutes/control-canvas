@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ControlCanvas.Editor.Extensions;
 using UniRx;
 using UnityEngine;
 
@@ -24,6 +26,7 @@ namespace ControlCanvas.Editor.ViewModels
         private Dictionary<string, string> DataFieldToReactivePropertyName;
 
         private static Dictionary<Type, Type> reactivePropertyTypeCache = new();
+        private static Dictionary<Type, Type> reactiveCollectionTypeCache = new();
 
         /// <summary>
         /// This should be self contained and don't rely on members of the class
@@ -50,19 +53,17 @@ namespace ControlCanvas.Editor.ViewModels
             {
                 GatherDataFields();
                 GatherVmReactiveProperties();
-                AutoDataFieldToReactivePropertyNameMapping();
-                DataProperty.Subscribe(data =>
+                if (AutoDataFieldToReactivePropertyNameMapping())
                 {
-                    AutoSetInitValues();
-                }).AddTo(disposables);
+                    return;
+                }
+
+                DataProperty.Subscribe(data => { AutoSetInitValues(); }).AddTo(disposables);
                 SetupAutoDataSaving();
             }
             else
             {
-                DataProperty.Subscribe(data =>
-                {
-                    LoadDataInternal(data);
-                }).AddTo(disposables);
+                DataProperty.Subscribe(data => { LoadDataInternal(data); }).AddTo(disposables);
             }
         }
 
@@ -92,42 +93,47 @@ namespace ControlCanvas.Editor.ViewModels
 
         protected void GatherDataFields()
         {
+            string dataFieldNames = "";
             FieldInfo[] fields;
             fields = typeof(TData).GetFields(BindingFlags.Public | BindingFlags.Instance);
             foreach (var fieldInfo in fields)
             {
                 string fieldName = fieldInfo.Name;
+                dataFieldNames += fieldName + ", ";
                 DataFields.Add(fieldName, fieldInfo);
             }
+
+            Debug.Log($"Found data fields on {typeof(TData)}: {dataFieldNames}");
         }
 
         protected void GatherVmReactiveProperties()
         {
+            string reactivePropertyFieldNames = "";
             GetType().GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToList()
                 .ForEach(fieldInfo =>
                 {
-                    if (fieldInfo.FieldType.IsGenericType &&
-                        fieldInfo.FieldType.GetGenericTypeDefinition() == typeof(ReactiveProperty<>))
+                    if (fieldInfo.FieldType.IsReactiveProperty())
                     {
                         string
                             fieldName = fieldInfo.Name;
-                        Debug.Log($"Found ReactiveProperty field {fieldInfo.Name}, saving it as {fieldName}");
+                        reactivePropertyFieldNames += fieldName + ", ";
                         RegisterTypedReactiveProperty(fieldName, (IDisposable)fieldInfo.GetValue(this));
                     }
                 });
+            string reactivePropertyPropertyNames = "";
             GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToList()
                 .ForEach(propertyInfo =>
                 {
-                    if (propertyInfo.PropertyType.IsGenericType &&
-                        propertyInfo.PropertyType.GetGenericTypeDefinition() == typeof(ReactiveProperty<>))
+                    if (propertyInfo.PropertyType.IsReactiveProperty())
                     {
-                        string
-                            propertyName =
-                                propertyInfo.Name;
-                        Debug.Log($"Found ReactiveProperty property {propertyInfo.Name}, saving it as {propertyName}");
+                        string propertyName = propertyInfo.Name;
+                        reactivePropertyPropertyNames += propertyName + ", ";
                         RegisterTypedReactiveProperty(propertyName, (IDisposable)propertyInfo.GetValue(this));
                     }
                 });
+            Debug.Log($"Found ReactiveProperty on {GetType()} \nfields: {reactivePropertyFieldNames} \n" +
+                      $"properties: {reactivePropertyPropertyNames}");
+            //Debug.Log($"Found ReactiveProperty properties {GetType()}: {reactivePropertyPropertyNames}");
         }
 
         private void RegisterTypedReactiveProperty(string reactivePropertyName, IDisposable reactiveProperty)
@@ -136,7 +142,7 @@ namespace ControlCanvas.Editor.ViewModels
         }
 
 
-        protected void AutoDataFieldToReactivePropertyNameMapping()
+        protected bool AutoDataFieldToReactivePropertyNameMapping()
         {
             foreach (KeyValuePair<string, FieldInfo> dataField in DataFields)
             {
@@ -157,14 +163,36 @@ namespace ControlCanvas.Editor.ViewModels
                 }
                 else
                 {
-                    Debug.Log(
-                        $"Could not find reactive property for {fieldName}. Creating it dynamically...");
-
                     Type vmReactivePropertyType;
-                    if (!reactivePropertyTypeCache.TryGetValue(dataField.Value.FieldType, out vmReactivePropertyType))
+                    Type fieldType = dataField.Value.FieldType;
+                    Type
+                        reactivePropertyValueType; // = dataField.Value.FieldType;//typeof(ReactiveProperty<>).GetGenericArguments()[0];
+
+                    if (fieldType.IsArray)
                     {
-                        vmReactivePropertyType = typeof(ReactiveProperty<>).MakeGenericType(dataField.Value.FieldType);
-                        reactivePropertyTypeCache[dataField.Value.FieldType] = vmReactivePropertyType;
+                        //reactivePropertyValueType = fieldType.GetElementType();
+                        Type elementType = fieldType.GetElementType();
+                        if (!reactiveCollectionTypeCache.TryGetValue(elementType, out reactivePropertyValueType))
+                        {
+                            reactivePropertyValueType = typeof(ReactiveCollection<>).MakeGenericType(elementType);
+                            reactiveCollectionTypeCache[elementType] = reactivePropertyValueType;
+                        }
+                    }
+                    else if (fieldType.IsGenericType)
+                    {
+                        throw new Exception("Generic types are not supported (yet)");
+                        Debug.LogError("Generic types are not supported (yet)");
+                        //reactivePropertyValueType = fieldType.GetGenericArguments()[0];
+                    }
+                    else
+                    {
+                        reactivePropertyValueType = fieldType;
+                    }
+
+                    if (!reactivePropertyTypeCache.TryGetValue(reactivePropertyValueType, out vmReactivePropertyType))
+                    {
+                        vmReactivePropertyType = typeof(ReactiveProperty<>).MakeGenericType(reactivePropertyValueType);
+                        reactivePropertyTypeCache[reactivePropertyValueType] = vmReactivePropertyType;
                     }
 
                     var vmReactivePropertyInstance = Activator.CreateInstance(vmReactivePropertyType);
@@ -172,6 +200,51 @@ namespace ControlCanvas.Editor.ViewModels
                     string propertyName = fieldNameUpper;
                     VmReactivePropertiesTyped.Add(propertyName, vmReactivePropertyInstance as IDisposable);
                     DataFieldToReactivePropertyName.Add(fieldName, propertyName);
+
+                    Debug.Log(
+                        $"Could not find reactive property for {fieldName}." +
+                        $"Created it dynamically with type {vmReactivePropertyType}...");
+                }
+            }
+
+            bool error = false;
+            //Check if types match
+            foreach (KeyValuePair<string, FieldInfo> dataField in DataFields)
+            {
+                string reactivePropertyName = DataFieldToReactivePropertyName[dataField.Key];
+                var reactiveProperty = VmReactivePropertiesTyped[reactivePropertyName];
+                Type innerPropertyType = reactiveProperty.GetType().GetGenericArguments()[0];
+                Type dataFieldType = dataField.Value.FieldType;
+                if (dataFieldType.IsCollection())
+                {
+                    Type innerPropertyGenericType = innerPropertyType.GetGenericTypeDefinition();
+                    Type innerFieldType = dataFieldType.GetInnerType();
+                    Type innerCollectionType = innerPropertyType.GetGenericArguments()[0];
+                    //Check if innerPropertyType is a ReactiveCollection of innerFieldType
+                    if (innerPropertyType.IsReactiveCollection())
+                    {
+                        if (innerCollectionType != innerFieldType)
+                        {
+                            Debug.LogError(
+                                $"Type mismatch between data field {dataField.Key} and reactive property {reactivePropertyName}: {innerPropertyType} != {innerFieldType}");
+                            error = true;
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogError(
+                            $"Type mismatch between data field {dataField.Key} and reactive property {reactivePropertyName}: {innerPropertyGenericType} != {typeof(ReactiveCollection<>)}");
+                        error = true;
+                    }
+                }
+                else
+                {
+                    if (innerPropertyType != dataFieldType)
+                    {
+                        Debug.LogError(
+                            $"Type mismatch between data field {dataField.Key} and reactive property {reactivePropertyName} : {innerPropertyType} != {dataFieldType}");
+                        error = true;
+                    }
                 }
             }
 
@@ -180,6 +253,8 @@ namespace ControlCanvas.Editor.ViewModels
                 if (DataFieldToReactivePropertyName.ContainsValue(keyValuePair.Key)) continue;
                 Debug.LogWarning($"Could not find data field for {keyValuePair.Key}");
             }
+
+            return error;
         }
 
         protected void AutoSetInitValues()
@@ -201,9 +276,25 @@ namespace ControlCanvas.Editor.ViewModels
         {
             if (VmReactivePropertiesTyped.TryGetValue(propertyName, out var reactiveProperty))
             {
-                var reactivePropertyType = reactiveProperty.GetType();
-                var reactivePropertyInstanceField = reactivePropertyType.GetProperty("Value");
-                reactivePropertyInstanceField.SetValue(reactiveProperty, value);
+                Type reactivePropertyType = reactiveProperty.GetType();
+                Type innerReactivePropertyType = reactivePropertyType.GetGenericArguments()[0];
+                PropertyInfo reactivePropertyInstanceField = reactivePropertyType.GetProperty("Value");
+                if (innerReactivePropertyType.IsReactiveCollection())
+                {
+                    //create new reactive collection and write values from list or array to it
+                    var reactiveCollection = Activator.CreateInstance(innerReactivePropertyType);
+
+                    foreach (var item in (IEnumerable)value)
+                    {
+                        reactiveCollection.GetType().GetMethod("Add").Invoke(reactiveCollection, new[] { item });
+                    }
+
+                    reactivePropertyInstanceField.SetValue(reactiveProperty, reactiveCollection);
+                }
+                else
+                {
+                    reactivePropertyInstanceField.SetValue(reactiveProperty, value);
+                }
             }
             else
             {
@@ -267,11 +358,41 @@ namespace ControlCanvas.Editor.ViewModels
         protected void SetupDataSavingHelper<T>(IDisposable property, FieldInfo fieldInfo)
         {
             ReactiveProperty<T> typedProperty = (ReactiveProperty<T>)property;
-            typedProperty.Subscribe(value =>
+
+            // Check if T is a ReactiveCollection
+            if (typeof(T).IsReactiveCollection())
             {
-                fieldInfo.SetValue(DataProperty.Value, value);
-            }).AddTo(disposables);
+                // Cast the value to ReactiveCollection and subscribe to its changes
+                typedProperty.Subscribe(value =>
+                {
+                    var reactiveCollection = value as ReactiveCollection<object>;
+                    if (reactiveCollection != null)
+                    {
+                        reactiveCollection.ObserveAdd().Subscribe(addEvent =>
+                        {
+                            // Handle addition to the collection
+                            // For example, you can update the field value
+                            fieldInfo.SetValue(DataProperty.Value, reactiveCollection.ToList());
+                        }).AddTo(disposables);
+
+                        reactiveCollection.ObserveRemove().Subscribe(removeEvent =>
+                        {
+                            // Handle removal from the collection
+                            // For example, you can update the field value
+                            fieldInfo.SetValue(DataProperty.Value, reactiveCollection.ToList());
+                        }).AddTo(disposables);
+                    }
+                }).AddTo(disposables);
+            }
+            else
+            {
+                typedProperty.Subscribe(value =>
+                {
+                    fieldInfo.SetValue(DataProperty.Value, value);
+                }).AddTo(disposables);
+            }
         }
+
 
 
         protected virtual void Dispose(bool disposing)
