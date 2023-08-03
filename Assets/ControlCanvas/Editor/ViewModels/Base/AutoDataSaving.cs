@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels.Base
 {
-    public class AutoDataSaving<TData>// : IDisposable
+    public class AutoDataSaving<TData> : IDisposable
     {
         private readonly ReactiveProperty<TData> DataProperty;
         private readonly CompositeDisposable disposables;
@@ -16,10 +16,10 @@ namespace ControlCanvas.Editor.ViewModels.Base
         private readonly ReactivePropertyManager reactivePropertyManager;
         private readonly FieldToPropertyMapper<TData> fieldToPropertyMapper;
         
-        public AutoDataSaving(ReactiveProperty<TData> dataProperty, CompositeDisposable disposables, DataFieldManager<TData> dataFieldManager, ReactivePropertyManager reactivePropertyManager, FieldToPropertyMapper<TData> fieldToPropertyMapper)
+        public AutoDataSaving(ReactiveProperty<TData> dataProperty, DataFieldManager<TData> dataFieldManager, ReactivePropertyManager reactivePropertyManager, FieldToPropertyMapper<TData> fieldToPropertyMapper)
         {
             DataProperty = dataProperty;
-            this.disposables = disposables;
+            this.disposables = new CompositeDisposable();
             this.dataFieldManager = dataFieldManager;
             this.reactivePropertyManager = reactivePropertyManager;
             this.fieldToPropertyMapper = fieldToPropertyMapper;
@@ -118,9 +118,30 @@ namespace ControlCanvas.Editor.ViewModels.Base
             }
         }
 
-        // public void Dispose()
-        // {
-        //     disposables?.Dispose();
-        // }
+        private void ReleaseUnmanagedResources()
+        {
+            
+        }
+
+        private void Dispose(bool disposing)
+        {
+            ReleaseUnmanagedResources();
+            if (disposing)
+            {
+                disposables?.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~AutoDataSaving()
+        {
+            Debug.LogWarning($"Dispose was not called on {this.GetType()}. You should call Dispose on IDisposable objects when you are done using them.");
+            Dispose(false);
+        }
     }
 }

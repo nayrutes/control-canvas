@@ -48,8 +48,8 @@ namespace ControlCanvas.Editor.ViewModels.Base
             dataFieldManager = new DataFieldManager<TData>();
             reactivePropertyManager = new ReactivePropertyManager();
             fieldToPropertyMapper = new FieldToPropertyMapper<TData>(reactivePropertyManager,dataFieldManager);
-            autoDataSaving = new AutoDataSaving<TData>(DataProperty, disposables, dataFieldManager, reactivePropertyManager, fieldToPropertyMapper);
-            viewModelTracker = new ViewModelTracker<TData>(DataProperty, disposables, dataFieldManager, reactivePropertyManager, fieldToPropertyMapper);
+            autoDataSaving = new AutoDataSaving<TData>(DataProperty, dataFieldManager, reactivePropertyManager, fieldToPropertyMapper);
+            viewModelTracker = new ViewModelTracker<TData>(DataProperty, dataFieldManager, reactivePropertyManager, fieldToPropertyMapper);
             
             fieldToPropertyMapper.Init(InitializeMappingDictionary());
             DataProperty.Value = data;
@@ -71,6 +71,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
                     autoDataSaving.AutoSetInitValues();
                 }).AddTo(disposables);
                 autoDataSaving.SetupAutoDataSaving();
+                disposables.Add(autoDataSaving);
             }
             else
             {
@@ -105,24 +106,55 @@ namespace ControlCanvas.Editor.ViewModels.Base
         }
 
 
+        // protected virtual void Dispose(bool disposing)
+        // {
+        //     if (disposing)
+        //     {
+        //     }
+        // }
+        //
+        // public void Dispose()
+        // {
+        //     disposables.Dispose();
+        //     DataProperty.Dispose();
+        //     Dispose(true);
+        //     //GC.SuppressFinalize(this);
+        // }
+
+        public IViewModel GetChildViewModel(object data)
+        {
+            return viewModelTracker.GetChildViewModel(data);
+        }
+
+        private void ReleaseUnmanagedResources()
+        {
+            // TODO release unmanaged resources here
+        }
+
         protected virtual void Dispose(bool disposing)
         {
+            ReleaseUnmanagedResources();
             if (disposing)
             {
+                disposables?.Dispose();
+                autoDataSaving?.Dispose();
+                viewModelTracker?.Dispose();
+                DataProperty?.Dispose();
             }
         }
 
         public void Dispose()
         {
-            disposables.Dispose();
-            DataProperty.Dispose();
+            //Debug.Log($"Disposing on type: {GetType()}");
             Dispose(true);
-            //GC.SuppressFinalize(this);
+            GC.SuppressFinalize(this);
         }
 
-        public IViewModel GetChildViewModel(object data)
+        ~BaseViewModel()
         {
-            return viewModelTracker.GetChildViewModel(data);
+            Debug.LogWarning(
+                $"Dispose was not called on {this.GetType()}. You should call Dispose on IDisposable objects when you are done using them.");
+            Dispose(false);
         }
     }
 }

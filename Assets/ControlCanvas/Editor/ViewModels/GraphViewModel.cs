@@ -1,8 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Serialization;
+using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels
 {
@@ -15,18 +17,12 @@ namespace ControlCanvas.Editor.ViewModels
             this.canvasViewModel = canvasViewModel;
         }
 
-        public void Dispose()
-        {
-            
-        }
 
         public IViewModel GetChildViewModel(object data)
         {
             return canvasViewModel.GetChildViewModel(data);
         }
 
-        //public List<EdgeViewModel> Edges=> canvasViewModel.EdgeViewModels.ToList();
-        //public IEnumerable<NodeViewModel> Nodes => canvasViewModel.NodeViewModels;
         public CanvasViewModel CanvasViewModel => canvasViewModel;
         public IEnumerable<EdgeData> Edges => canvasViewModel.Edges.Value;
         public IEnumerable<NodeData> Nodes => canvasViewModel.Nodes.Value;
@@ -38,5 +34,31 @@ namespace ControlCanvas.Editor.ViewModels
         public EdgeData CreateEdge(NodeViewModel startNode, NodeViewModel endNode) => canvasViewModel.CreateEdge(startNode.DataProperty.Value, endNode.DataProperty.Value);
         
         public void DeleteEdge(EdgeData edgeData) => canvasViewModel.DeleteEdge(edgeData);
+
+        private void ReleaseUnmanagedResources()
+        {
+            
+        }
+
+        private void Dispose(bool disposing)
+        {
+            ReleaseUnmanagedResources();
+            if (disposing)
+            {
+                canvasViewModel?.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~GraphViewModel()
+        {
+            Debug.LogWarning($"Dispose was not called on {this.GetType()}. You should call Dispose on IDisposable objects when you are done using them.");
+            Dispose(false);
+        }
     }
 }

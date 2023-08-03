@@ -38,6 +38,10 @@ namespace ControlCanvas.Editor.ViewModels
         {
             GraphViewModel = new GraphViewModel(this);
             InspectorViewModel = new InspectorViewModel();
+            //TODO: fetch all viewModels in base class and add them to the disposables list
+            disposables.Add(GraphViewModel);
+            disposables.Add(InspectorViewModel);
+            
             string fieldName = "Nodes";
             
             //Example of how to get a ReactiveProperty from a dataField

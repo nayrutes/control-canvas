@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Reflection;
 using ControlCanvas.Editor.Extensions;
 using UniRx;
+using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels.Base
 {
     public class ViewModelTracker<TData> : IDisposable
     {
-        Dictionary<string, IViewModel> trackedViewModelFields = new ();
-        Dictionary<string, List<IViewModel>> trackedViewModelCollections = new ();
-        
-        Dictionary<object, IViewModel> trackedViewModels = new ();
+        Dictionary<string, IViewModel> trackedViewModelFields = new();
+        Dictionary<string, List<IViewModel>> trackedViewModelCollections = new();
+
+        Dictionary<object, IViewModel> trackedViewModels = new();
 
         private readonly CompositeDisposable disposables;
         private readonly DataFieldManager<TData> dataFieldManager;
@@ -19,11 +20,12 @@ namespace ControlCanvas.Editor.ViewModels.Base
         private readonly FieldToPropertyMapper<TData> fieldToPropertyMapper;
 
         private ReactiveProperty<TData> DataProperty;
-        
-        public ViewModelTracker(ReactiveProperty<TData> dataProperty, CompositeDisposable disposables, DataFieldManager<TData> dataFieldManager, ReactivePropertyManager reactivePropertyManager, FieldToPropertyMapper<TData> fieldToPropertyMapper)
+
+        public ViewModelTracker(ReactiveProperty<TData> dataProperty, DataFieldManager<TData> dataFieldManager,
+            ReactivePropertyManager reactivePropertyManager, FieldToPropertyMapper<TData> fieldToPropertyMapper)
         {
             DataProperty = dataProperty;
-            this.disposables = disposables;
+            this.disposables = new CompositeDisposable();
             this.dataFieldManager = dataFieldManager;
             this.reactivePropertyManager = reactivePropertyManager;
             this.fieldToPropertyMapper = fieldToPropertyMapper;
@@ -40,7 +42,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
                     TrackViewModelCollections(type);
                 }
             }
-    
+
             SetupDataBinding();
         }
 
@@ -58,7 +60,9 @@ namespace ControlCanvas.Editor.ViewModels.Base
                         //TODO: check if old viewModel could be reused?
                         viewModel.Dispose();
                     }
-                    object data = dataFieldManager.GetFieldData(fieldToPropertyMapper.GetFieldNameByPropName(rpField), x);
+
+                    object data =
+                        dataFieldManager.GetFieldData(fieldToPropertyMapper.GetFieldNameByPropName(rpField), x);
                     viewModel = ViewModelCreator.CreateViewModel(type, data);
                     disposables.Add(viewModel);
                     trackedViewModelFields[rpField] = viewModel;
@@ -72,7 +76,8 @@ namespace ControlCanvas.Editor.ViewModels.Base
             List<string> collections = reactivePropertyManager.GetCollectionsOfType(type);
             foreach (string collection in collections)
             {
-                DataProperty.Subscribe(x=> { 
+                DataProperty.Subscribe(x =>
+                {
                     List<IViewModel> viewModels = new List<IViewModel>();
                     if (trackedViewModelCollections.TryGetValue(collection, out var oldViewModels))
                     {
@@ -80,9 +85,12 @@ namespace ControlCanvas.Editor.ViewModels.Base
                         {
                             oldViewModel.Dispose();
                         }
+
                         oldViewModels.Clear();
                     }
-                    IEnumerable<object> data = dataFieldManager.GetCollectionData(fieldToPropertyMapper.GetFieldNameByPropName(collection), x);
+
+                    IEnumerable<object> data =
+                        dataFieldManager.GetCollectionData(fieldToPropertyMapper.GetFieldNameByPropName(collection), x);
                     foreach (object o in data)
                     {
                         var viewModel = ViewModelCreator.CreateViewModel(type, o);
@@ -90,6 +98,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
                         disposables.Add(viewModel);
                         trackedViewModels[o] = viewModel;
                     }
+
                     trackedViewModelCollections[collection] = viewModels;
                 }).AddTo(disposables);
             }
@@ -98,11 +107,11 @@ namespace ControlCanvas.Editor.ViewModels.Base
         private void SetupDataBinding()
         {
             foreach (KeyValuePair<string, IViewModel> viewModelField in trackedViewModelFields)
-            {   
+            {
                 SetupDataBindingForProperty(viewModelField.Key);
             }
 
-            foreach (KeyValuePair<string,List<IViewModel>> viewModelCollection in trackedViewModelCollections)
+            foreach (KeyValuePair<string, List<IViewModel>> viewModelCollection in trackedViewModelCollections)
             {
                 SetupDataBindingForProperty(viewModelCollection.Key);
             }
@@ -111,7 +120,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
         private void SetupDataBindingForProperty(string propertyName)
         {
             IDisposable property = reactivePropertyManager.GetReactiveProperty(propertyName);
-    
+
             // Get the type of T in ReactiveProperty<T>
             Type valueType = property.GetType().GetGenericArguments()[0];
             // Get the helper method and make it generic
@@ -122,10 +131,10 @@ namespace ControlCanvas.Editor.ViewModels.Base
             // Invoke the helper method
             genericHelperMethod.Invoke(this, new object[] { property, propertyName });
         }
-        
+
         // Helper method for setting up data saving
         // ReSharper disable once UnusedMember.Local
-        private void SubscribeHelper<T,TInner>(IDisposable property, string propertyName)
+        private void SubscribeHelper<T, TInner>(IDisposable property, string propertyName)
         {
             ReactiveProperty<T> typedProperty = (ReactiveProperty<T>)property;
 
@@ -144,7 +153,6 @@ namespace ControlCanvas.Editor.ViewModels.Base
                             var viewModel = ViewModelCreator.CreateViewModel(typeof(TInner), addEvent.Value);
                             trackedViewModelCollections[propertyName].Add(viewModel);
                             trackedViewModels[addEvent.Value] = viewModel;
-                            
                         }).AddTo(disposables);
 
                         reactiveCollection.ObserveRemove().Subscribe(removeEvent =>
@@ -153,7 +161,6 @@ namespace ControlCanvas.Editor.ViewModels.Base
                             trackedViewModelCollections[propertyName].RemoveAt(removeEvent.Index);
                             trackedViewModels[removeEvent.Value].Dispose();
                             trackedViewModels.Remove(removeEvent.Value);
-                            
                         }).AddTo(disposables);
                     }
                 }).AddTo(disposables);
@@ -165,7 +172,6 @@ namespace ControlCanvas.Editor.ViewModels.Base
                     var viewModel = ViewModelCreator.CreateViewModel(typeof(T), value);
                     trackedViewModelFields[propertyName] = viewModel;
                     trackedViewModels[value] = viewModel;
-                    
                 }).AddTo(disposables);
             }
         }
@@ -181,6 +187,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
             {
                 viewModel.Dispose();
             }
+
             trackedViewModelFields.Clear();
 
             foreach (var viewModelList in trackedViewModelCollections.Values)
@@ -190,12 +197,14 @@ namespace ControlCanvas.Editor.ViewModels.Base
                     viewModel.Dispose();
                 }
             }
+
             trackedViewModelCollections.Clear();
 
             foreach (var viewModel in trackedViewModels.Values)
             {
                 viewModel.Dispose();
             }
+
             trackedViewModels.Clear();
         }
 
@@ -216,6 +225,8 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
         ~ViewModelTracker()
         {
+            Debug.LogWarning(
+                $"Dispose was not called on {this.GetType()}. You should call Dispose on IDisposable objects when you are done using them.");
             Dispose(false);
         }
     }

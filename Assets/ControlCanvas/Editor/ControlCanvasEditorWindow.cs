@@ -1,12 +1,14 @@
+using System;
 using ControlCanvas.Editor.ViewModels;
 using ControlCanvas.Editor.Views;
 using UniRx;
 using UnityEditor;
+using UnityEditor.Compilation;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class ControlCanvasEditorWindow : EditorWindow
+public class ControlCanvasEditorWindow : EditorWindow, IDisposable
 {
     [SerializeField] private VisualTreeAsset m_VisualTreeAsset = default;
 
@@ -39,6 +41,7 @@ public class ControlCanvasEditorWindow : EditorWindow
         if (m_CanvasViewModel == null)
         {
             m_CanvasViewModel = new CanvasViewModel();
+            disposables.Add(m_CanvasViewModel);
         }
 
         graphView.SetViewModel(m_CanvasViewModel.GraphViewModel);
@@ -55,11 +58,49 @@ public class ControlCanvasEditorWindow : EditorWindow
         //TODO: Save and load last file from EditorPrefs or PlayerPrefs
     }
 
-    private void OnDestroy()
+    private void OnEnable()
     {
-        disposables.Dispose();
+        EditorApplication.quitting += OnEditorApplicationQuitting;
+        EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
     }
 
+    private void OnDisable()
+    {
+        EditorApplication.quitting -= OnEditorApplicationQuitting;
+        EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+    }
+    
+    private void OnEditorApplicationQuitting()
+    {
+        Dispose();
+    }
+
+    private void OnPlayModeStateChanged(PlayModeStateChange state)
+    {
+        if (state == PlayModeStateChange.ExitingEditMode || state == PlayModeStateChange.ExitingPlayMode)
+        {
+            Dispose();
+        }
+    }
+    
+    private void OnDestroy()
+    {
+        Dispose();
+    }
+
+    [InitializeOnLoadMethod]
+    private static void InitializeOnLoad()
+    {
+        CompilationPipeline.compilationStarted += OnCompilationStarted;
+    }
+    
+    private static void OnCompilationStarted(object obj)
+    {
+        // Get a reference to the window
+        var window = GetWindow<ControlCanvasEditorWindow>();
+        window.Dispose();
+    }
+    
     public void SerializeDataAsXML()
     {
         var path = EditorUtility.SaveFilePanel("Save ControlCanvasSO as XML", "", "ControlCanvasSO", "xml");
@@ -80,4 +121,30 @@ public class ControlCanvasEditorWindow : EditorWindow
     }
 
 
+    private void ReleaseUnmanagedResources()
+    {
+        // TODO release unmanaged resources here
+    }
+
+    private void Dispose(bool disposing)
+    {
+        ReleaseUnmanagedResources();
+        if (disposing)
+        {
+            disposables?.Dispose();
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    ~ControlCanvasEditorWindow()
+    {
+        Debug.LogWarning(
+            $"Dispose was not called on {this.GetType()}. Using Finalizer to dispose because unity event did not trigger.");
+        Dispose(false);
+    }
 }
