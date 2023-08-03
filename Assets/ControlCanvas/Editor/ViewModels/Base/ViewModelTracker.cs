@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using ControlCanvas.Editor.Extensions;
 using UniRx;
 
 namespace ControlCanvas.Editor.ViewModels.Base
 {
-    public class ViewModelTracker<TData>
+    public class ViewModelTracker<TData> : IDisposable
     {
-        Dictionary<string, IViewModel> trackedViewModelFields = new Dictionary<string, IViewModel>();
-        Dictionary<string, List<IViewModel>> trackedViewModelCollections = new Dictionary<string, List<IViewModel>>();
+        Dictionary<string, IViewModel> trackedViewModelFields = new ();
+        Dictionary<string, List<IViewModel>> trackedViewModelCollections = new ();
         
-        Dictionary<object, IViewModel> trackedViewModels = new Dictionary<object, IViewModel>();
+        Dictionary<object, IViewModel> trackedViewModels = new ();
 
         private readonly CompositeDisposable disposables;
         private readonly DataFieldManager<TData> dataFieldManager;
@@ -30,106 +29,102 @@ namespace ControlCanvas.Editor.ViewModels.Base
             this.fieldToPropertyMapper = fieldToPropertyMapper;
         }
 
-
         public void SetupViewModelTracking()
         {
-            // DataProperty.Subscribe(x =>
-            // {
-            //     foreach (KeyValuePair<object,IViewModel> trackedViewModel in trackedViewModels)
-            //     {
-            //         trackedViewModel.Value.Dispose();
-            //     }
-            //     trackedViewModels.Clear();
-            // }).AddTo(disposables);
-
             List<Type> types = reactivePropertyManager.GetAllInnerTypes();
             foreach (Type type in types)
             {
                 if (ViewModelCreator.IsTypeSupported(type))
                 {
-                    List<string> rpFields = reactivePropertyManager.GetFieldsOfType(type);
-                    foreach (string rpField in rpFields)
-                    {
-                        DataProperty.Subscribe(x =>
-                        {
-                            IViewModel viewModel;
-                            if (trackedViewModelFields.TryGetValue(rpField, out var field))
-                            {
-                                viewModel = field;
-                                //TODO: check if old viewModel could be reused?
-                                viewModel.Dispose();
-                            }
-                            object data = dataFieldManager.GetFieldData(fieldToPropertyMapper.GetFieldNameByPropName(rpField), x);
-                            viewModel = ViewModelCreator.CreateViewModel(type, data);
-                            disposables.Add(viewModel);
-                            trackedViewModelFields[rpField] = viewModel;
-                            trackedViewModels[data] = viewModel;
-                        }).AddTo(disposables);
-                    }
-                    List<string> collections = reactivePropertyManager.GetCollectionsOfType(type);
-                    foreach (string collection in collections)
-                    {
-                        DataProperty.Subscribe(x=> { 
-                            List<IViewModel> viewModels = new List<IViewModel>();
-                            if (trackedViewModelCollections.TryGetValue(collection, out var oldViewModels))
-                            {
-                                foreach (IViewModel oldViewModel in oldViewModels)
-                                {
-                                    oldViewModel.Dispose();
-                                }
-                                oldViewModels.Clear();
-                            }
-                            IEnumerable<object> data = dataFieldManager.GetCollectionData(fieldToPropertyMapper.GetFieldNameByPropName(collection), x);
-                            foreach (object o in data)
-                            {
-                                var viewModel = ViewModelCreator.CreateViewModel(type, o);
-                                viewModels.Add(viewModel);
-                                disposables.Add(viewModel);
-                                trackedViewModels[o] = viewModel;
-                            }
-                            trackedViewModelCollections[collection] = viewModels;
-                        }).AddTo(disposables);
-                    }
+                    TrackViewModelFields(type);
+                    TrackViewModelCollections(type);
                 }
             }
-            
-            //SetupDataBinding
+    
+            SetupDataBinding();
+        }
+
+        private void TrackViewModelFields(Type type)
+        {
+            List<string> rpFields = reactivePropertyManager.GetFieldsOfType(type);
+            foreach (string rpField in rpFields)
+            {
+                DataProperty.Subscribe(x =>
+                {
+                    IViewModel viewModel;
+                    if (trackedViewModelFields.TryGetValue(rpField, out var field))
+                    {
+                        viewModel = field;
+                        //TODO: check if old viewModel could be reused?
+                        viewModel.Dispose();
+                    }
+                    object data = dataFieldManager.GetFieldData(fieldToPropertyMapper.GetFieldNameByPropName(rpField), x);
+                    viewModel = ViewModelCreator.CreateViewModel(type, data);
+                    disposables.Add(viewModel);
+                    trackedViewModelFields[rpField] = viewModel;
+                    trackedViewModels[data] = viewModel;
+                }).AddTo(disposables);
+            }
+        }
+
+        private void TrackViewModelCollections(Type type)
+        {
+            List<string> collections = reactivePropertyManager.GetCollectionsOfType(type);
+            foreach (string collection in collections)
+            {
+                DataProperty.Subscribe(x=> { 
+                    List<IViewModel> viewModels = new List<IViewModel>();
+                    if (trackedViewModelCollections.TryGetValue(collection, out var oldViewModels))
+                    {
+                        foreach (IViewModel oldViewModel in oldViewModels)
+                        {
+                            oldViewModel.Dispose();
+                        }
+                        oldViewModels.Clear();
+                    }
+                    IEnumerable<object> data = dataFieldManager.GetCollectionData(fieldToPropertyMapper.GetFieldNameByPropName(collection), x);
+                    foreach (object o in data)
+                    {
+                        var viewModel = ViewModelCreator.CreateViewModel(type, o);
+                        viewModels.Add(viewModel);
+                        disposables.Add(viewModel);
+                        trackedViewModels[o] = viewModel;
+                    }
+                    trackedViewModelCollections[collection] = viewModels;
+                }).AddTo(disposables);
+            }
+        }
+
+        private void SetupDataBinding()
+        {
             foreach (KeyValuePair<string, IViewModel> viewModelField in trackedViewModelFields)
             {   
-                IDisposable property = reactivePropertyManager.GetReactiveProperty(viewModelField.Key);
-                
-                // Get the type of T in ReactiveProperty<T>
-                Type valueType = property.GetType().GetGenericArguments()[0];
-                // Get the helper method and make it generic
-                MethodInfo helperMethod =
-                    GetType().GetMethod("SubscribeHelper", BindingFlags.NonPublic | BindingFlags.Instance);
-                //second type is unused, but needed for the generic method
-                MethodInfo genericHelperMethod = helperMethod.MakeGenericMethod(new Type[] {valueType, valueType});
-
-                // Invoke the helper method
-                genericHelperMethod.Invoke(this, new object[] { property, viewModelField.Key });
+                SetupDataBindingForProperty(viewModelField.Key);
             }
 
             foreach (KeyValuePair<string,List<IViewModel>> viewModelCollection in trackedViewModelCollections)
             {
-                IDisposable property = reactivePropertyManager.GetReactiveProperty(viewModelCollection.Key);
-                
-                // Get the type of T in ReactiveProperty<T>
-                Type valueType = property.GetType().GetGenericArguments()[0];
-                // Get the helper method and make it generic
-                MethodInfo helperMethod =
-                    GetType().GetMethod("SubscribeHelper", BindingFlags.NonPublic | BindingFlags.Instance);
-                MethodInfo genericHelperMethod = helperMethod.MakeGenericMethod(valueType, valueType.GetInnerType());
-
-                // Invoke the helper method
-                genericHelperMethod.Invoke(this, new object[] { property, viewModelCollection.Key });
+                SetupDataBindingForProperty(viewModelCollection.Key);
             }
         }
+
+        private void SetupDataBindingForProperty(string propertyName)
+        {
+            IDisposable property = reactivePropertyManager.GetReactiveProperty(propertyName);
+    
+            // Get the type of T in ReactiveProperty<T>
+            Type valueType = property.GetType().GetGenericArguments()[0];
+            // Get the helper method and make it generic
+            MethodInfo helperMethod =
+                GetType().GetMethod("SubscribeHelper", BindingFlags.NonPublic | BindingFlags.Instance);
+            MethodInfo genericHelperMethod = helperMethod.MakeGenericMethod(valueType, valueType.GetInnerType());
+
+            // Invoke the helper method
+            genericHelperMethod.Invoke(this, new object[] { property, propertyName });
+        }
         
-        // ReSharper disable once MemberCanBePrivate.Global
-        // ReSharper disable once UnusedMember.Global
-        // protected is needed for the reflection
         // Helper method for setting up data saving
+        // ReSharper disable once UnusedMember.Local
         private void SubscribeHelper<T,TInner>(IDisposable property, string propertyName)
         {
             ReactiveProperty<T> typedProperty = (ReactiveProperty<T>)property;
@@ -178,6 +173,50 @@ namespace ControlCanvas.Editor.ViewModels.Base
         public IViewModel GetChildViewModel(object data)
         {
             return trackedViewModels[data];
+        }
+
+        private void ReleaseUnmanagedResources()
+        {
+            foreach (var viewModel in trackedViewModelFields.Values)
+            {
+                viewModel.Dispose();
+            }
+            trackedViewModelFields.Clear();
+
+            foreach (var viewModelList in trackedViewModelCollections.Values)
+            {
+                foreach (var viewModel in viewModelList)
+                {
+                    viewModel.Dispose();
+                }
+            }
+            trackedViewModelCollections.Clear();
+
+            foreach (var viewModel in trackedViewModels.Values)
+            {
+                viewModel.Dispose();
+            }
+            trackedViewModels.Clear();
+        }
+
+        private void Dispose(bool disposing)
+        {
+            ReleaseUnmanagedResources();
+            if (disposing)
+            {
+                disposables?.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~ViewModelTracker()
+        {
+            Dispose(false);
         }
     }
 }

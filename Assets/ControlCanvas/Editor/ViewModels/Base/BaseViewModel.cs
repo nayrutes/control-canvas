@@ -62,7 +62,10 @@ namespace ControlCanvas.Editor.ViewModels.Base
                 {
                     return;
                 }
+                
                 viewModelTracker.SetupViewModelTracking();
+                disposables.Add(viewModelTracker);
+                
                 DataProperty.Subscribe(data =>
                 {
                     autoDataSaving.AutoSetInitValues();

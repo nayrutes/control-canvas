@@ -16,17 +16,9 @@ namespace ControlCanvas.Editor.ViewModels
 
         public ReactiveProperty<string> canvasName = new();
 
-        //public ReactiveProperty<List<NodeData>> Nodes { get; private set; } = new();
-        //public ReactiveProperty<List<EdgeData>> Edges { get; private set; } = new();
-
-        //public ReactiveCollection<NodeData> NodeDatas { get; private set; } = new();
-        //public ReactiveCollection<EdgeData> EdgeDatas { get; private set; } = new();
-
+        //defining the ReactiveProperty as a property allows referencing it easier
         public ReactiveProperty<ReactiveCollection<NodeData>> Nodes { get; private set; } = new();
         public ReactiveProperty<ReactiveCollection<EdgeData>> Edges { get; private set; } = new();
-
-        //public ReactiveCollection<NodeViewModel> NodeViewModels { get; private set; } = new();
-        //public ReactiveCollection<EdgeViewModel> EdgeViewModels { get; private set; } = new();
 
         protected override Dictionary<string, string> InitializeMappingDictionary()
         {
@@ -47,45 +39,9 @@ namespace ControlCanvas.Editor.ViewModels
             GraphViewModel = new GraphViewModel(this);
             InspectorViewModel = new InspectorViewModel();
             string fieldName = "Nodes";
+            
+            //Example of how to get a ReactiveProperty from a dataField
             var rp = GetReactiveProperty<ReactiveProperty<ReactiveCollection<NodeData>>>(fieldName);
-            //bool test = rp == Nodes;
-            // rp.Subscribe(x =>
-            // {
-            //     Debug.Log("Nodes changed");
-            //     NodeViewModels.Clear();
-            //     //Init handling entries
-            //     x.ToList().ForEach(nodeData =>
-            //     {
-            //         var nodeViewModel = new NodeViewModel(nodeData);
-            //         NodeViewModels.Add(nodeViewModel);
-            //     });
-            //     
-            //     //handling changes
-            //     x.ObserveAdd().Subscribe(y =>
-            //     {
-            //         Debug.Log("Node added");
-            //         NodeViewModels.Add(new NodeViewModel(y.Value));
-            //     }).AddTo(disposables);
-            // }).AddTo(disposables);
-            //
-            // Edges.Subscribe(x =>
-            // {
-            //     Debug.Log("Edges changed");
-            //     EdgeViewModels.Clear();
-            //     //Init handling entries
-            //     x.ToList().ForEach(edgeData =>
-            //     {
-            //         var edgeViewModel = new EdgeViewModel(edgeData);
-            //         EdgeViewModels.Add(edgeViewModel);
-            //     });
-            //     
-            //     //handling changes
-            //     x.ObserveAdd().Subscribe(y =>
-            //     {
-            //         Debug.Log("Edge added");
-            //         EdgeViewModels.Add(new EdgeViewModel(y.Value));
-            //     }).AddTo(disposables);
-            // }).AddTo(disposables);
         }
 
         protected override CanvasData CreateData()
@@ -97,37 +53,11 @@ namespace ControlCanvas.Editor.ViewModels
 
         protected override void LoadDataInternal(CanvasData canvasData)
         {
-            // NodeViewModels.Clear();
-            // EdgeViewModels.Clear();
-            //
-            // if (canvasData == null)
-            // {
-            //     canvasName.Value = "<No canvas Object>";
-            //     return;
-            // }
-            //
-            // canvasName.Value = canvasData.Name;
-            // canvasData.Nodes.ForEach(nodeData =>
-            // {
-            //     var nodeViewModel = new NodeViewModel(nodeData);
-            //     NodeViewModels.Add(nodeViewModel);
-            // });
-            //
-            // canvasData.Edges.ForEach(edgeData =>
-            // {
-            //     var edgeViewModel = new EdgeViewModel(edgeData, true);
-            //     EdgeViewModels.Add(edgeViewModel);
-            // });
+
         }
 
         protected override void SaveDataInternal(CanvasData data)
         {
-            // data.Name = canvasName.Value;
-            // data.Nodes.Clear();
-            // NodeViewModels.ToList().ForEach(nodeViewModel => { data.Nodes.Add(nodeViewModel.DataProperty.Value); });
-            //
-            // data.Edges.Clear();
-            // EdgeViewModels.ToList().ForEach(edgeViewModel => { data.Edges.Add(edgeViewModel.DataProperty.Value); });
         }
 
 
@@ -154,9 +84,6 @@ namespace ControlCanvas.Editor.ViewModels
 
         public NodeData CreateNode()
         {
-            // NodeViewModel nodeViewModel = new NodeViewModel();
-            // NodeViewModels.Add(nodeViewModel);
-            // return nodeViewModel;
             NodeData nodeData = new NodeData();
             Nodes.Value.Add(nodeData);
             return nodeData;
@@ -177,10 +104,6 @@ namespace ControlCanvas.Editor.ViewModels
             };
             Edges.Value.Add(edgeData);
             return edgeData;
-            
-            // EdgeViewModel edgeViewModel = new EdgeViewModel(from, to);
-            // EdgeViewModels.Add(edgeViewModel);
-            // return edgeViewModel;
         }
 
         public void DeleteEdge(EdgeData edgeData)
