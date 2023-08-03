@@ -164,5 +164,21 @@ namespace ControlCanvas.Editor.ViewModels.Base
         {
             return VmReactivePropertiesTyped[reactivePropertyName];
         }
+
+        public List<Type> GetAllInnerTypes()
+        {
+            return VmReactivePropertiesTyped.Values.Select(x => x.GetType().GetInnerType().GetInnerType()).ToList();
+        }
+
+        public List<string> GetFieldsOfType(Type type)
+        {
+            return VmReactivePropertiesTyped.Where(x => x.Value.GetType().GetInnerType() == type).Select(x => x.Key).ToList();
+        }
+
+        public List<string> GetCollectionsOfType(Type type)
+        {
+            return VmReactivePropertiesTyped.Where(x => x.Value.GetType().GetInnerType().IsReactiveCollection() 
+                                                        && x.Value.GetType().GetInnerType().GetInnerType() == type).Select(x => x.Key).ToList();
+        }
     }
 }

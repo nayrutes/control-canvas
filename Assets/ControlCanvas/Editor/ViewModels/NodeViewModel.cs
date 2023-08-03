@@ -33,6 +33,11 @@ namespace ControlCanvas.Editor.ViewModels
         {
             
         }
+        
+        public NodeViewModel(NodeData data, bool autobind) : base(data, autobind)
+        {
+            
+        }
 
 
         protected override NodeData CreateData()

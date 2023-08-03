@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -27,6 +28,22 @@ namespace ControlCanvas.Editor.ViewModels.Base
         public Dictionary<string, FieldInfo> GetDataFields()
         {
             return DataFields;
+        }
+
+        public object GetFieldData(string getFieldByName, object data)
+        {
+            return DataFields[getFieldByName].GetValue(data);
+        }
+
+        public List<object> GetCollectionData(string fieldByName, object data)
+        {
+            List<object> collectionData = new();
+            var collection = (IEnumerable)DataFields[fieldByName].GetValue(data);
+            foreach (var item in collection)
+            {
+                collectionData.Add(item);
+            }
+            return collectionData;
         }
     }
 }

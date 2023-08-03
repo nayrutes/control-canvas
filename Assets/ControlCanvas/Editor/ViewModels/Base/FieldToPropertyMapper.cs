@@ -161,9 +161,22 @@ namespace ControlCanvas.Editor.ViewModels.Base
             return DataFieldToReactivePropertyName.ContainsKey(dataFieldKey);
         }
 
-        public string GetPropByFieldName(string dataFieldKey)
+        public string GetPropNameByFieldName(string dataFieldKey)
         {
             return DataFieldToReactivePropertyName[dataFieldKey];
+        }
+
+        public string GetFieldNameByPropName(string rpField)
+        {
+            foreach (var kvp in DataFieldToReactivePropertyName)
+            {
+                if (kvp.Value == rpField)
+                {
+                    return kvp.Key;
+                }
+            }
+
+            return null;
         }
     }
 }

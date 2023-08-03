@@ -18,7 +18,7 @@ namespace ControlCanvas.Editor.ViewModels
             DataProperty.Value.EndNodeGuid = to.DataProperty.Value.guid;
         }
 
-        public EdgeViewModel(EdgeData data) : base(data)
+        public EdgeViewModel(EdgeData data, bool autobind) : base(data, autobind)
         {
         }
 

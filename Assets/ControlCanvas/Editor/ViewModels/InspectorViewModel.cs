@@ -33,7 +33,12 @@ namespace ControlCanvas.Editor.ViewModels
         {
             
         }
-        
+
+        public IViewModel GetChildViewModel(object data)
+        {
+            throw new NotImplementedException();
+        }
+
         public void OnSelectionChanged(SelectedChangedArgs args, CanvasData canvasData)
         {
             if (args.Selectables.Count == 0)

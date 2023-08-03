@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ControlCanvas.Editor.ViewModels;
+using ControlCanvas.Serialization;
 using UniRx;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
@@ -108,7 +109,7 @@ namespace ControlCanvas.Editor.Views
                         if (edge.input.node is VisualNodeView inputNode &&
                             edge.output.node is VisualNodeView outputNode)
                         {
-                            viewModel.DeleteEdge(viewModel.Edges.Find(x =>
+                            viewModel.DeleteEdge(viewModel.Edges.ToList().Find(x =>
                                 x.StartNodeGuid == inputNode.nodeViewModel.Guid.Value &&
                                 x.EndNodeGuid == outputNode.nodeViewModel.Guid.Value));
                         }
@@ -147,9 +148,10 @@ namespace ControlCanvas.Editor.Views
             }
         }
 
-        void CreateVisualNode(NodeViewModel nodeViewModel)
+        void CreateVisualNode(NodeData nodeData)
         {
             VisualNodeView visualNodeView = new VisualNodeView();
+            NodeViewModel nodeViewModel = (NodeViewModel)viewModel.GetChildViewModel(nodeData);
             visualNodeView.SetViewModel(nodeViewModel);
             AddElement(visualNodeView);
         }

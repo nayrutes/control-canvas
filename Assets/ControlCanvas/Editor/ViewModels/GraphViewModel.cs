@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using ControlCanvas.Editor.ViewModels.Base;
+using ControlCanvas.Serialization;
 
 namespace ControlCanvas.Editor.ViewModels
 {
@@ -17,17 +19,24 @@ namespace ControlCanvas.Editor.ViewModels
         {
             
         }
-        
-        public List<EdgeViewModel> Edges=> canvasViewModel.EdgeViewModels.ToList();
-        public IEnumerable<NodeViewModel> Nodes => canvasViewModel.NodeViewModels;
-        public CanvasViewModel CanvasViewModel => canvasViewModel;
 
-        public NodeViewModel CreateNode() => canvasViewModel.CreateNode();
+        public IViewModel GetChildViewModel(object data)
+        {
+            return canvasViewModel.GetChildViewModel(data);
+        }
+
+        //public List<EdgeViewModel> Edges=> canvasViewModel.EdgeViewModels.ToList();
+        //public IEnumerable<NodeViewModel> Nodes => canvasViewModel.NodeViewModels;
+        public CanvasViewModel CanvasViewModel => canvasViewModel;
+        public IEnumerable<EdgeData> Edges => canvasViewModel.Edges.Value;
+        public IEnumerable<NodeData> Nodes => canvasViewModel.Nodes.Value;
+
+        public NodeData CreateNode() => canvasViewModel.CreateNode();
         
-        public void DeleteNode(NodeViewModel nodeViewModel) => canvasViewModel.DeleteNode(nodeViewModel);
+        public void DeleteNode(NodeViewModel nodeViewModel) => canvasViewModel.DeleteNode(nodeViewModel.DataProperty.Value);
         
-        public EdgeViewModel CreateEdge(NodeViewModel startNode, NodeViewModel endNode) => canvasViewModel.CreateEdge(startNode, endNode);
+        public EdgeData CreateEdge(NodeViewModel startNode, NodeViewModel endNode) => canvasViewModel.CreateEdge(startNode.DataProperty.Value, endNode.DataProperty.Value);
         
-        public void DeleteEdge(EdgeViewModel edgeViewModel) => canvasViewModel.DeleteEdge(edgeViewModel);
+        public void DeleteEdge(EdgeData edgeData) => canvasViewModel.DeleteEdge(edgeData);
     }
 }

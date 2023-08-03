@@ -19,14 +19,14 @@ namespace ControlCanvas.Editor.ViewModels
         //public ReactiveProperty<List<NodeData>> Nodes { get; private set; } = new();
         //public ReactiveProperty<List<EdgeData>> Edges { get; private set; } = new();
 
-        public ReactiveCollection<NodeData> NodeDatas { get; private set; } = new();
-        public ReactiveCollection<EdgeData> EdgeDatas { get; private set; } = new();
+        //public ReactiveCollection<NodeData> NodeDatas { get; private set; } = new();
+        //public ReactiveCollection<EdgeData> EdgeDatas { get; private set; } = new();
 
-        //public ReactiveProperty<ReactiveCollection<NodeData>> Nodes { get; private set; } = new();
+        public ReactiveProperty<ReactiveCollection<NodeData>> Nodes { get; private set; } = new();
         public ReactiveProperty<ReactiveCollection<EdgeData>> Edges { get; private set; } = new();
 
-        public ReactiveCollection<NodeViewModel> NodeViewModels { get; private set; } = new();
-        public ReactiveCollection<EdgeViewModel> EdgeViewModels { get; private set; } = new();
+        //public ReactiveCollection<NodeViewModel> NodeViewModels { get; private set; } = new();
+        //public ReactiveCollection<EdgeViewModel> EdgeViewModels { get; private set; } = new();
 
         protected override Dictionary<string, string> InitializeMappingDictionary()
         {
@@ -36,7 +36,7 @@ namespace ControlCanvas.Editor.ViewModels
             };
         }
 
-        //TODO: Add support for ReactiveCollections so autobind does work
+        
         public CanvasViewModel() : base()
         {
             Initialize();
@@ -49,43 +49,43 @@ namespace ControlCanvas.Editor.ViewModels
             string fieldName = "Nodes";
             var rp = GetReactiveProperty<ReactiveProperty<ReactiveCollection<NodeData>>>(fieldName);
             //bool test = rp == Nodes;
-            rp.Subscribe(x =>
-            {
-                Debug.Log("Nodes changed");
-                NodeViewModels.Clear();
-                //Init handling entries
-                x.ToList().ForEach(nodeData =>
-                {
-                    var nodeViewModel = new NodeViewModel(nodeData);
-                    NodeViewModels.Add(nodeViewModel);
-                });
-                
-                //handling changes
-                x.ObserveAdd().Subscribe(y =>
-                {
-                    Debug.Log("Node added");
-                    NodeViewModels.Add(new NodeViewModel(y.Value));
-                }).AddTo(disposables);
-            }).AddTo(disposables);
-            
-            Edges.Subscribe(x =>
-            {
-                Debug.Log("Edges changed");
-                EdgeViewModels.Clear();
-                //Init handling entries
-                x.ToList().ForEach(edgeData =>
-                {
-                    var edgeViewModel = new EdgeViewModel(edgeData);
-                    EdgeViewModels.Add(edgeViewModel);
-                });
-                
-                //handling changes
-                x.ObserveAdd().Subscribe(y =>
-                {
-                    Debug.Log("Edge added");
-                    EdgeViewModels.Add(new EdgeViewModel(y.Value));
-                }).AddTo(disposables);
-            }).AddTo(disposables);
+            // rp.Subscribe(x =>
+            // {
+            //     Debug.Log("Nodes changed");
+            //     NodeViewModels.Clear();
+            //     //Init handling entries
+            //     x.ToList().ForEach(nodeData =>
+            //     {
+            //         var nodeViewModel = new NodeViewModel(nodeData);
+            //         NodeViewModels.Add(nodeViewModel);
+            //     });
+            //     
+            //     //handling changes
+            //     x.ObserveAdd().Subscribe(y =>
+            //     {
+            //         Debug.Log("Node added");
+            //         NodeViewModels.Add(new NodeViewModel(y.Value));
+            //     }).AddTo(disposables);
+            // }).AddTo(disposables);
+            //
+            // Edges.Subscribe(x =>
+            // {
+            //     Debug.Log("Edges changed");
+            //     EdgeViewModels.Clear();
+            //     //Init handling entries
+            //     x.ToList().ForEach(edgeData =>
+            //     {
+            //         var edgeViewModel = new EdgeViewModel(edgeData);
+            //         EdgeViewModels.Add(edgeViewModel);
+            //     });
+            //     
+            //     //handling changes
+            //     x.ObserveAdd().Subscribe(y =>
+            //     {
+            //         Debug.Log("Edge added");
+            //         EdgeViewModels.Add(new EdgeViewModel(y.Value));
+            //     }).AddTo(disposables);
+            // }).AddTo(disposables);
         }
 
         protected override CanvasData CreateData()
@@ -97,37 +97,37 @@ namespace ControlCanvas.Editor.ViewModels
 
         protected override void LoadDataInternal(CanvasData canvasData)
         {
-            NodeViewModels.Clear();
-            EdgeViewModels.Clear();
-
-            if (canvasData == null)
-            {
-                canvasName.Value = "<No canvas Object>";
-                return;
-            }
-
-            canvasName.Value = canvasData.Name;
-            canvasData.Nodes.ForEach(nodeData =>
-            {
-                var nodeViewModel = new NodeViewModel(nodeData);
-                NodeViewModels.Add(nodeViewModel);
-            });
-
-            canvasData.Edges.ForEach(edgeData =>
-            {
-                var edgeViewModel = new EdgeViewModel(edgeData);
-                EdgeViewModels.Add(edgeViewModel);
-            });
+            // NodeViewModels.Clear();
+            // EdgeViewModels.Clear();
+            //
+            // if (canvasData == null)
+            // {
+            //     canvasName.Value = "<No canvas Object>";
+            //     return;
+            // }
+            //
+            // canvasName.Value = canvasData.Name;
+            // canvasData.Nodes.ForEach(nodeData =>
+            // {
+            //     var nodeViewModel = new NodeViewModel(nodeData);
+            //     NodeViewModels.Add(nodeViewModel);
+            // });
+            //
+            // canvasData.Edges.ForEach(edgeData =>
+            // {
+            //     var edgeViewModel = new EdgeViewModel(edgeData, true);
+            //     EdgeViewModels.Add(edgeViewModel);
+            // });
         }
 
         protected override void SaveDataInternal(CanvasData data)
         {
-            data.Name = canvasName.Value;
-            data.Nodes.Clear();
-            NodeViewModels.ToList().ForEach(nodeViewModel => { data.Nodes.Add(nodeViewModel.DataProperty.Value); });
-
-            data.Edges.Clear();
-            EdgeViewModels.ToList().ForEach(edgeViewModel => { data.Edges.Add(edgeViewModel.DataProperty.Value); });
+            // data.Name = canvasName.Value;
+            // data.Nodes.Clear();
+            // NodeViewModels.ToList().ForEach(nodeViewModel => { data.Nodes.Add(nodeViewModel.DataProperty.Value); });
+            //
+            // data.Edges.Clear();
+            // EdgeViewModels.ToList().ForEach(edgeViewModel => { data.Edges.Add(edgeViewModel.DataProperty.Value); });
         }
 
 
@@ -152,26 +152,40 @@ namespace ControlCanvas.Editor.ViewModels
             InspectorViewModel.OnSelectionChanged(obj, DataProperty.Value);
         }
 
-        public NodeViewModel CreateNode()
+        public NodeData CreateNode()
         {
-            NodeViewModel nodeViewModel = new NodeViewModel();
-            NodeViewModels.Add(nodeViewModel);
-            return nodeViewModel;
+            // NodeViewModel nodeViewModel = new NodeViewModel();
+            // NodeViewModels.Add(nodeViewModel);
+            // return nodeViewModel;
+            NodeData nodeData = new NodeData();
+            Nodes.Value.Add(nodeData);
+            return nodeData;
         }
 
-        public void DeleteNode(NodeViewModel nodeViewModel)
+        public void DeleteNode(NodeData nodeData)
         {
+            Nodes.Value.Remove(nodeData);
         }
 
-        public EdgeViewModel CreateEdge(NodeViewModel from, NodeViewModel to)
+        public EdgeData CreateEdge(NodeData from, NodeData to)
         {
-            EdgeViewModel edgeViewModel = new EdgeViewModel(from, to);
-            EdgeViewModels.Add(edgeViewModel);
-            return edgeViewModel;
+            EdgeData edgeData = new EdgeData()
+            {
+                StartNodeGuid = from.guid,
+                EndNodeGuid = to.guid,
+                Guid = System.Guid.NewGuid().ToString()
+            };
+            Edges.Value.Add(edgeData);
+            return edgeData;
+            
+            // EdgeViewModel edgeViewModel = new EdgeViewModel(from, to);
+            // EdgeViewModels.Add(edgeViewModel);
+            // return edgeViewModel;
         }
 
-        public void DeleteEdge(EdgeViewModel edgeViewModel)
+        public void DeleteEdge(EdgeData edgeData)
         {
+            Edges.Value.Remove(edgeData);
         }
     }
 }

@@ -26,9 +26,13 @@ namespace ControlCanvas.Editor.Extensions
             {
                 return type.GetGenericArguments()[0];
             }
+            else if (type.IsGenericType)
+            {
+                return type.GetGenericArguments()[0];
+            }
             else
             {
-                return null;
+                return type;
             }
         }
         
@@ -40,6 +44,20 @@ namespace ControlCanvas.Editor.Extensions
         public static bool IsReactiveCollection(this Type type)
         {
             return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ReactiveCollection<>);
+        }
+        
+        public static bool IsSubclassOfRawGeneric(this Type toCheck, Type generic)
+        {
+            while (toCheck != null && toCheck != typeof(object))
+            {
+                var cur = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
+                if (generic == cur)
+                {
+                    return true;
+                }
+                toCheck = toCheck.BaseType;
+            }
+            return false;
         }
     }
 }

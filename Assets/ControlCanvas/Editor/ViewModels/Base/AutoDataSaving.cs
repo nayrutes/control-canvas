@@ -8,13 +8,13 @@ using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels.Base
 {
-    public class AutoDataSaving<TData>
+    public class AutoDataSaving<TData>// : IDisposable
     {
-        private ReactiveProperty<TData> DataProperty;
-        private CompositeDisposable disposables;
-        private DataFieldManager<TData> dataFieldManager;
-        private ReactivePropertyManager reactivePropertyManager;
-        private FieldToPropertyMapper<TData> fieldToPropertyMapper;
+        private readonly ReactiveProperty<TData> DataProperty;
+        private readonly CompositeDisposable disposables;
+        private readonly DataFieldManager<TData> dataFieldManager;
+        private readonly ReactivePropertyManager reactivePropertyManager;
+        private readonly FieldToPropertyMapper<TData> fieldToPropertyMapper;
         
         public AutoDataSaving(ReactiveProperty<TData> dataProperty, CompositeDisposable disposables, DataFieldManager<TData> dataFieldManager, ReactivePropertyManager reactivePropertyManager, FieldToPropertyMapper<TData> fieldToPropertyMapper)
         {
@@ -113,10 +113,14 @@ namespace ControlCanvas.Editor.ViewModels.Base
                     continue;
                 }
 
-                reactivePropertyManager.SetReactivePropertyInitValue(fieldToPropertyMapper.GetPropByFieldName(dataField.Key),
+                reactivePropertyManager.SetReactivePropertyInitValue(fieldToPropertyMapper.GetPropNameByFieldName(dataField.Key),
                     dataField.Value.GetValue(DataProperty.Value));
             }
         }
-        
+
+        // public void Dispose()
+        // {
+        //     disposables?.Dispose();
+        // }
     }
 }

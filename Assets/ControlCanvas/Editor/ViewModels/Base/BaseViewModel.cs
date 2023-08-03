@@ -11,6 +11,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
 {
     public interface IViewModel : IDisposable
     {
+        public IViewModel GetChildViewModel(object data);
     }
 
     public abstract class BaseViewModel<TData> : IViewModel
@@ -23,6 +24,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
         private ReactivePropertyManager reactivePropertyManager;
         private FieldToPropertyMapper<TData> fieldToPropertyMapper;
         private AutoDataSaving<TData> autoDataSaving;
+        private ViewModelTracker<TData> viewModelTracker;
         
         /// <summary>
         /// This should be self contained and don't rely on members of the class
@@ -47,6 +49,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
             reactivePropertyManager = new ReactivePropertyManager();
             fieldToPropertyMapper = new FieldToPropertyMapper<TData>(reactivePropertyManager,dataFieldManager);
             autoDataSaving = new AutoDataSaving<TData>(DataProperty, disposables, dataFieldManager, reactivePropertyManager, fieldToPropertyMapper);
+            viewModelTracker = new ViewModelTracker<TData>(DataProperty, disposables, dataFieldManager, reactivePropertyManager, fieldToPropertyMapper);
             
             fieldToPropertyMapper.Init(InitializeMappingDictionary());
             DataProperty.Value = data;
@@ -59,7 +62,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
                 {
                     return;
                 }
-
+                viewModelTracker.SetupViewModelTracking();
                 DataProperty.Subscribe(data =>
                 {
                     autoDataSaving.AutoSetInitValues();
@@ -112,6 +115,11 @@ namespace ControlCanvas.Editor.ViewModels.Base
             DataProperty.Dispose();
             Dispose(true);
             //GC.SuppressFinalize(this);
+        }
+
+        public IViewModel GetChildViewModel(object data)
+        {
+            return viewModelTracker.GetChildViewModel(data);
         }
     }
 }
