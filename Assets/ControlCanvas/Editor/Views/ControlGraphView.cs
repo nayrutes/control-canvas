@@ -37,7 +37,7 @@ namespace ControlCanvas.Editor.Views
             this.AddManipulator(new ContentDragger());
             this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
-            
+
             RegisterCallback<MouseMoveEvent>(evt => EvtMousePosition(evt));
 
             this.viewDataKey = "ControlGraphView";
@@ -67,11 +67,15 @@ namespace ControlCanvas.Editor.Views
 
             graphViewChanged += OnGraphViewChanged;
             OnSelectionChanged += OnSelectionChangedHandler;
+            viewTransformChanged += OnViewTransformChanged;
+            viewDataKey = "ControlGraphView";
 
-            this.viewModel.CanvasViewModel.DataProperty.Subscribe(x =>
+            this.viewModel.CanvasViewModel.DataProperty.DoWithLast(x =>
             {
                 ClearView();
                 UnbindViewFromVM();
+            }).Subscribe(x =>
+            {
                 if (x != null)
                 {
                     BindViewToVM();
@@ -90,15 +94,20 @@ namespace ControlCanvas.Editor.Views
         private void UnbindViewFromVM()
         {
             disposables.Clear();
-            //disposables = new CompositeDisposable();
         }
-        
+
         ~ControlGraphView()
         {
             graphViewChanged -= OnGraphViewChanged;
             OnSelectionChanged -= OnSelectionChangedHandler;
+            viewTransformChanged -= OnViewTransformChanged;
             UnregisterCallback<MouseMoveEvent>(evt => EvtMousePosition(evt));
-            
+        }
+
+        private void OnViewTransformChanged(GraphView graphview)
+        {
+            //This is saved by unity with viewDataKey = "ControlGraphView";
+            //viewModel.SetViewTransform(graphview.viewTransform.position, graphview.viewTransform.scale);
         }
 
         private GraphViewChange OnGraphViewChanged(GraphViewChange graphviewchange)
@@ -159,34 +168,6 @@ namespace ControlCanvas.Editor.Views
             return graphviewchange;
         }
 
-        public void PopulateView()
-        {
-            //ClearView();
-            if (viewModel == null)
-                return;
-            foreach (var node in viewModel.Nodes)
-            {
-                //CreateVisualNode(node);
-            }
-
-            foreach (var edge in viewModel.Edges)
-            {
-                // var startNode = nodes.ToList().Find(x =>
-                //     x is VisualNodeView node && node.nodeViewModel.Guid.Value == edge.StartNodeGuid);
-                // var endNode = nodes.ToList().Find(x =>
-                //     x is VisualNodeView node && node.nodeViewModel.Guid.Value == edge.EndNodeGuid);
-                // if (startNode != null && endNode != null)
-                // {
-                //     var edgeGV = new UnityEditor.Experimental.GraphView.Edge();
-                //     edgeGV.input = startNode.inputContainer.Q<Port>();
-                //     edgeGV.output = endNode.outputContainer.Q<Port>();
-                //     //edgeGV.capabilities &= ~Capabilities.Deletable;
-                //
-                //     AddElement(edgeGV);
-                // }
-            }
-        }
-
         void CreateVisualNode(NodeData nodeData)
         {
             VisualNodeView visualNodeView = new VisualNodeView();
@@ -194,16 +175,16 @@ namespace ControlCanvas.Editor.Views
             visualNodeView.SetViewModel(nodeViewModel);
             AddElement(visualNodeView);
         }
+
         private void RemoveVisualNode(NodeData nodeData)
         {
-            
         }
-        
+
         private void CreateVisualEdge(EdgeData edgeData)
         {
-            if(_ignoreAddEdge)
+            if (_ignoreAddEdge)
                 return;
-            
+
             var startNode = nodes.ToList().Find(x =>
                 x is VisualNodeView node && node.nodeViewModel.Guid.Value == edgeData.StartNodeGuid);
             var endNode = nodes.ToList().Find(x =>
@@ -218,11 +199,11 @@ namespace ControlCanvas.Editor.Views
                 AddElement(edgeGV);
             }
         }
-        
+
         private void RemoveVisualEdge(EdgeData edgeData)
         {
-            
         }
+
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
             //base.BuildContextualMenu(evt);
@@ -231,7 +212,8 @@ namespace ControlCanvas.Editor.Views
             //     evt.menu.AppendAction("No Canvas selected", a => {}, DropdownMenuAction.AlwaysDisabled);
             //     return;
             // }
-            evt.menu.AppendAction("Create Node", (a) => viewModel.CreateNode(mousePosition), DropdownMenuAction.AlwaysEnabled);
+            evt.menu.AppendAction("Create Node", (a) => viewModel.CreateNode(mousePosition),
+                DropdownMenuAction.AlwaysEnabled);
         }
 
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)

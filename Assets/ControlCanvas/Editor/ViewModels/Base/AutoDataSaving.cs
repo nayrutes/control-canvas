@@ -12,15 +12,14 @@ namespace ControlCanvas.Editor.ViewModels.Base
     {
         private readonly ReactiveProperty<TData> DataProperty;
         private readonly CompositeDisposable disposables;
-        private readonly DataFieldManager<TData> dataFieldManager;
         private readonly ReactivePropertyManager reactivePropertyManager;
         private readonly FieldToPropertyMapper<TData> fieldToPropertyMapper;
-        
-        public AutoDataSaving(ReactiveProperty<TData> dataProperty, DataFieldManager<TData> dataFieldManager, ReactivePropertyManager reactivePropertyManager, FieldToPropertyMapper<TData> fieldToPropertyMapper)
+
+        public AutoDataSaving(ReactiveProperty<TData> dataProperty, ReactivePropertyManager reactivePropertyManager,
+            FieldToPropertyMapper<TData> fieldToPropertyMapper)
         {
             DataProperty = dataProperty;
             this.disposables = new CompositeDisposable();
-            this.dataFieldManager = dataFieldManager;
             this.reactivePropertyManager = reactivePropertyManager;
             this.fieldToPropertyMapper = fieldToPropertyMapper;
         }
@@ -28,7 +27,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
         public void SetupAutoDataSaving()
         {
-            Dictionary<string, FieldInfo> dataFields = dataFieldManager.GetDataFields();
+            Dictionary<string, FieldInfo> dataFields = DataFieldManager.GetDataFields<TData>();
             foreach (KeyValuePair<string, FieldInfo> dataField in dataFields)
             {
                 if (fieldToPropertyMapper.TryGetValue(dataField.Key, out var reactivePropertyName))
@@ -49,7 +48,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
         {
             FieldInfo fieldInfo; // = DataProperty.Value.GetType().GetField(dataVariableName);
 
-            fieldInfo = dataFieldManager.GetDataFields()[dataFieldName];
+            fieldInfo = DataFieldManager.GetDataFields<TData>()[dataFieldName];
 
             // Get the type of T in ReactiveProperty<T>
             Type valueType = property.GetType().GetGenericArguments()[0];
@@ -104,7 +103,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
         public void AutoSetInitValues()
         {
-            Dictionary<string, FieldInfo> DataFields = dataFieldManager.GetDataFields();
+            Dictionary<string, FieldInfo> DataFields = DataFieldManager.GetDataFields<TData>();
             foreach (KeyValuePair<string, FieldInfo> dataField in DataFields)
             {
                 if (!fieldToPropertyMapper.ContainsKey(dataField.Key))
@@ -113,14 +112,14 @@ namespace ControlCanvas.Editor.ViewModels.Base
                     continue;
                 }
 
-                reactivePropertyManager.SetReactivePropertyInitValue(fieldToPropertyMapper.GetPropNameByFieldName(dataField.Key),
+                reactivePropertyManager.SetReactivePropertyInitValue(
+                    fieldToPropertyMapper.GetPropNameByFieldName(dataField.Key),
                     dataField.Value.GetValue(DataProperty.Value));
             }
         }
 
         private void ReleaseUnmanagedResources()
         {
-            
         }
 
         private void Dispose(bool disposing)
@@ -140,7 +139,8 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
         ~AutoDataSaving()
         {
-            Debug.LogWarning($"Dispose was not called on {this.GetType()}. You should call Dispose on IDisposable objects when you are done using them.");
+            Debug.LogWarning(
+                $"Dispose was not called on {this.GetType()}. You should call Dispose on IDisposable objects when you are done using them.");
             Dispose(false);
         }
     }

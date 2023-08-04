@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using ControlCanvas.Editor.Extensions;
 using UniRx;
@@ -10,228 +10,127 @@ namespace ControlCanvas.Editor.ViewModels.Base
 {
     public class ViewModelTracker<TData> : IDisposable
     {
-        //Dictionary<string, IViewModel> trackedViewModelFields = new();
-        //Dictionary<string, List<IViewModel>> trackedViewModelCollections = new();
+        private static Dictionary<Tuple<Type, bool>, MethodInfo> methodCache = new();
 
-        Dictionary<object, IViewModel> trackedViewModels = new();
+        private Dictionary<object, IViewModel> trackedViewModels = new();
 
         private readonly CompositeDisposable disposables;
-        private readonly DataFieldManager<TData> dataFieldManager;
         private readonly ReactivePropertyManager reactivePropertyManager;
-        private readonly FieldToPropertyMapper<TData> fieldToPropertyMapper;
 
-        private ReactiveProperty<TData> DataProperty;
-
-        public ViewModelTracker(ReactiveProperty<TData> dataProperty, DataFieldManager<TData> dataFieldManager,
-            ReactivePropertyManager reactivePropertyManager, FieldToPropertyMapper<TData> fieldToPropertyMapper)
+        public ViewModelTracker(ReactivePropertyManager reactivePropertyManager)
         {
-            DataProperty = dataProperty;
             this.disposables = new CompositeDisposable();
-            this.dataFieldManager = dataFieldManager;
             this.reactivePropertyManager = reactivePropertyManager;
-            this.fieldToPropertyMapper = fieldToPropertyMapper;
         }
-
-        // public void SetupViewModelTracking()
-        // {
-        //     // List<Type> types = reactivePropertyManager.GetAllInnerTypes();
-        //     // foreach (Type type in types)
-        //     // {
-        //     //     if (ViewModelCreator.IsTypeSupported(type))
-        //     //     {
-        //     //         TrackViewModelFields(type);
-        //     //         TrackViewModelCollections(type);
-        //     //     }
-        //     // }
-        //
-        //     SetupDataBindingForPropertiesInsideClass();
-        // }
-        //
-        // private void TrackViewModelFields(Type type)
-        // {
-        //     List<string> rpFields = reactivePropertyManager.GetFieldsOfType(type);
-        //     foreach (string rpField in rpFields)
-        //     {
-        //         DataProperty.Subscribe(x =>
-        //         {
-        //             //IViewModel viewModel;
-        //             if (trackedViewModelFields.TryGetValue(rpField, out var field))
-        //             {
-        //                 field.Dispose();
-        //                 //viewModel = field;
-        //                 //TODO: check if old viewModel could be reused?
-        //                 //viewModel.Dispose();
-        //             }
-        //
-        //             //This should happen on subscribe anyway
-        //             
-        //             // object data =
-        //             //     dataFieldManager.GetFieldData(fieldToPropertyMapper.GetFieldNameByPropName(rpField), x);
-        //             // viewModel = ViewModelCreator.CreateViewModel(type, data);
-        //             // disposables.Add(viewModel);
-        //             // trackedViewModelFields[rpField] = viewModel;
-        //             // trackedViewModels[data] = viewModel;
-        //         }).AddTo(disposables);
-        //     }
-        // }
-        //
-        // private void TrackViewModelCollections(Type type)
-        // {
-        //     List<string> collections = reactivePropertyManager.GetCollectionsOfType(type);
-        //     foreach (string collection in collections)
-        //     {
-        //         DataProperty.Subscribe(x =>
-        //         {
-        //             //List<IViewModel> viewModels = new List<IViewModel>();
-        //             if (trackedViewModelCollections.TryGetValue(collection, out var oldViewModels))
-        //             {
-        //                 foreach (IViewModel oldViewModel in oldViewModels)
-        //                 {
-        //                     oldViewModel.Dispose();
-        //                 }
-        //                 oldViewModels.Clear();
-        //             }
-        //         }).AddTo(disposables);
-        //     }
-        // }
 
         public void SetupDataBindingForPropertiesInsideClass()
         {
-            List<Type> types = reactivePropertyManager.GetAllInnerTypes();
-            foreach (Type type in types)
+            var types = reactivePropertyManager.GetAllInnerTypes();
+            foreach (var type in types.Where(ViewModelCreator.IsTypeSupported))
             {
-                if (ViewModelCreator.IsTypeSupported(type))
+                foreach (var viewModelField in reactivePropertyManager.GetFieldsOfType(type))
                 {
-                    foreach (var viewModelField in reactivePropertyManager.GetFieldsOfType(type))
-                    {
-                        SetupDataBindingForProperty(viewModelField);
-                    }
+                    SetupDataBindingForProperty(viewModelField);
+                }
 
-                    foreach (string viewModelCollection in reactivePropertyManager.GetCollectionsOfType(type))
-                    {
-                        SetupDataBindingForProperty(viewModelCollection);
-                    }
+                foreach (var viewModelCollection in reactivePropertyManager.GetCollectionsOfType(type))
+                {
+                    SetupDataBindingForProperty(viewModelCollection);
                 }
             }
         }
 
-        private void SetupDataBindingForProperty(string propertyName)
+        private void SetupDataBindingForProperty(IDisposable property)
         {
-            IDisposable property = reactivePropertyManager.GetReactiveProperty(propertyName);
+            var valueType = property.GetType().GetGenericArguments()[0];
+            var isCollection = valueType.IsReactiveCollection();
+            var key = new Tuple<Type, bool>(valueType, isCollection);
 
-            // Get the type of T in ReactiveProperty<T>
-            Type valueType = property.GetType().GetGenericArguments()[0];
-            // Get the helper method and make it generic
-            MethodInfo helperMethod;// = GetType().GetMethod("SubscribeHelper", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            MethodInfo genericHelperMethod;
-            if (valueType.IsReactiveCollection())
+            if (!methodCache.TryGetValue(key, out var genericHelperMethod))
             {
-                helperMethod = GetType().GetMethod("SubscribeHelperCollection", BindingFlags.NonPublic | BindingFlags.Instance);
-                genericHelperMethod = helperMethod.MakeGenericMethod(valueType, valueType.GetInnerType());
+                MethodInfo helperMethod;
+                if (isCollection)
+                {
+                    helperMethod = GetType().GetMethod("SubscribeHelperCollection",
+                        BindingFlags.NonPublic | BindingFlags.Instance);
+                    genericHelperMethod = helperMethod.MakeGenericMethod(valueType, valueType.GetInnerType());
+                }
+                else
+                {
+                    helperMethod = GetType().GetMethod("SubscribeHelperField",
+                        BindingFlags.NonPublic | BindingFlags.Instance);
+                    genericHelperMethod = helperMethod.MakeGenericMethod(valueType);
+                }
+
+                methodCache[key] = genericHelperMethod;
             }
-            else
+
+            genericHelperMethod.Invoke(this, new object[] { property });
+        }
+
+
+        // ReSharper disable once UnusedMember.Local
+        private void SubscribeHelperCollection<T, TInner>(IDisposable property) where T : ReactiveCollection<TInner>
+        {
+            var typedProperty = (ReactiveProperty<T>)property;
+            typedProperty.DoWithLast(ClearOldValues)
+                .Subscribe(SubscribeToNewValues).AddTo(disposables);
+        }
+
+        private void ClearOldValues<TInner>(ReactiveCollection<TInner> oldValue)
+        {
+            oldValue?.Clear();
+        }
+
+        private void SubscribeToNewValues<TInner>(ReactiveCollection<TInner> newValue)
+        {
+            if (newValue != null)
             {
-                helperMethod = GetType().GetMethod("SubscribeHelperField", BindingFlags.NonPublic | BindingFlags.Instance);
-                genericHelperMethod = helperMethod.MakeGenericMethod(valueType);
+                newValue.SubscribeAndProcessExisting(CreateViewModelIfNotTracked).AddTo(disposables);
+                newValue.ObserveRemove().Subscribe(removeEvent => DisposeAndRemove(removeEvent.Value))
+                    .AddTo(disposables);
+                newValue.ObserveReset().Subscribe(x => DisposeAndRemoveAll(newValue)).AddTo(disposables);
             }
-
-            // Invoke the helper method
-            genericHelperMethod.Invoke(this, new object[] { property, propertyName });
         }
 
-        // Helper method for setting up data saving
-        // ReSharper disable once UnusedMember.Local
-        private void SubscribeHelperCollection<T, TInner>(IDisposable property, string propertyName)
-            where T : ReactiveCollection<TInner>
+        private void DisposeAndRemove<TInner>(TInner value)
         {
-            ReactiveProperty<T> typedProperty = (ReactiveProperty<T>)property;
-
-
-            // Cast the value to ReactiveCollection and subscribe to its changes
-            typedProperty.DoWithLast(oldValue =>
-                {
-                    var reactiveCollection = oldValue as ReactiveCollection<TInner>;
-                    if (reactiveCollection != null)
-                    {
-                        oldValue.Clear();
-                    }
-
-                })
-                .Subscribe(newValue =>
-                {
-                    var reactiveCollection = newValue as ReactiveCollection<TInner>;
-                    if (reactiveCollection != null)
-                    {
-                        reactiveCollection.SubscribeAndProcessExisting(x =>
-                        {
-                            // Handle addition to the collection
-                            //var viewModel = ViewModelCreator.CreateViewModel(typeof(TInner), addEvent.Value);
-                            //TrackViewModel(true, viewModel, propertyName, addEvent.Value);
-                            CreateViewModelIfNotTracked(true, propertyName, x);
-                        }).AddTo(disposables);
-
-                        reactiveCollection.ObserveRemove().Subscribe(removeEvent =>
-                        {
-                            // Handle removal from the collection
-                            //trackedViewModelCollections[propertyName].RemoveAt(removeEvent.Index);
-                            trackedViewModels[removeEvent.Value].Dispose();
-                            trackedViewModels.Remove(removeEvent.Value);
-                        }).AddTo(disposables);
-                        
-                        reactiveCollection.ObserveReset().Subscribe(x=> {
-                            foreach (TInner inner in reactiveCollection)
-                            {
-                                trackedViewModels[inner].Dispose();
-                                trackedViewModels.Remove(inner);
-                            }
-                            
-                            // foreach (IViewModel viewModel in trackedViewModelCollections[propertyName])
-                            // {
-                            //     viewModel.Dispose();
-                            // }
-                            // trackedViewModelCollections[propertyName].Clear();
-                            // trackedViewModels.Clear();
-                        }).AddTo(disposables);
-                    }
-                }).AddTo(disposables);
+            trackedViewModels[value].Dispose();
+            trackedViewModels.Remove(value);
         }
 
-        // Helper method for setting up data saving
-        // ReSharper disable once UnusedMember.Local
-        private void SubscribeHelperField<T>(IDisposable property, string propertyName) where T : TData
+        private void DisposeAndRemoveAll<TInner>(ReactiveCollection<TInner> collection)
         {
-            ReactiveProperty<T> typedProperty = (ReactiveProperty<T>)property;
-
-            typedProperty.DoWithLast(oldValue =>
-                {
-                    //trackedViewModelFields[propertyName].Dispose();
-                    trackedViewModels[oldValue].Dispose();
-                    trackedViewModels.Remove(oldValue);
-                })
-                .Subscribe(newValue =>
-                {
-                    //var viewModel = ViewModelCreator.CreateViewModel(typeof(T), value);
-                    //TrackViewModel(false, viewModel, propertyName, value);
-                    CreateViewModelIfNotTracked(false, propertyName, newValue);
-                }).AddTo(disposables);
+            foreach (var inner in collection)
+            {
+                DisposeAndRemove(inner);
+            }
         }
 
-        private void CreateViewModelIfNotTracked<TInnerData>(bool isCollection, string propertyName, TInnerData value)
+        // ReSharper disable once UnusedMember.Local
+        private void SubscribeHelperField<T>(IDisposable property) where T : TData
+        {
+            var typedProperty = (ReactiveProperty<T>)property;
+            typedProperty.DoWithLast(DisposeAndRemove)
+                .Subscribe(CreateViewModelIfNotTracked).AddTo(disposables);
+        }
+
+
+        private void CreateViewModelIfNotTracked<TInnerData>(TInnerData value)
         {
             if (!CheckIfTracked(value))
             {
                 IViewModel viewModel = ViewModelCreator.CreateViewModel(typeof(TInnerData), value);
-                TrackViewModel(isCollection, viewModel, propertyName, value);
+                TrackViewModel(viewModel, value);
             }
         }
-        
+
         private bool CheckIfTracked<TInnerData>(TInnerData value)
         {
             return trackedViewModels.ContainsKey(value);
         }
-        
-        private void TrackViewModel<TInnerData>(bool isCollection, IViewModel viewModel, string propertyName, TInnerData value)
+
+        private void TrackViewModel<TInnerData>(IViewModel viewModel, TInnerData value)
         {
             if (CheckIfTracked(value))
             {
@@ -239,63 +138,33 @@ namespace ControlCanvas.Editor.ViewModels.Base
                 return;
             }
 
-            // if (isCollection)
-            // {
-            //     if (!trackedViewModelCollections.ContainsKey(propertyName))
-            //     {
-            //         trackedViewModelCollections[propertyName] = new List<IViewModel>();
-            //     }
-            //     trackedViewModelCollections[propertyName].Add(viewModel);
-            // }
-            // else
-            // {
-            //     trackedViewModelFields[propertyName] = viewModel;
-            // }
             trackedViewModels[value] = viewModel;
         }
-        
+
         public IViewModel GetChildViewModel(object data)
         {
             return trackedViewModels[data];
         }
 
-        public TViewModel AddChildViewModel<TViewModel, TInnerData>(TViewModel newViewModel, ReactiveProperty<TInnerData> reactivePropertyData) where TViewModel : BaseViewModel<TInnerData>
+        public TViewModel AddChildViewModel<TViewModel, TInnerData>(TViewModel newViewModel,
+            ReactiveProperty<TInnerData> reactivePropertyData) where TViewModel : BaseViewModel<TInnerData>
         {
-            string name = reactivePropertyManager.GetNameByReactiveProperty(reactivePropertyData);
-            TrackViewModel(false, newViewModel, name, newViewModel.DataProperty.Value);
-            // trackedViewModelFields[name] = newViewModel;
-            // trackedViewModels[newViewModel.DataProperty] = newViewModel;
+            TrackViewModel(newViewModel, newViewModel.DataProperty.Value);
             reactivePropertyData.Value = newViewModel.DataProperty.Value;
             return newViewModel;
         }
 
-        public TViewModel AddChildViewModel<TViewModel, TInnerData>(TViewModel newViewModel, ReactiveProperty<ReactiveCollection<TInnerData>> reactivePropertyData)  where TViewModel : BaseViewModel<TInnerData>
+        public TViewModel AddChildViewModel<TViewModel, TInnerData>(TViewModel newViewModel,
+            ReactiveProperty<ReactiveCollection<TInnerData>> reactivePropertyData)
+            where TViewModel : BaseViewModel<TInnerData>
         {
-            string name = reactivePropertyManager.GetNameByReactiveProperty(reactivePropertyData);
-            TrackViewModel(true, newViewModel, name, newViewModel.DataProperty.Value);
+            TrackViewModel(newViewModel, newViewModel.DataProperty.Value);
             reactivePropertyData.Value.Add(newViewModel.DataProperty.Value);
             return newViewModel;
         }
-        
-        private void ReleaseUnmanagedResources()
-        {
-            // foreach (var viewModel in trackedViewModelFields.Values)
-            // {
-            //     viewModel.Dispose();
-            // }
-            //
-            // trackedViewModelFields.Clear();
-            //
-            // foreach (var viewModelList in trackedViewModelCollections.Values)
-            // {
-            //     foreach (var viewModel in viewModelList)
-            //     {
-            //         viewModel.Dispose();
-            //     }
-            // }
-            //
-            // trackedViewModelCollections.Clear();
 
+        public void ForceDisposeAll()
+        {
             foreach (var viewModel in trackedViewModels.Values)
             {
                 viewModel.Dispose();
@@ -304,12 +173,17 @@ namespace ControlCanvas.Editor.ViewModels.Base
             trackedViewModels.Clear();
         }
 
+        private void ReleaseUnmanagedResources()
+        {
+        }
+
         private void Dispose(bool disposing)
         {
             ReleaseUnmanagedResources();
             if (disposing)
             {
                 disposables?.Dispose();
+                ForceDisposeAll();
             }
         }
 

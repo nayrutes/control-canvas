@@ -15,36 +15,42 @@ namespace ControlCanvas.Editor.ViewModels.Base
         private static Dictionary<Type, Type> reactivePropertyTypeCache = new();
         private static Dictionary<Type, Type> reactiveCollectionTypeCache = new();
 
+        private static Dictionary<Type, List<FieldInfo>> fieldCache = new();
+        private static Dictionary<Type, List<PropertyInfo>> propertyCache = new();
+
         public void GatherVmReactiveProperties(IViewModel viewModel)
         {
             Type type = viewModel.GetType();
-            string reactivePropertyFieldNames = "";
-            type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToList()
-                .ForEach(fieldInfo =>
-                {
-                    if (fieldInfo.FieldType.IsReactiveProperty())
-                    {
-                        string
-                            fieldName = fieldInfo.Name;
-                        reactivePropertyFieldNames += fieldName + ", ";
-                        RegisterTypedReactiveProperty(fieldName, (IDisposable)fieldInfo.GetValue(viewModel));
-                    }
-                });
-            string reactivePropertyPropertyNames = "";
-            type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToList()
-                .ForEach(propertyInfo =>
-                {
-                    if (propertyInfo.PropertyType.IsReactiveProperty())
-                    {
-                        string propertyName = propertyInfo.Name;
-                        reactivePropertyPropertyNames += propertyName + ", ";
-                        RegisterTypedReactiveProperty(propertyName, (IDisposable)propertyInfo.GetValue(viewModel));
-                    }
-                });
-            Debug.Log($"Found ReactiveProperty on {type} \nfields: {reactivePropertyFieldNames} \n" +
-                      $"properties: {reactivePropertyPropertyNames}");
-            //Debug.Log($"Found ReactiveProperty properties {GetType()}: {reactivePropertyPropertyNames}");
+
+            if (!fieldCache.TryGetValue(type, out var fields))
+            {
+                fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                    .Where(fieldInfo => fieldInfo.FieldType.IsReactiveProperty())
+                    .ToList();
+                fieldCache[type] = fields;
+            }
+
+            foreach (var fieldInfo in fields)
+            {
+                string fieldName = fieldInfo.Name;
+                RegisterTypedReactiveProperty(fieldName, (IDisposable)fieldInfo.GetValue(viewModel));
+            }
+
+            if (!propertyCache.TryGetValue(type, out var properties))
+            {
+                properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                    .Where(propertyInfo => propertyInfo.PropertyType.IsReactiveProperty())
+                    .ToList();
+                propertyCache[type] = properties;
+            }
+
+            foreach (var propertyInfo in properties)
+            {
+                string propertyName = propertyInfo.Name;
+                RegisterTypedReactiveProperty(propertyName, (IDisposable)propertyInfo.GetValue(viewModel));
+            }
         }
+
 
         private void RegisterTypedReactiveProperty(string reactivePropertyName, IDisposable reactiveProperty)
         {
@@ -62,9 +68,10 @@ namespace ControlCanvas.Editor.ViewModels.Base
             //KeyValuePair<string, string> mapping = new(dataField.Key, propertyName);
             //fieldToPropertyMapper.Add(dataField.Key, propertyName);
 
-            Debug.Log($"Could not find reactive property for {dataField.Key}. Created it dynamically with type {vmReactivePropertyType}...");
+            //Debug.Log($"Could not find reactive property for {dataField.Key}. Created it dynamically with type {vmReactivePropertyType}...");
             return propertyName;
         }
+
         private Type GetReactivePropertyValueType(Type fieldType)
         {
             if (fieldType.IsCollection())
@@ -87,7 +94,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
                 return fieldType;
             }
         }
-        
+
         private Type GetVmReactivePropertyType(Type reactivePropertyValueType)
         {
             if (!reactivePropertyTypeCache.TryGetValue(reactivePropertyValueType, out Type vmReactivePropertyType))
@@ -100,7 +107,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
         }
 
 
-        public void WarnForUnmappedReactiveProperties(Dictionary<string,string> fieldToPropertyMap)
+        public void WarnForUnmappedReactiveProperties(Dictionary<string, string> fieldToPropertyMap)
         {
             foreach (KeyValuePair<string, IDisposable> keyValuePair in VmReactivePropertiesTyped)
             {
@@ -170,15 +177,17 @@ namespace ControlCanvas.Editor.ViewModels.Base
             return VmReactivePropertiesTyped.Values.Select(x => x.GetType().GetInnerType().GetInnerType()).ToList();
         }
 
-        public List<string> GetFieldsOfType(Type type)
+        public List<IDisposable> GetFieldsOfType(Type type)
         {
-            return VmReactivePropertiesTyped.Where(x => x.Value.GetType().GetInnerType() == type).Select(x => x.Key).ToList();
+            return VmReactivePropertiesTyped.Where(x => x.Value.GetType().GetInnerType() == type).Select(x => x.Value)
+                .ToList();
         }
 
-        public List<string> GetCollectionsOfType(Type type)
+        public List<IDisposable> GetCollectionsOfType(Type type)
         {
-            return VmReactivePropertiesTyped.Where(x => x.Value.GetType().GetInnerType().IsReactiveCollection() 
-                                                        && x.Value.GetType().GetInnerType().GetInnerType() == type).Select(x => x.Key).ToList();
+            return VmReactivePropertiesTyped.Where(x => x.Value.GetType().GetInnerType().IsReactiveCollection()
+                                                        && x.Value.GetType().GetInnerType().GetInnerType() == type)
+                .Select(x => x.Value).ToList();
         }
 
         public string GetNameByReactiveProperty(IDisposable reactivePropertyData)

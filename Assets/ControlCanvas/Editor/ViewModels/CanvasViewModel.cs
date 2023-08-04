@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Editor.Views;
 using ControlCanvas.Serialization;
 using UniRx;
-using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels
 {
@@ -28,7 +26,7 @@ namespace ControlCanvas.Editor.ViewModels
             };
         }
 
-        
+
         public CanvasViewModel() : base()
         {
             Initialize();
@@ -38,12 +36,11 @@ namespace ControlCanvas.Editor.ViewModels
         {
             GraphViewModel = new GraphViewModel(this);
             InspectorViewModel = new InspectorViewModel();
-            //TODO: fetch all viewModels in base class and add them to the disposables list
             disposables.Add(GraphViewModel);
             disposables.Add(InspectorViewModel);
-            
+
             string fieldName = "Nodes";
-            
+
             //Example of how to get a ReactiveProperty from a dataField
             var rp = GetReactiveProperty<ReactiveProperty<ReactiveCollection<NodeData>>>(fieldName);
         }
@@ -57,7 +54,6 @@ namespace ControlCanvas.Editor.ViewModels
 
         protected override void LoadDataInternal(CanvasData canvasData)
         {
-
         }
 
         protected override void SaveDataInternal(CanvasData data)
@@ -90,10 +86,6 @@ namespace ControlCanvas.Editor.ViewModels
         {
             NodeViewModel cvm = AddChildViewModel<NodeViewModel, NodeData>(new NodeViewModel(), Nodes);
             return cvm;
-            // NodeData nodeData = NodeViewModel.CreateNodeData();
-            // Nodes.Value.Add(nodeData);
-            // NodeViewModel nvm = GetChildViewModel<NodeViewModel>(nodeData);
-            // return nvm;
         }
 
         public void DeleteNode(NodeData nodeData)
@@ -105,7 +97,6 @@ namespace ControlCanvas.Editor.ViewModels
         {
             EdgeData edgeData = EdgeViewModel.CreateEdgeData(from.guid, to.guid);
             Edges.Value.Add(edgeData);
-            //return edgeData;
         }
 
         public void DeleteEdge(EdgeData edgeData)

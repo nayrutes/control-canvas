@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using ControlCanvas.Editor.Extensions;
 using UniRx;
 using UnityEngine;
@@ -20,12 +17,11 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
         public ReactiveProperty<TData> DataProperty { get; private set; } = new();
 
-        private DataFieldManager<TData> dataFieldManager;
         private ReactivePropertyManager reactivePropertyManager;
         private FieldToPropertyMapper<TData> fieldToPropertyMapper;
         private AutoDataSaving<TData> autoDataSaving;
         private ViewModelTracker<TData> viewModelTracker;
-        
+
         /// <summary>
         /// This should be self contained and don't rely on members of the class
         /// </summary>
@@ -45,31 +41,28 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
         private void Setup(TData data, bool autobind)
         {
-            dataFieldManager = new DataFieldManager<TData>();
             reactivePropertyManager = new ReactivePropertyManager();
-            fieldToPropertyMapper = new FieldToPropertyMapper<TData>(reactivePropertyManager,dataFieldManager);
-            autoDataSaving = new AutoDataSaving<TData>(DataProperty, dataFieldManager, reactivePropertyManager, fieldToPropertyMapper);
-            viewModelTracker = new ViewModelTracker<TData>(DataProperty, dataFieldManager, reactivePropertyManager, fieldToPropertyMapper);
-            
+            fieldToPropertyMapper = new FieldToPropertyMapper<TData>(reactivePropertyManager);
+            autoDataSaving = new AutoDataSaving<TData>(DataProperty, reactivePropertyManager, fieldToPropertyMapper);
+            viewModelTracker = new ViewModelTracker<TData>(reactivePropertyManager);
+
             fieldToPropertyMapper.Init(InitializeMappingDictionary());
             DataProperty.Value = data;
-            
+
             if (autobind)
             {
-                dataFieldManager.GatherDataFields();
+                DataFieldManager.GatherDataFields<TData>();
                 reactivePropertyManager.GatherVmReactiveProperties(this);
                 if (fieldToPropertyMapper.AutoDataFieldToReactivePropertyNameMapping())
                 {
                     return;
                 }
-                
+
                 viewModelTracker.SetupDataBindingForPropertiesInsideClass();
                 disposables.Add(viewModelTracker);
-                
-                DataProperty.Subscribe(data =>
-                {
-                    autoDataSaving.AutoSetInitValues();
-                }).AddTo(disposables);
+
+                DataProperty.DoWithLast(x => { viewModelTracker.ForceDisposeAll(); })
+                    .Subscribe(data => { autoDataSaving.AutoSetInitValues(); }).AddTo(disposables);
                 autoDataSaving.SetupAutoDataSaving();
                 disposables.Add(autoDataSaving);
             }
@@ -79,8 +72,9 @@ namespace ControlCanvas.Editor.ViewModels.Base
             }
         }
 
-        protected TType GetReactiveProperty<TType>(string fieldName) => fieldToPropertyMapper.GetReactiveProperty<TType>(fieldName);
-        
+        protected TType GetReactiveProperty<TType>(string fieldName) =>
+            fieldToPropertyMapper.GetReactiveProperty<TType>(fieldName);
+
         /// <summary>
         /// Override this to manual map data fields to reactive properties
         /// </summary>
@@ -125,25 +119,28 @@ namespace ControlCanvas.Editor.ViewModels.Base
         {
             return viewModelTracker.GetChildViewModel(data) as TViewModel;
         }
-        
+
         public IViewModel GetChildViewModel(object data)
         {
             return viewModelTracker.GetChildViewModel(data);
         }
 
-        
-        protected TViewModel AddChildViewModel<TViewModel, TInnerType>(TViewModel newViewModel, ReactiveProperty<TInnerType> reactiveProperty) where TViewModel : BaseViewModel<TInnerType>
+
+        protected TViewModel AddChildViewModel<TViewModel, TInnerType>(TViewModel newViewModel,
+            ReactiveProperty<TInnerType> reactiveProperty) where TViewModel : BaseViewModel<TInnerType>
         {
             return viewModelTracker.AddChildViewModel(newViewModel, reactiveProperty);
         }
-        protected TViewModel AddChildViewModel<TViewModel, TInnerType>(TViewModel newViewModel, ReactiveProperty<ReactiveCollection<TInnerType>> reactiveProperty) where TViewModel : BaseViewModel<TInnerType>
+
+        protected TViewModel AddChildViewModel<TViewModel, TInnerType>(TViewModel newViewModel,
+            ReactiveProperty<ReactiveCollection<TInnerType>> reactiveProperty)
+            where TViewModel : BaseViewModel<TInnerType>
         {
             return viewModelTracker.AddChildViewModel(newViewModel, reactiveProperty);
         }
-        
+
         private void ReleaseUnmanagedResources()
         {
-            // TODO release unmanaged resources here
         }
 
         protected virtual void Dispose(bool disposing)

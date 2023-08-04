@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Serialization;
 using UniRx;
@@ -12,7 +9,7 @@ namespace ControlCanvas.Editor.ViewModels
     public class GraphViewModel : IViewModel
     {
         CanvasViewModel canvasViewModel;
-        
+
         public GraphViewModel(CanvasViewModel canvasViewModel)
         {
             this.canvasViewModel = canvasViewModel;
@@ -34,15 +31,16 @@ namespace ControlCanvas.Editor.ViewModels
             nodeVm.Position.Value = mousePosition;
         }
 
-        public void DeleteNode(NodeViewModel nodeViewModel) => canvasViewModel.DeleteNode(nodeViewModel.DataProperty.Value);
-        
-        public void CreateEdge(NodeViewModel startNode, NodeViewModel endNode) => canvasViewModel.CreateEdge(startNode.DataProperty.Value, endNode.DataProperty.Value);
-        
+        public void DeleteNode(NodeViewModel nodeViewModel) =>
+            canvasViewModel.DeleteNode(nodeViewModel.DataProperty.Value);
+
+        public void CreateEdge(NodeViewModel startNode, NodeViewModel endNode) =>
+            canvasViewModel.CreateEdge(startNode.DataProperty.Value, endNode.DataProperty.Value);
+
         public void DeleteEdge(EdgeData edgeData) => canvasViewModel.DeleteEdge(edgeData);
 
         private void ReleaseUnmanagedResources()
         {
-            
         }
 
         private void Dispose(bool disposing)
@@ -62,7 +60,8 @@ namespace ControlCanvas.Editor.ViewModels
 
         ~GraphViewModel()
         {
-            Debug.LogWarning($"Dispose was not called on {this.GetType()}. You should call Dispose on IDisposable objects when you are done using them.");
+            Debug.LogWarning(
+                $"Dispose was not called on {this.GetType()}. You should call Dispose on IDisposable objects when you are done using them.");
             Dispose(false);
         }
     }

@@ -10,29 +10,27 @@ namespace ControlCanvas.Editor.ViewModels.Base
     public class FieldToPropertyMapper<TData>
     {
         ReactivePropertyManager reactivePropertyManager;
-        DataFieldManager<TData> dataFieldManager;
 
         private Dictionary<string, string> DataFieldToReactivePropertyName;
-        
-        public FieldToPropertyMapper(ReactivePropertyManager reactivePropertyManager, DataFieldManager<TData> dataFieldManager)
+
+        public FieldToPropertyMapper(ReactivePropertyManager reactivePropertyManager)
         {
             this.reactivePropertyManager = reactivePropertyManager;
-            this.dataFieldManager = dataFieldManager;
         }
 
         public void Init(Dictionary<string, string> initializeMappingDictionary)
         {
             DataFieldToReactivePropertyName = initializeMappingDictionary;
         }
-        
+
         public bool AutoDataFieldToReactivePropertyNameMapping()
         {
-            MapDataFieldsToReactiveProperties(dataFieldManager.GetDataFields());
-            bool error = CheckTypeMatch(dataFieldManager.GetDataFields());
+            MapDataFieldsToReactiveProperties(DataFieldManager.GetDataFields<TData>());
+            bool error = CheckTypeMatch(DataFieldManager.GetDataFields<TData>());
             reactivePropertyManager.WarnForUnmappedReactiveProperties(DataFieldToReactivePropertyName);
             return error;
         }
-        
+
         private void MapDataFieldsToReactiveProperties(Dictionary<string, FieldInfo> DataFields)
         {
             foreach (KeyValuePair<string, FieldInfo> dataField in DataFields)
@@ -94,7 +92,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
             return error;
         }
-        
+
         private bool CheckCollectionTypeMatch(KeyValuePair<string, FieldInfo> dataField, string reactivePropertyName,
             Type innerPropertyType, Type dataFieldType)
         {
@@ -118,6 +116,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
             return error;
         }
+
         private bool CheckNonCollectionTypeMatch(KeyValuePair<string, FieldInfo> dataField, string reactivePropertyName,
             Type innerPropertyType, Type dataFieldType)
         {

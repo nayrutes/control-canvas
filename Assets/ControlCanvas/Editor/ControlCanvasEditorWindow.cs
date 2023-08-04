@@ -1,4 +1,5 @@
 using System;
+using ControlCanvas.Editor.Extensions;
 using ControlCanvas.Editor.ViewModels;
 using ControlCanvas.Editor.Views;
 using UniRx;
@@ -11,17 +12,14 @@ using UnityEngine.UIElements;
 public class ControlCanvasEditorWindow : EditorWindow, IDisposable
 {
     [SerializeField] private VisualTreeAsset m_VisualTreeAsset = default;
+    private const string ControlFlowPlayerPrefsKey = "ControlFlowPath";
 
-    CanvasViewModel m_CanvasViewModel;
-
+    private CanvasViewModel m_CanvasViewModel;
     private ControlGraphView graphView;
     private InspectorView inspectorView;
-    private IMGUIContainer blackboardView;
-
-    public SerializedObject canvasObject;
-    private SerializedProperty blackboardProperty;
-
-    CompositeDisposable disposables = new CompositeDisposable();
+    
+    private Label canvasNameLabel;
+    CompositeDisposable disposables = new ();
 
 
     [MenuItem("Window/UI Toolkit/ControlCanvasEditorWindow")]
@@ -33,56 +31,88 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
 
     public void CreateGUI()
     {
-        // Each editor window contains a root VisualElement object
-        VisualElement root = rootVisualElement;
-        m_VisualTreeAsset.CloneTree(root);
-        graphView = root.Q<ControlGraphView>();
-        inspectorView = root.Q<InspectorView>();
-        if (m_CanvasViewModel == null)
-        {
-            m_CanvasViewModel = new CanvasViewModel();
-            disposables.Add(m_CanvasViewModel);
-        }
+        //Debug.Log("CreateGUI");
 
+        SetUpViewModel();
+        SetUpView();
+        SetUpSubscriptions();
+        AutoLoadLastFile();
+    }
+
+    private void SetUpViewModel()
+    {
+        if (m_CanvasViewModel != null) return;
+
+        //Debug.Log("SetUpViewModel");
+        m_CanvasViewModel = new CanvasViewModel();
+    }
+    
+    private void SetUpView()
+    {
+        m_VisualTreeAsset.CloneTree(rootVisualElement);
+        graphView = rootVisualElement.Q<ControlGraphView>();
+        inspectorView = rootVisualElement.Q<InspectorView>();
+        rootVisualElement.Q<ToolbarButton>("save-button").clicked += () => SerializeDataAsXML();
+        rootVisualElement.Q<ToolbarButton>("load-button").clicked += () => DeserializeDataFromXML();
+        canvasNameLabel = rootVisualElement.Q<Label>("canvas-name");
+    }
+
+    private void SetUpSubscriptions()
+    {
+        graphView.OnSelectionChanged += m_CanvasViewModel.OnSelectionChanged;
         graphView.SetViewModel(m_CanvasViewModel.GraphViewModel);
         inspectorView.SetViewModel(m_CanvasViewModel.InspectorViewModel);
 
-        root.Q<ToolbarButton>("save-button").clicked += () => SerializeDataAsXML();
-        root.Q<ToolbarButton>("load-button").clicked += () => DeserializeDataFromXML();
+        m_CanvasViewModel.DataProperty.DoWithLast(x => { disposables.Clear(); }).Subscribe(x =>
+        {
+            if (x != null)
+            {
+                m_CanvasViewModel.canvasName.Subscribe(x => { canvasNameLabel.text = x; }).AddTo(disposables);
+            }
+        });
+    }
 
-        Label canvasNameLabel = root.Q<Label>("canvas-name");
-        m_CanvasViewModel.canvasName.Subscribe(x => { canvasNameLabel.text = x; }).AddTo(disposables);
-
-        graphView.OnSelectionChanged += m_CanvasViewModel.OnSelectionChanged;
-
-        //TODO: Save and load last file from EditorPrefs or PlayerPrefs
+    private void AutoLoadLastFile()
+    {
+        var lastFile = EditorPrefs.GetString(ControlFlowPlayerPrefsKey);
+        if (string.IsNullOrEmpty(lastFile)) return;
+        m_CanvasViewModel.DeserializeData(lastFile);
     }
 
     private void OnEnable()
     {
+        //Debug.Log("OnEnable");
         EditorApplication.quitting += OnEditorApplicationQuitting;
         EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
     }
 
     private void OnDisable()
     {
+        //Debug.Log("OnDisable");
         EditorApplication.quitting -= OnEditorApplicationQuitting;
         EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
     }
-    
+
     private void OnEditorApplicationQuitting()
     {
+        //Debug.Log("OnEditorApplicationQuitting");
         Dispose();
     }
 
     private void OnPlayModeStateChanged(PlayModeStateChange state)
     {
-        if (state == PlayModeStateChange.ExitingEditMode || state == PlayModeStateChange.ExitingPlayMode)
+        if (state == PlayModeStateChange.ExitingEditMode)
         {
+            //Debug.Log($"OnPlayModeStateChanged: {state}");
             Dispose();
         }
+        else if (state == PlayModeStateChange.ExitingPlayMode)
+        {
+            //Debug.Log($"OnPlayModeStateChanged: {state}");
+            //Dispose();
+        }
     }
-    
+
     private void OnDestroy()
     {
         Dispose();
@@ -91,22 +121,29 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
     [InitializeOnLoadMethod]
     private static void InitializeOnLoad()
     {
-        CompilationPipeline.compilationStarted += OnCompilationStarted;
+        CompilationPipeline.compilationStarted += OnCompilationStartedStatic;
     }
-    
-    private static void OnCompilationStarted(object obj)
+
+    private static void OnCompilationStartedStatic(object obj)
     {
         // Get a reference to the window
         var window = GetWindow<ControlCanvasEditorWindow>();
-        window.Dispose();
+        window.OnCompilationStarted();
     }
-    
+
+    private void OnCompilationStarted()
+    {
+        //Debug.Log("OnCompilationStarted");
+        Dispose();
+    }
+
     public void SerializeDataAsXML()
     {
         var path = EditorUtility.SaveFilePanel("Save ControlCanvasSO as XML", "", "ControlCanvasSO", "xml");
         if (path.Length != 0)
         {
             m_CanvasViewModel.SerializeData(path);
+            EditorPrefs.SetString(ControlFlowPlayerPrefsKey, path);
         }
     }
 
@@ -117,13 +154,13 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         if (path.Length != 0)
         {
             m_CanvasViewModel.DeserializeData(path);
+            EditorPrefs.SetString(ControlFlowPlayerPrefsKey, path);
         }
     }
 
 
     private void ReleaseUnmanagedResources()
     {
-        // TODO release unmanaged resources here
     }
 
     private void Dispose(bool disposing)
@@ -132,6 +169,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         if (disposing)
         {
             disposables?.Dispose();
+            m_CanvasViewModel?.Dispose();
         }
     }
 

@@ -1,49 +1,63 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels.Base
 {
-    public class DataFieldManager<TData>
+    public static class DataFieldManager
     {
-        private Dictionary<string, FieldInfo> DataFields = new();
-        
-        public void GatherDataFields()
+        private static Dictionary<Type, Dictionary<string, FieldInfo>> DataFieldsCache = new();
+
+        public static void GatherDataFields<TData>()
         {
-            string dataFieldNames = "";
-            FieldInfo[] fields;
-            fields = typeof(TData).GetFields(BindingFlags.Public | BindingFlags.Instance);
-            foreach (var fieldInfo in fields)
+            if (!DataFieldsCache.TryGetValue(typeof(TData), out var dataFields))
             {
-                string fieldName = fieldInfo.Name;
-                dataFieldNames += fieldName + ", ";
-                DataFields.Add(fieldName, fieldInfo);
+                dataFields = new Dictionary<string, FieldInfo>();
+                var fields = typeof(TData).GetFields(BindingFlags.Public | BindingFlags.Instance);
+                foreach (var fieldInfo in fields)
+                {
+                    dataFields.Add(fieldInfo.Name, fieldInfo);
+                }
+
+                DataFieldsCache[typeof(TData)] = dataFields;
+                LogFindings<TData>(dataFields);
+            }
+        }
+
+        public static Dictionary<string, FieldInfo> GetDataFields<TData>()
+        {
+            GatherDataFields<TData>();
+            return DataFieldsCache[typeof(TData)];
+        }
+
+        private static void LogFindings<TData>(Dictionary<string, FieldInfo> dataFields)
+        {
+            string findings = $"DataFields for {typeof(TData)}:\n";
+            foreach (var dataField in dataFields)
+            {
+                findings += $"{dataField.Key} {dataField.Value.FieldType}\n";
             }
 
-            Debug.Log($"Found data fields on {typeof(TData)}: {dataFieldNames}");
+            Debug.Log(findings);
         }
 
-        public Dictionary<string, FieldInfo> GetDataFields()
-        {
-            return DataFields;
-        }
-
-        public object GetFieldData(string getFieldByName, object data)
-        {
-            return DataFields[getFieldByName].GetValue(data);
-        }
-
-        public List<object> GetCollectionData(string fieldByName, object data)
-        {
-            List<object> collectionData = new();
-            var collection = (IEnumerable)DataFields[fieldByName].GetValue(data);
-            foreach (var item in collection)
-            {
-                collectionData.Add(item);
-            }
-            return collectionData;
-        }
+        // public static object GetFieldData<TData>(string getFieldByName, TData data)
+        // {
+        //     var dataFields = GetDataFields<TData>();
+        //     return dataFields[getFieldByName].GetValue(data);
+        // }
+        //
+        // public static List<object> GetCollectionData<TData>(string fieldByName, TData data)
+        // {
+        //     var dataFields = GetDataFields<TData>();
+        //     var collectionData = new List<object>();
+        //     var collection = (IEnumerable)dataFields[fieldByName].GetValue(data);
+        //     foreach (var item in collection)
+        //     {
+        //         collectionData.Add(item);
+        //     }
+        //     return collectionData;
+        // }
     }
 }
