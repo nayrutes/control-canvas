@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CanvasData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Nodes>
+    <Node>
+      <Name />
+      <Guid>289bd32534ef2654d93dc931908cc938</Guid>
+      <Position>
+        <x>-68</x>
+        <y>149</y>
+      </Position>
+      <Size>
+        <x>281</x>
+        <y>126</y>
+      </Size>
+      <nodeType>Decision</nodeType>
+    </Node>
+    <Node>
+      <Name />
+      <Guid>8347b9d85fcdb0149b3ce3b27e5bcfc9</Guid>
+      <Position>
+        <x>199</x>
+        <y>401</y>
+      </Position>
+      <Size>
+        <x>276</x>
+        <y>126</y>
+      </Size>
+      <nodeType>State</nodeType>
+    </Node>
+    <Node>
+      <Name>New Node</Name>
+      <Guid>b8753ad6-3b30-41ee-aacd-85d6cfd946db</Guid>
+      <Position>
+        <x>558</x>
+        <y>314</y>
+      </Position>
+      <Size>
+        <x>361</x>
+        <y>126</y>
+      </Size>
+      <nodeType>State</nodeType>
+    </Node>
+  </Nodes>
+  <Edges>
+    <Edge>
+      <Guid>44b01a80d9fd6834db09d58042b51fd2</Guid>
+      <StartNodeGuid>8347b9d85fcdb0149b3ce3b27e5bcfc9</StartNodeGuid>
+      <EndNodeGuid>289bd32534ef2654d93dc931908cc938</EndNodeGuid>
+    </Edge>
+    <Edge>
+      <Guid>3e8080e4-4ff1-4370-81a4-ad719fdf680f</Guid>
+      <StartNodeGuid>b8753ad6-3b30-41ee-aacd-85d6cfd946db</StartNodeGuid>
+      <EndNodeGuid>8347b9d85fcdb0149b3ce3b27e5bcfc9</EndNodeGuid>
+    </Edge>
+  </Edges>
+</CanvasData>

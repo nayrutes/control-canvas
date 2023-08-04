@@ -42,6 +42,11 @@ namespace ControlCanvas.Editor.ViewModels
 
         protected override NodeData CreateData()
         {
+            return CreateNodeData();
+        }
+        
+        public static NodeData CreateNodeData()
+        {
             NodeData newData = new();
             newData.name = "New Node";
             newData.guid = System.Guid.NewGuid().ToString();

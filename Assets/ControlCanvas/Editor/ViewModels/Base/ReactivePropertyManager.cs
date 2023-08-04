@@ -180,5 +180,10 @@ namespace ControlCanvas.Editor.ViewModels.Base
             return VmReactivePropertiesTyped.Where(x => x.Value.GetType().GetInnerType().IsReactiveCollection() 
                                                         && x.Value.GetType().GetInnerType().GetInnerType() == type).Select(x => x.Key).ToList();
         }
+
+        public string GetNameByReactiveProperty(IDisposable reactivePropertyData)
+        {
+            return VmReactivePropertiesTyped.FirstOrDefault(x => x.Value == reactivePropertyData).Key;
+        }
     }
 }

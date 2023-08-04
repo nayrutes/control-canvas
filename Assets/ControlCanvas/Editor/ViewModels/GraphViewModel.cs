@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Serialization;
+using UniRx;
 using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels
@@ -24,14 +25,18 @@ namespace ControlCanvas.Editor.ViewModels
         }
 
         public CanvasViewModel CanvasViewModel => canvasViewModel;
-        public IEnumerable<EdgeData> Edges => canvasViewModel.Edges.Value;
-        public IEnumerable<NodeData> Nodes => canvasViewModel.Nodes.Value;
+        public ReactiveCollection<EdgeData> Edges => canvasViewModel.Edges.Value;
+        public ReactiveCollection<NodeData> Nodes => canvasViewModel.Nodes.Value;
 
-        public NodeData CreateNode() => canvasViewModel.CreateNode();
-        
+        public void CreateNode(Vector2 mousePosition)
+        {
+            NodeViewModel nodeVm = canvasViewModel.CreateNode();
+            nodeVm.Position.Value = mousePosition;
+        }
+
         public void DeleteNode(NodeViewModel nodeViewModel) => canvasViewModel.DeleteNode(nodeViewModel.DataProperty.Value);
         
-        public EdgeData CreateEdge(NodeViewModel startNode, NodeViewModel endNode) => canvasViewModel.CreateEdge(startNode.DataProperty.Value, endNode.DataProperty.Value);
+        public void CreateEdge(NodeViewModel startNode, NodeViewModel endNode) => canvasViewModel.CreateEdge(startNode.DataProperty.Value, endNode.DataProperty.Value);
         
         public void DeleteEdge(EdgeData edgeData) => canvasViewModel.DeleteEdge(edgeData);
 

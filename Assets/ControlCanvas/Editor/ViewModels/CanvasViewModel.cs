@@ -86,11 +86,14 @@ namespace ControlCanvas.Editor.ViewModels
             InspectorViewModel.OnSelectionChanged(obj, DataProperty.Value);
         }
 
-        public NodeData CreateNode()
+        public NodeViewModel CreateNode()
         {
-            NodeData nodeData = new NodeData();
-            Nodes.Value.Add(nodeData);
-            return nodeData;
+            NodeViewModel cvm = AddChildViewModel<NodeViewModel, NodeData>(new NodeViewModel(), Nodes);
+            return cvm;
+            // NodeData nodeData = NodeViewModel.CreateNodeData();
+            // Nodes.Value.Add(nodeData);
+            // NodeViewModel nvm = GetChildViewModel<NodeViewModel>(nodeData);
+            // return nvm;
         }
 
         public void DeleteNode(NodeData nodeData)
@@ -98,16 +101,11 @@ namespace ControlCanvas.Editor.ViewModels
             Nodes.Value.Remove(nodeData);
         }
 
-        public EdgeData CreateEdge(NodeData from, NodeData to)
+        public void CreateEdge(NodeData from, NodeData to)
         {
-            EdgeData edgeData = new EdgeData()
-            {
-                StartNodeGuid = from.guid,
-                EndNodeGuid = to.guid,
-                Guid = System.Guid.NewGuid().ToString()
-            };
+            EdgeData edgeData = EdgeViewModel.CreateEdgeData(from.guid, to.guid);
             Edges.Value.Add(edgeData);
-            return edgeData;
+            //return edgeData;
         }
 
         public void DeleteEdge(EdgeData edgeData)

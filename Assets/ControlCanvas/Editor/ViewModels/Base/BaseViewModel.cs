@@ -63,7 +63,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
                     return;
                 }
                 
-                viewModelTracker.SetupViewModelTracking();
+                viewModelTracker.SetupDataBindingForPropertiesInsideClass();
                 disposables.Add(viewModelTracker);
                 
                 DataProperty.Subscribe(data =>
@@ -121,11 +121,26 @@ namespace ControlCanvas.Editor.ViewModels.Base
         //     //GC.SuppressFinalize(this);
         // }
 
+        public TViewModel GetChildViewModel<TViewModel>(object data) where TViewModel : class, IViewModel
+        {
+            return viewModelTracker.GetChildViewModel(data) as TViewModel;
+        }
+        
         public IViewModel GetChildViewModel(object data)
         {
             return viewModelTracker.GetChildViewModel(data);
         }
 
+        
+        protected TViewModel AddChildViewModel<TViewModel, TInnerType>(TViewModel newViewModel, ReactiveProperty<TInnerType> reactiveProperty) where TViewModel : BaseViewModel<TInnerType>
+        {
+            return viewModelTracker.AddChildViewModel(newViewModel, reactiveProperty);
+        }
+        protected TViewModel AddChildViewModel<TViewModel, TInnerType>(TViewModel newViewModel, ReactiveProperty<ReactiveCollection<TInnerType>> reactiveProperty) where TViewModel : BaseViewModel<TInnerType>
+        {
+            return viewModelTracker.AddChildViewModel(newViewModel, reactiveProperty);
+        }
+        
         private void ReleaseUnmanagedResources()
         {
             // TODO release unmanaged resources here

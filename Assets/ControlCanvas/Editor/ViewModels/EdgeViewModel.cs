@@ -24,8 +24,21 @@ namespace ControlCanvas.Editor.ViewModels
 
         protected override EdgeData CreateData()
         {
+            return CreateEdgeData();
+        }
+        
+        public static EdgeData CreateEdgeData()
+        {
             EdgeData newData = new();
             newData.Guid = System.Guid.NewGuid().ToString();
+            return newData;
+        }
+        
+        public static EdgeData CreateEdgeData(string start, string end)
+        {
+            EdgeData newData = CreateEdgeData();
+            newData.StartNodeGuid = start;
+            newData.EndNodeGuid = end;
             return newData;
         }
     }

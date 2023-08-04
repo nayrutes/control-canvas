@@ -12,25 +12,63 @@
         <x>281</x>
         <y>126</y>
       </Size>
+      <nodeType>State</nodeType>
     </Node>
     <Node>
-      <Name />
-      <Guid>8347b9d85fcdb0149b3ce3b27e5bcfc9</Guid>
+      <Name>New Node</Name>
+      <Guid>d2b6b6f1-5209-48b1-a678-cd276f79b37a</Guid>
       <Position>
-        <x>199</x>
-        <y>401</y>
+        <x>270</x>
+        <y>456</y>
       </Position>
       <Size>
-        <x>276</x>
+        <x>355</x>
         <y>126</y>
       </Size>
+      <nodeType>State</nodeType>
+    </Node>
+    <Node>
+      <Name>New Node</Name>
+      <Guid>78a4cc75-d61b-46fa-a9dc-40b2417930d2</Guid>
+      <Position>
+        <x>709</x>
+        <y>342</y>
+      </Position>
+      <Size>
+        <x>358</x>
+        <y>126</y>
+      </Size>
+      <nodeType>Behaviour</nodeType>
+    </Node>
+    <Node>
+      <Name>New Node</Name>
+      <Guid>af73a1a6-144e-4aec-9293-8354b2921243</Guid>
+      <Position>
+        <x>709</x>
+        <y>582</y>
+      </Position>
+      <Size>
+        <x>358</x>
+        <y>126</y>
+      </Size>
+      <nodeType>Decision</nodeType>
     </Node>
   </Nodes>
   <Edges>
     <Edge>
-      <Guid>44b01a80d9fd6834db09d58042b51fd2</Guid>
-      <StartNodeGuid>8347b9d85fcdb0149b3ce3b27e5bcfc9</StartNodeGuid>
+      <Guid>9dd6d023-daab-471e-8490-7aec6c14261a</Guid>
+      <StartNodeGuid>d2b6b6f1-5209-48b1-a678-cd276f79b37a</StartNodeGuid>
       <EndNodeGuid>289bd32534ef2654d93dc931908cc938</EndNodeGuid>
+    </Edge>
+    <Edge>
+      <Guid>90ffa00e-e08c-42a8-8915-57320294b9c5</Guid>
+      <StartNodeGuid>78a4cc75-d61b-46fa-a9dc-40b2417930d2</StartNodeGuid>
+      <EndNodeGuid>d2b6b6f1-5209-48b1-a678-cd276f79b37a</EndNodeGuid>
+    </Edge>
+    <Edge>
+      <Guid>c016867f-61ed-4eac-abb0-81e2f3d3484d</Guid>
+      <StartNodeGuid>af73a1a6-144e-4aec-9293-8354b2921243</StartNodeGuid>
+      <EndNodeGuid>d2b6b6f1-5209-48b1-a678-cd276f79b37a</EndNodeGuid>
     </Edge>
   </Edges>
 </CanvasData>

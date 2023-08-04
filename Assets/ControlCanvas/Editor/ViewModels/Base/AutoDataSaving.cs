@@ -57,7 +57,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
             // Get the helper method and make it generic
             MethodInfo helperMethod =
                 GetType().GetMethod("SetupDataSavingHelper", BindingFlags.NonPublic | BindingFlags.Instance);
-            MethodInfo genericHelperMethod = helperMethod.MakeGenericMethod(valueType);
+            MethodInfo genericHelperMethod = helperMethod.MakeGenericMethod(valueType, valueType.GetInnerType());
 
             // Invoke the helper method
             genericHelperMethod.Invoke(this, new object[] { property, fieldInfo });
@@ -67,7 +67,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
         // ReSharper disable once UnusedMember.Global
         // protected is needed for the reflection
         // Helper method for setting up data saving
-        protected void SetupDataSavingHelper<T>(IDisposable property, FieldInfo fieldInfo)
+        protected void SetupDataSavingHelper<T, TInner>(IDisposable property, FieldInfo fieldInfo)
         {
             ReactiveProperty<T> typedProperty = (ReactiveProperty<T>)property;
 
@@ -77,7 +77,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
                 // Cast the value to ReactiveCollection and subscribe to its changes
                 typedProperty.Subscribe(value =>
                 {
-                    var reactiveCollection = value as ReactiveCollection<object>;
+                    var reactiveCollection = value as ReactiveCollection<TInner>;
                     if (reactiveCollection != null)
                     {
                         reactiveCollection.ObserveAdd().Subscribe(addEvent =>
