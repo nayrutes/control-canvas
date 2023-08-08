@@ -85,6 +85,10 @@ namespace ControlCanvas.Editor.ViewModels
         public NodeViewModel CreateNode()
         {
             NodeViewModel cvm = AddChildViewModel<NodeViewModel, NodeData>(new NodeViewModel(), Nodes);
+            cvm.MakeStartNodeCommand.Subscribe(_ =>
+                {
+                    DataProperty.Value.InitialNode = cvm.DataProperty.Value.guid;
+                });
             return cvm;
         }
 

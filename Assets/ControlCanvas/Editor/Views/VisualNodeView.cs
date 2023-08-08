@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using ControlCanvas.Editor.ViewModels;
+using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
 using UniRx;
 using UnityEditor.Experimental.GraphView;
@@ -43,6 +45,23 @@ namespace ControlCanvas.Editor.Views
             m_DynamicContent.Clear();
             m_DynamicContent.Add(new Label($"This is a {type} node"));
             this.Q<EnumField>("type-enum").SetValueWithoutNotify(type);
+        }
+        
+        private void SetNewClass(string className)
+        {
+            m_DynamicContent.Clear();
+            m_DynamicContent.Add(new Label($"This Node represents class {className}"));
+
+            if (className != null && NodeManager.stateDictionary.TryGetValue(className, out var t))
+            {
+                if (t == typeof(DebugState))
+                {
+                    //m_DynamicContent.Add(new DebugStateView());
+                    TextField visualElement = new TextField("Message");
+                    m_DynamicContent.Add(visualElement);
+                    //visualElement.RegisterValueChangedCallback(evt => nodeViewModel.Message.Value = evt.newValue);
+                }
+            }
         }
         
         public void CreatePorts()
@@ -98,6 +117,9 @@ namespace ControlCanvas.Editor.Views
             
             m_DynamicContent = this.Q<VisualElement>("dynamic-content");
             nodeViewModel = viewModel;
+
+            
+            this.Q<DropdownField>("class-dropdown").choices = viewModel.ClassChoices;
             
             BindViewToViewModel();
             BindViewModelToView();
@@ -126,6 +148,8 @@ namespace ControlCanvas.Editor.Views
                 .Subscribe(rect => this.SetPosition(rect)).AddTo(disposables);
             
             nodeViewModel.NodeType.Subscribe(type => SetNewType(type)).AddTo(disposables);
+            
+            nodeViewModel.ClassName.Subscribe(className => SetNewClass(className)).AddTo(disposables);
         }
         
         private void UnbindViewFromViewModel()
@@ -138,12 +162,22 @@ namespace ControlCanvas.Editor.Views
         {
             RegisterCallback((GeometryChangedEvent evt) => OnGeometryChanged(evt));
             this.Q<EnumField>("type-enum").RegisterValueChangedCallback(OnTypeChanged);
+            
+            this.Q<DropdownField>("class-dropdown").RegisterValueChangedCallback(evt =>
+            {
+                nodeViewModel.ClassName.Value = evt.newValue;
+            });
         }
         
         private void UnbindViewModelFromView()
         {
             UnregisterCallback((GeometryChangedEvent evt) => OnGeometryChanged(evt));
             this.Q<EnumField>("type-enum").UnregisterValueChangedCallback(OnTypeChanged);
+        }
+
+        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
+        {
+            evt.menu.AppendAction("Make Start Node", (a) => nodeViewModel.MakeStartNodeCommand.Execute(), DropdownMenuAction.AlwaysEnabled);
         }
     }
 }

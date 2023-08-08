@@ -18,6 +18,8 @@ namespace ControlCanvas.Serialization
         // public ControlAgent controlAgent;
 
         public NodeType nodeType;
+        public string className;
+        public string specificGuid;
     }
     
     

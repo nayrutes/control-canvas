@@ -15,5 +15,9 @@ namespace ControlCanvas.Serialization
 
         [XmlArray("Edges"), XmlArrayItem("Edge")]
         public List<EdgeData> Edges = new List<EdgeData>();
+
+        public string InitialNode;
+        
+        //Save all IStates here
     }
 }

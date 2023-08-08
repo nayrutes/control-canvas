@@ -1,4 +1,4 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
     <Style src="project://database/Assets/ControlCanvas/Editor/Node.uss?fileID=7433441132597879392&amp;guid=a34cce0996ec8514588a1af158e7885b&amp;type=3#Node" />
     <ui:VisualElement name="node-border">
         <ui:VisualElement name="title">
@@ -12,7 +12,10 @@
         <ui:VisualElement name="contents" style="background-color: rgb(76, 76, 76);">
             <ui:VisualElement name="divider" class="horizontal" />
             <ui:Label tabindex="-1" text="This is a description" display-tooltip-when-elided="true" name="description" />
-            <ui:EnumField label="Type" type="ControlCanvas.Serialization.NodeType, Assembly-CSharp" name="type-enum" />
+            <ui:VisualElement style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); flex-direction: row;">
+                <ui:EnumField label="Type" type="ControlCanvas.Serialization.NodeType, Assembly-CSharp" name="type-enum" />
+                <ui:DropdownField label="Class" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="class-dropdown" />
+            </ui:VisualElement>
             <ui:VisualElement name="dynamic-content" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);" />
             <ui:VisualElement name="divider" class="horizontal" />
             <ui:VisualElement name="top">
