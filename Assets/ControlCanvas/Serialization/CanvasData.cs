@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
+using ControlCanvas.Runtime;
 
 namespace ControlCanvas.Serialization
 {
@@ -19,5 +20,6 @@ namespace ControlCanvas.Serialization
         public string InitialNode;
         
         //Save all IStates here
+        //public List<IState> States = new ();
     }
 }

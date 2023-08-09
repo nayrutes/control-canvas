@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Xml.Serialization;
+using ControlCanvas.Runtime;
 
 //using UnityEngine.Serialization;
 
@@ -18,8 +19,10 @@ namespace ControlCanvas.Serialization
         // public ControlAgent controlAgent;
 
         public NodeType nodeType;
-        public string className;
+        //public string className;
         public string specificGuid;
+        
+        public IState specificState;
     }
     
     

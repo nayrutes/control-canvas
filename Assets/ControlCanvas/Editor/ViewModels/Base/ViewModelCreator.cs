@@ -19,7 +19,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
             foreach (var type in assembly.GetTypes())
             {
-                if(type == typeof(DynamicViewModel))
+                if(type == typeof(DynamicViewModel<>))
                     continue;
                 
                 if (type.IsClass && !type.IsAbstract && type.IsSubclassOfRawGeneric(baseViewModelType))
@@ -38,7 +38,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
             if (!viewModelTypes.TryGetValue(dataType, out var viewModelType))
             {
                 Debug.LogWarning("Usage of DynamicViewModel is not tested!");
-                viewModelType = typeof(DynamicViewModel);
+                viewModelType = typeof(DynamicViewModel<>).MakeGenericType(dataType);
             }
 
             return (IViewModel)Activator.CreateInstance(viewModelType, data, autobind);

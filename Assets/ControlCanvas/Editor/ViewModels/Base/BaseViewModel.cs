@@ -72,7 +72,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
             }
         }
 
-        protected TType GetReactiveProperty<TType>(string fieldName) =>
+        public TType GetReactiveProperty<TType>(string fieldName) =>
             fieldToPropertyMapper.GetReactiveProperty<TType>(fieldName);
 
         /// <summary>

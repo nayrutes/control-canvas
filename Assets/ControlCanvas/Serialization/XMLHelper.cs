@@ -1,7 +1,9 @@
-﻿using System.IO;
-using System.Xml.Serialization;
+﻿using System;
+using System.IO;
+using System.Xml;
 using ExtendedXmlSerializer;
 using ExtendedXmlSerializer.Configuration;
+using UnityEngine;
 
 namespace ControlCanvas.Serialization
 {
@@ -10,24 +12,53 @@ namespace ControlCanvas.Serialization
         public static void SerializeToXML(string path, CanvasData data)
         {
             IExtendedXmlSerializer serializerEx = new ConfigurationContainer()
-                .UseAutoFormatting()
-                .UseOptimizedNamespaces()
-                .EnableImplicitTyping(typeof(CanvasData))
-                .Create();
-            XmlSerializer serializer = new XmlSerializer(typeof(CanvasData));
-            using (StreamWriter writer = new StreamWriter(path))
+                    .UseAutoFormatting()
+                    .EnableImplicitTyping(typeof(CanvasData))
+                    .UseOptimizedNamespaces()
+                    .Create();
+            
+            XmlWriterSettings settings = new XmlWriterSettings();
+            settings.Indent = true;
+            
+            string xml = serializerEx.Serialize(settings, data);
+           
+            try
             {
-                serializer.Serialize(writer, data);
+                using (StreamWriter writer = new StreamWriter(path))
+                {
+                    writer.Write(xml);
+                }
             }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
+            
         }
         
         public static void DeserializeFromXML(string path, out CanvasData data)
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(CanvasData));
-            using (StreamReader reader = new StreamReader(path))
+            data = new CanvasData();
+            IExtendedXmlSerializer serializerEx = new ConfigurationContainer()
+                .UseAutoFormatting()
+                .WithUnknownContent()
+                .Continue()
+                .EnableImplicitTyping(typeof(CanvasData))
+                .UseOptimizedNamespaces()
+                .Create();
+
+            try
             {
-                data = (CanvasData)serializer.Deserialize(reader);
+                using (StreamReader reader = new StreamReader(path))
+                {
+                    data = serializerEx.Deserialize<CanvasData>(reader);
+                }
             }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
+            
         }
     }
 }

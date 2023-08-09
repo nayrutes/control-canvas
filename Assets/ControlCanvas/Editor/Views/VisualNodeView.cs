@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using ControlCanvas.Editor.ViewModels;
+using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
 using UniRx;
@@ -47,18 +48,28 @@ namespace ControlCanvas.Editor.Views
             this.Q<EnumField>("type-enum").SetValueWithoutNotify(type);
         }
         
-        private void SetNewClass(string className)
+        private void SetNewClass(IState state)
         {
             m_DynamicContent.Clear();
-            m_DynamicContent.Add(new Label($"This Node represents class {className}"));
+            var label = new Label($"This Node represents class {state?.GetType()}");
+            m_DynamicContent.Add(label);
 
-            if (className != null && NodeManager.stateDictionary.TryGetValue(className, out var t))
+            this.Q<DropdownField>("class-dropdown").value = state?.GetType().Name ?? "None";
+            
+            if (state != null)// && NodeManager.stateDictionary.TryGetValue(className, out var t))
             {
-                if (t == typeof(DebugState))
+                if (state.GetType() == typeof(DebugState))
                 {
                     //m_DynamicContent.Add(new DebugStateView());
                     TextField visualElement = new TextField("Message");
                     m_DynamicContent.Add(visualElement);
+                    var vm = ViewModelCreator.CreateViewModel(state.GetType(), state);
+                    var vmBase = vm as BaseViewModel<DebugState>;
+                    //var vm = nodeViewModel.GetChildViewModel(nodeViewModel.specificState.Value) as BaseViewModel<DebugState>;
+                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<string>>("nodeMessage");
+                    rp.Subscribe(x=> visualElement.value = x);
+                    visualElement.RegisterValueChangedCallback(evt => rp.Value = evt.newValue);
+                    
                     //visualElement.RegisterValueChangedCallback(evt => nodeViewModel.Message.Value = evt.newValue);
                 }
             }
@@ -149,7 +160,7 @@ namespace ControlCanvas.Editor.Views
             
             nodeViewModel.NodeType.Subscribe(type => SetNewType(type)).AddTo(disposables);
             
-            nodeViewModel.ClassName.Subscribe(className => SetNewClass(className)).AddTo(disposables);
+            nodeViewModel.specificState.Subscribe(state => SetNewClass(state)).AddTo(disposables);
         }
         
         private void UnbindViewFromViewModel()

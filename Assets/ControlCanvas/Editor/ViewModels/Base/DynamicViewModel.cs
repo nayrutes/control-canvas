@@ -1,8 +1,12 @@
 ﻿namespace ControlCanvas.Editor.ViewModels.Base
 {
-    public class DynamicViewModel : BaseViewModel<object>
+    public class DynamicViewModel<T> : BaseViewModel<T>
     {
-        protected override object CreateData()
+        public DynamicViewModel(T data, bool autobind = true) : base(data, autobind)
+        {
+        }
+        
+        protected override T CreateData()
         {
             throw new System.NotImplementedException();
         }

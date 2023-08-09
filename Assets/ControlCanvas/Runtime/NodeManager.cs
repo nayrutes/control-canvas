@@ -26,15 +26,18 @@ namespace ControlCanvas.Runtime
             }
             else
             {
-                string typeName = canvasData.Nodes.FirstOrDefault(x => x.guid == guid)?.className;
-                Type type = null;
-                var typeFound = typeName != null && stateDictionary.TryGetValue(typeName, out type);
-                if (!typeFound)
-                {
-                    Debug.LogError($"No type found for {typeName} on node {guid}");
-                    return null;
-                }
-                IState state = (IState)Activator.CreateInstance(type);
+                // string typeName = canvasData.Nodes.FirstOrDefault(x => x.guid == guid)?.className;
+                // Type type = null;
+                // var typeFound = typeName != null && stateDictionary.TryGetValue(typeName, out type);
+                // if (!typeFound)
+                // {
+                //     Debug.LogError($"No type found for {typeName} on node {guid}");
+                //     return null;
+                // }
+                // IState state = (IState)Activator.CreateInstance(type);
+                
+                IState state = canvasData.Nodes.FirstOrDefault(x => x.guid == guid)?.specificState;
+                
                 stateCache.Add(guid, state);
                 return state;
             }

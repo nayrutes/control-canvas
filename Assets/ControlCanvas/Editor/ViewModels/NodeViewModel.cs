@@ -20,6 +20,8 @@ namespace ControlCanvas.Editor.ViewModels
         public ReactiveProperty<string> ClassName { get;} = new();
         public List<string> ClassChoices { get;} = new();
 
+        public ReactiveProperty<IState> specificState { get; } = new();
+        
         //[NonSerialized]
         public Blackboard blackboardCanvas;
 
@@ -30,21 +32,52 @@ namespace ControlCanvas.Editor.ViewModels
 
         public NodeViewModel(NodeData nodeData) : base(nodeData)
         {
-            
+            InitNode();
         }
 
         public NodeViewModel() : base()
         {
-            ClassChoices.Add("None");
-            ClassChoices.AddRange(NodeManager.stateDictionary.Keys);
+            InitNode();
         }
         
         public NodeViewModel(NodeData data, bool autobind) : base(data, autobind)
         {
-            
+            InitNode();
         }
 
-
+        void InitNode()
+        {
+            ClassChoices.Add("None");
+            ClassChoices.AddRange(NodeManager.stateDictionary.Keys);
+            
+            specificState.Subscribe(state =>
+            {
+                if (state != null)
+                {
+                    ClassName.Value = state.GetType().Name;
+                }
+            });
+            
+            ClassName.Subscribe(className =>
+            {
+                if (className == null || className == "None")
+                {
+                    specificState.Value = null;
+                }
+                else if(specificState.Value == null || specificState.Value.GetType().Name != className)
+                {
+                    if (NodeManager.stateDictionary.TryGetValue(className, out var value))
+                    {
+                        specificState.Value = (IState)Activator.CreateInstance(value);
+                    }
+                    else
+                    {
+                        specificState.Value = null;
+                    }
+                }
+            });
+        }
+        
         protected override NodeData CreateData()
         {
             return CreateNodeData();
