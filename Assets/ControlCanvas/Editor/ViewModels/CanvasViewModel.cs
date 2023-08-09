@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using ControlCanvas.Editor.Extensions;
 using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Editor.Views;
+using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
 using UniRx;
 
@@ -18,6 +21,11 @@ namespace ControlCanvas.Editor.ViewModels
         public ReactiveProperty<ReactiveCollection<NodeData>> Nodes { get; private set; } = new();
         public ReactiveProperty<ReactiveCollection<EdgeData>> Edges { get; private set; } = new();
 
+        public ReactiveCommand<NodeViewModel> MakeInitialNodeCommand { get; private set; } = new();
+        
+        public ReactiveProperty<string> InitialNode { get; private set; } = new();
+        public ReactiveProperty<string> CurrentDebugNode { get; private set; } = new();
+        
         protected override Dictionary<string, string> InitializeMappingDictionary()
         {
             return new Dictionary<string, string>()
@@ -39,12 +47,73 @@ namespace ControlCanvas.Editor.ViewModels
             disposables.Add(GraphViewModel);
             disposables.Add(InspectorViewModel);
 
-            string fieldName = "Nodes";
+            string fieldName = "InitialNode";
 
             //Example of how to get a ReactiveProperty from a dataField
-            var rp = GetReactiveProperty<ReactiveProperty<ReactiveCollection<NodeData>>>(fieldName);
+            //var rp = GetReactiveProperty<ReactiveProperty<string>>(fieldName);
+
+            Nodes.Subscribe(x =>
+            {
+                x.SubscribeAndProcessExisting(y =>
+                {
+                    var cvm = GetChildViewModel<NodeViewModel>(y);
+                    cvm.MakeStartNodeCommand.Subscribe(z =>
+                    {
+                        MakeInitialNodeCommand.Execute(z);
+                    }).AddTo(disposables);
+                }).AddTo(disposables);
+            }).AddTo(disposables);
+
+            MakeInitialNodeCommand.Subscribe(x =>
+            {
+                InitialNode.Value = x.DataProperty.Value.guid;
+            });
+
+            InitialNode.DoWithLast(x =>
+                {
+                    if (x != null)
+                    {
+                        var isInitialNode = GetViewModelByGuid(x)?.IsInitialNode;
+                        if (isInitialNode != null) isInitialNode.Value = false;
+                    }
+                })
+                .Subscribe(x =>
+            {
+                if (x != null)
+                {
+                    var isInitialNode = GetViewModelByGuid(x)?.IsInitialNode;
+                    if (isInitialNode != null) isInitialNode.Value = true;
+                }
+            });
+            
+            CurrentDebugNode.DoWithLast(x =>
+                {
+                    if (x != null)
+                    {
+                        var isDebugNode = GetViewModelByGuid(x)?.IsDebugNode;
+                        if (isDebugNode != null) isDebugNode.Value = false;
+                    }
+                })
+                .Subscribe(x =>
+            {
+                if (x != null)
+                {
+                    var isDebugNode = GetViewModelByGuid(x)?.IsDebugNode;
+                    if (isDebugNode != null) isDebugNode.Value = true;
+                }
+            });
         }
 
+        private NodeViewModel GetViewModelByGuid(string guid)
+        {
+            var node = Nodes.Value.ToList().Find(x => x.guid == guid);
+            if (node != null)
+            {
+                return GetChildViewModel<NodeViewModel>(node);
+            }
+            return null;
+        }
+        
         protected override CanvasData CreateData()
         {
             CanvasData newData = new();
@@ -85,10 +154,6 @@ namespace ControlCanvas.Editor.ViewModels
         public NodeViewModel CreateNode()
         {
             NodeViewModel cvm = AddChildViewModel<NodeViewModel, NodeData>(new NodeViewModel(), Nodes);
-            cvm.MakeStartNodeCommand.Subscribe(_ =>
-                {
-                    DataProperty.Value.InitialNode = cvm.DataProperty.Value.guid;
-                });
             return cvm;
         }
 
@@ -106,6 +171,11 @@ namespace ControlCanvas.Editor.ViewModels
         public void DeleteEdge(EdgeData edgeData)
         {
             Edges.Value.Remove(edgeData);
+        }
+
+        public void SetCurrentDebugState(IState state)
+        {
+            CurrentDebugNode.Value = NodeManager.Instance.GetGuidForState(state);
         }
     }
 }

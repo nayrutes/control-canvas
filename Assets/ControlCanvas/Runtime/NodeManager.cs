@@ -42,5 +42,10 @@ namespace ControlCanvas.Runtime
                 return state;
             }
         }
+        
+        public string GetGuidForState(IState state)
+        {
+            return stateCache.FirstOrDefault(x => x.Value == state).Key;
+        }
     }
 }

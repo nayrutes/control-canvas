@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace ControlCanvas
+namespace ControlCanvas.Runtime
 {
     public class ControlAgent : MonoBehaviour
     {

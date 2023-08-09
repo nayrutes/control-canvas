@@ -1,7 +1,9 @@
 using System;
+using ControlCanvas.Editor;
 using ControlCanvas.Editor.Extensions;
 using ControlCanvas.Editor.ViewModels;
 using ControlCanvas.Editor.Views;
+using ControlCanvas.Runtime;
 using UniRx;
 using UnityEditor;
 using UnityEditor.Compilation;
@@ -21,7 +23,10 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
     private Label canvasNameLabel;
     CompositeDisposable disposables = new ();
 
+    ObjectField debugRunnerField;
 
+    DebugLinker debugLinker;
+    
     [MenuItem("Window/UI Toolkit/ControlCanvasEditorWindow")]
     public static void OpenWindow()
     {
@@ -55,6 +60,8 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         rootVisualElement.Q<ToolbarButton>("save-button").clicked += () => SerializeDataAsXML();
         rootVisualElement.Q<ToolbarButton>("load-button").clicked += () => DeserializeDataFromXML();
         canvasNameLabel = rootVisualElement.Q<Label>("canvas-name");
+        debugRunnerField = rootVisualElement.Q<ObjectField>("debug-runner");
+        
     }
 
     private void SetUpSubscriptions()
@@ -69,6 +76,16 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
             {
                 m_CanvasViewModel.canvasName.Subscribe(x => { canvasNameLabel.text = x; }).AddTo(disposables);
             }
+        });
+        
+        
+        
+        debugRunnerField.RegisterValueChangedCallback(evt =>
+        {
+            var runner = evt.newValue as StateRunner;
+            if (runner == null) return;
+            debugLinker = new DebugLinker(runner, m_CanvasViewModel);
+            debugLinker.Link();
         });
     }
 
@@ -108,6 +125,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         }
         else if (state == PlayModeStateChange.ExitingPlayMode)
         {
+            debugLinker?.Unlink();
             //Debug.Log($"OnPlayModeStateChanged: {state}");
             //Dispose();
         }

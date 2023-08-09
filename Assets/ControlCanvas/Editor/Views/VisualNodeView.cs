@@ -161,6 +161,30 @@ namespace ControlCanvas.Editor.Views
             nodeViewModel.NodeType.Subscribe(type => SetNewType(type)).AddTo(disposables);
             
             nodeViewModel.specificState.Subscribe(state => SetNewClass(state)).AddTo(disposables);
+            
+            nodeViewModel.IsInitialNode.Subscribe(x =>
+            {
+                if (x)
+                {
+                    this.AddToClassList("initial-node");
+                }
+                else
+                {
+                    this.RemoveFromClassList("initial-node");
+                }
+            }).AddTo(disposables);
+            
+            nodeViewModel.IsDebugNode.Subscribe(x =>
+            {
+                if (x)
+                {
+                    this.AddToClassList("debug-node");
+                }
+                else
+                {
+                    this.RemoveFromClassList("debug-node");
+                }
+            }).AddTo(disposables);
         }
         
         private void UnbindViewFromViewModel()
@@ -188,7 +212,7 @@ namespace ControlCanvas.Editor.Views
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
-            evt.menu.AppendAction("Make Start Node", (a) => nodeViewModel.MakeStartNodeCommand.Execute(), DropdownMenuAction.AlwaysEnabled);
+            evt.menu.AppendAction("Make Start Node", (a) => nodeViewModel.MakeStartNodeCommand.Execute(nodeViewModel), DropdownMenuAction.AlwaysEnabled);
         }
     }
 }

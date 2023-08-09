@@ -9,6 +9,7 @@
             <ControlCanvas.Editor.SplitView orientation="Vertical" fixed-pane-initial-dimension="244">
                 <ui:VisualElement name="inspector-container" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">
                     <uie:ObjectField label="ControlCanvas" name="currentCanvas" />
+                    <uie:ObjectField label="Debug Runner" type="ControlCanvas.Runtime.StateRunner, Assembly-CSharp" name="debug-runner" />
                     <ui:Label tabindex="-1" text="Inspector" display-tooltip-when-elided="true" />
                     <ControlCanvas.Editor.Views.InspectorView />
                 </ui:VisualElement>

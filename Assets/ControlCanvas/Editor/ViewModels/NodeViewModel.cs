@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
-using PlasticPipe.Server;
 using UniRx;
 
 namespace ControlCanvas.Editor.ViewModels
@@ -15,12 +13,15 @@ namespace ControlCanvas.Editor.ViewModels
         public ReactiveProperty<string> Guid { get; } = new ReactiveProperty<string>();
         public ReactiveProperty<SerializableVector2> Position { get; set; } = new ReactiveProperty<SerializableVector2>();
         public ReactiveProperty<SerializableVector2> Size { get; set; } = new ReactiveProperty<SerializableVector2>();
-        public ReactiveCommand MakeStartNodeCommand { get; set; } = new();
+        public ReactiveCommand<NodeViewModel> MakeStartNodeCommand { get; set; } = new();
 
         public ReactiveProperty<string> ClassName { get;} = new();
         public List<string> ClassChoices { get;} = new();
 
         public ReactiveProperty<IState> specificState { get; } = new();
+        public ReactiveProperty<bool> IsInitialNode { get; private set; } = new();
+        
+        public ReactiveProperty<bool> IsDebugNode { get; private set; } = new();
         
         //[NonSerialized]
         public Blackboard blackboardCanvas;

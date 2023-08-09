@@ -12,17 +12,17 @@ namespace ControlCanvas.Runtime
         
         public void Execute(ControlAgent agentContext, float deltaTime)
         {
-            Debug.Log($"Executing {nameof(DebugState)} for {agentContext.Name}");
+            Debug.Log($"Executing {nameof(DebugState)} for {agentContext.Name} : {nodeMessage}");
         }
 
         public void OnEnter(ControlAgent agentContext)
         {
-            Debug.Log($"Entering {nameof(DebugState)} for {agentContext.Name}");
+            Debug.Log($"Entering {nameof(DebugState)} for {agentContext.Name} : {nodeMessage}");
         }
 
         public void OnExit(ControlAgent agentContext)
         {
-            Debug.Log($"Exiting {nameof(DebugState)} for {agentContext.Name}");
+            Debug.Log($"Exiting {nameof(DebugState)} for {agentContext.Name} : {nodeMessage}");
         }
     }
 }

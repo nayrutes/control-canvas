@@ -211,3 +211,18 @@
 #contents > #top > #input > #controls > #element {
     margin-top: 5px;
 }
+
+.initial-node {
+    background-color: rgba(53, 132, 94, 0.98);
+}
+
+.debug-node {
+    border-left-color: rgb(180, 42, 142);
+    border-right-color: rgb(180, 42, 142);
+    border-top-color: rgb(180, 42, 142);
+    border-bottom-color: rgb(180, 42, 142);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+}
