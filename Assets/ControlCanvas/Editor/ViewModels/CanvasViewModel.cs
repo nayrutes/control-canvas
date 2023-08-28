@@ -70,22 +70,27 @@ namespace ControlCanvas.Editor.ViewModels
                 InitialNode.Value = x.DataProperty.Value.guid;
             });
 
-            InitialNode.DoWithLast(x =>
-                {
-                    if (x != null)
-                    {
-                        var isInitialNode = GetViewModelByGuid(x)?.IsInitialNode;
-                        if (isInitialNode != null) isInitialNode.Value = false;
-                    }
-                })
-                .Subscribe(x =>
+            DataProperty.Where(nn => nn != null).Subscribe(c =>
             {
-                if (x != null)
-                {
-                    var isInitialNode = GetViewModelByGuid(x)?.IsInitialNode;
-                    if (isInitialNode != null) isInitialNode.Value = true;
-                }
-            });
+                InitialNode.DoWithLast(x =>
+                    {
+                        if (x != null)
+                        {
+                            var isInitialNode = GetViewModelByGuid(x)?.IsInitialNode;
+                            if (isInitialNode != null) isInitialNode.Value = false;
+                        }
+                    })
+                    .Subscribe(x =>
+                    {
+                        if (x != null)
+                        {
+                            var isInitialNode = GetViewModelByGuid(x)?.IsInitialNode;
+                            if (isInitialNode != null) isInitialNode.Value = true;
+                        }
+                    }).AddTo(disposables);
+            }).AddTo(disposables);
+            
+            
             
             CurrentDebugNode.DoWithLast(x =>
                 {

@@ -2,7 +2,7 @@
 <CanvasData xmlns:sys="https://extendedxmlserializer.github.io/system" xmlns:exs="https://extendedxmlserializer.github.io/v2" xmlns:ns1="clr-namespace:ControlCanvas.Runtime;assembly=Assembly-CSharp" InitialNode="d2b6b6f1-5209-48b1-a678-cd276f79b37a">
   <Nodes Capacity="4">
     <NodeData Name="" Guid="289bd32534ef2654d93dc931908cc938" nodeType="State" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp">
-      <Position x="-18" y="541" />
+      <Position x="-96" y="567" />
       <Size x="379" y="126" />
       <specificState exs:type="ns1:IdleState" />
     </NodeData>
@@ -17,9 +17,9 @@
       <specificState exs:type="ns1:DebugState" nodeMessage="Anotther Test message" />
     </NodeData>
   </Nodes>
-  <Edges Capacity="4">
-    <EdgeData Guid="9dd6d023-daab-471e-8490-7aec6c14261a" StartNodeGuid="d2b6b6f1-5209-48b1-a678-cd276f79b37a" EndNodeGuid="289bd32534ef2654d93dc931908cc938" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp" />
-    <EdgeData Guid="90ffa00e-e08c-42a8-8915-57320294b9c5" StartNodeGuid="78a4cc75-d61b-46fa-a9dc-40b2417930d2" EndNodeGuid="d2b6b6f1-5209-48b1-a678-cd276f79b37a" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp" />
-    <EdgeData Guid="07730536-582b-4e34-ada3-5fa959a37f65" StartNodeGuid="289bd32534ef2654d93dc931908cc938" EndNodeGuid="78a4cc75-d61b-46fa-a9dc-40b2417930d2" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp" />
+  <Edges Capacity="3">
+    <EdgeData Guid="3aa4b6c4-1419-4ece-932b-81c2ed6525f8" StartNodeGuid="d2b6b6f1-5209-48b1-a678-cd276f79b37a" EndNodeGuid="78a4cc75-d61b-46fa-a9dc-40b2417930d2" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp" />
+    <EdgeData Guid="16503e16-74b2-4941-8d8c-67862bf9031f" StartNodeGuid="78a4cc75-d61b-46fa-a9dc-40b2417930d2" EndNodeGuid="289bd32534ef2654d93dc931908cc938" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp" />
+    <EdgeData Guid="7b8d2c0f-8c48-4362-b8f4-180e13bf5741" StartNodeGuid="289bd32534ef2654d93dc931908cc938" EndNodeGuid="d2b6b6f1-5209-48b1-a678-cd276f79b37a" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp" />
   </Edges>
 </CanvasData>

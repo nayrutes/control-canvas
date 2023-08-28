@@ -133,7 +133,7 @@ namespace ControlCanvas.Editor.Views
                     if (edge.input.node is VisualNodeView inputNode && edge.output.node is VisualNodeView outputNode)
                     {
                         _ignoreAddEdge = true;
-                        viewModel.CreateEdge(inputNode.nodeViewModel, outputNode.nodeViewModel);
+                        viewModel.CreateEdge(outputNode.nodeViewModel, inputNode.nodeViewModel);
                         _ignoreAddEdge = false;
                     }
                 }
@@ -192,8 +192,9 @@ namespace ControlCanvas.Editor.Views
             if (startNode != null && endNode != null)
             {
                 var edgeGV = new UnityEditor.Experimental.GraphView.Edge();
-                edgeGV.input = startNode.inputContainer.Q<Port>();
-                edgeGV.output = endNode.outputContainer.Q<Port>();
+                edgeGV.input = endNode.inputContainer.Q<Port>();
+                edgeGV.output = startNode.outputContainer.Q<Port>();
+                
                 //edgeGV.capabilities &= ~Capabilities.Deletable;
 
                 AddElement(edgeGV);
