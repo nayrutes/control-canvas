@@ -21,6 +21,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
     private InspectorView inspectorView;
     
     private Label canvasNameLabel;
+    private Label canvasPathLabel;
     CompositeDisposable disposables = new ();
 
     ObjectField debugRunnerField;
@@ -60,6 +61,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         rootVisualElement.Q<ToolbarButton>("save-button").clicked += () => SerializeDataAsXML();
         rootVisualElement.Q<ToolbarButton>("load-button").clicked += () => DeserializeDataFromXML();
         canvasNameLabel = rootVisualElement.Q<Label>("canvas-name");
+        canvasPathLabel = rootVisualElement.Q<Label>("canvas-path");
         debugRunnerField = rootVisualElement.Q<ObjectField>("debug-runner");
         
     }
@@ -75,6 +77,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
             if (x != null)
             {
                 m_CanvasViewModel.canvasName.Subscribe(x => { canvasNameLabel.text = x; }).AddTo(disposables);
+                m_CanvasViewModel.canvasPath.Subscribe(x => { canvasPathLabel.text = x; }).AddTo(disposables);
             }
         });
         

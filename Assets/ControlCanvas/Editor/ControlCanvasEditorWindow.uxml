@@ -3,6 +3,7 @@
     <uie:Toolbar>
         <uie:ToolbarButton text="Save XML" display-tooltip-when-elided="true" name="save-button" />
         <uie:ToolbarButton text="Load XML" display-tooltip-when-elided="true" name="load-button" />
+        <ui:Label tabindex="-1" text="Paths: " display-tooltip-when-elided="true" name="canvas-path" />
     </uie:Toolbar>
     <ControlCanvas.Editor.SplitView fixed-pane-initial-dimension="300">
         <ui:VisualElement name="left-panel" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">

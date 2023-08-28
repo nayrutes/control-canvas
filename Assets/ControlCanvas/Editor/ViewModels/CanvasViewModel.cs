@@ -16,6 +16,7 @@ namespace ControlCanvas.Editor.ViewModels
         public InspectorViewModel InspectorViewModel { get; private set; }
 
         public ReactiveProperty<string> canvasName = new();
+        public ReactiveProperty<string> canvasPath = new();
 
         //defining the ReactiveProperty as a property allows referencing it easier
         public ReactiveProperty<ReactiveCollection<NodeData>> Nodes { get; private set; } = new();
@@ -133,12 +134,14 @@ namespace ControlCanvas.Editor.ViewModels
         public void SerializeData(string path)
         {
             XMLHelper.SerializeToXML(path, DataProperty.Value);
+            canvasPath.Value = path;
         }
 
         public void DeserializeData(string path)
         {
             XMLHelper.DeserializeFromXML(path, out var canvasData);
             LoadData(canvasData);
+            canvasPath.Value = path;
         }
 
         private void LoadData(CanvasData canvasData)
