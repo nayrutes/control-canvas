@@ -8,6 +8,7 @@ namespace ControlCanvas.Serialization
         public string Guid;
         public string StartNodeGuid;
         public string EndNodeGuid;
-        
+        public string StartPortName;
+        public string EndPortName;
     }
 }

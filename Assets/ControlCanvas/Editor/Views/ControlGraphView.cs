@@ -133,7 +133,7 @@ namespace ControlCanvas.Editor.Views
                     if (edge.input.node is VisualNodeView inputNode && edge.output.node is VisualNodeView outputNode)
                     {
                         _ignoreAddEdge = true;
-                        viewModel.CreateEdge(outputNode.nodeViewModel, inputNode.nodeViewModel);
+                        viewModel.CreateEdge(outputNode.nodeViewModel, inputNode.nodeViewModel, edge.output.portName, edge.input.portName);
                         _ignoreAddEdge = false;
                     }
                 }
@@ -158,8 +158,11 @@ namespace ControlCanvas.Editor.Views
                             edge.output.node is VisualNodeView outputNode)
                         {
                             viewModel.DeleteEdge(viewModel.Edges.ToList().Find(x =>
-                                x.StartNodeGuid == inputNode.nodeViewModel.Guid.Value &&
-                                x.EndNodeGuid == outputNode.nodeViewModel.Guid.Value));
+                                x.StartNodeGuid == outputNode.nodeViewModel.Guid.Value &&
+                                (x.StartPortName == null || x.StartPortName == edge.output.portName) &&
+                                x.EndNodeGuid == inputNode.nodeViewModel.Guid.Value &&
+                                (x.EndPortName == null || x.EndPortName == edge.input.portName)));
+
                         }
                     }
                 }
@@ -192,8 +195,18 @@ namespace ControlCanvas.Editor.Views
             if (startNode != null && endNode != null)
             {
                 var edgeGV = new UnityEditor.Experimental.GraphView.Edge();
-                edgeGV.input = endNode.inputContainer.Q<Port>();
-                edgeGV.output = startNode.outputContainer.Q<Port>();
+                Port portIn = endNode.inputContainer.Q<Port>();
+                Port portOut = startNode.outputContainer.Q<Port>();
+                if (edgeData.StartPortName is not (null or ""))
+                {
+                    portOut = startNode.Q<Port>(edgeData.StartPortName);
+                }
+                if (edgeData.EndPortName is not (null or ""))
+                {
+                    portIn = endNode.Q<Port>(edgeData.EndPortName);
+                }
+                edgeGV.input = portIn;
+                edgeGV.output = portOut;
                 
                 //edgeGV.capabilities &= ~Capabilities.Deletable;
 

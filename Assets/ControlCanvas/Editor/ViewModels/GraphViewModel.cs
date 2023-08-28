@@ -38,6 +38,12 @@ namespace ControlCanvas.Editor.ViewModels
         public void CreateEdge(NodeViewModel startNode, NodeViewModel endNode) =>
             canvasViewModel.CreateEdge(startNode.DataProperty.Value, endNode.DataProperty.Value);
 
+        
+        public void CreateEdge(NodeViewModel outputNodeNodeViewModel, NodeViewModel inputNodeNodeViewModel, string outputPortName, string inputPortName)
+        {
+            canvasViewModel.CreateEdge(outputNodeNodeViewModel.DataProperty.Value, inputNodeNodeViewModel.DataProperty.Value, outputPortName, inputPortName);
+        }
+        
         public void DeleteEdge(EdgeData edgeData) => canvasViewModel.DeleteEdge(edgeData);
 
         private void ReleaseUnmanagedResources()
@@ -65,5 +71,6 @@ namespace ControlCanvas.Editor.ViewModels
                 $"Dispose was not called on {this.GetType()}. You should call Dispose on IDisposable objects when you are done using them.");
             Dispose(false);
         }
+
     }
 }

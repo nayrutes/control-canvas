@@ -20,6 +20,7 @@ namespace ControlCanvas.Editor.Views
         
         public Port portIn;
         public Port portOut;
+        public Port portOut2;
 
         private VisualElement m_DynamicContent;
         private CompositeDisposable disposables = new();
@@ -46,6 +47,19 @@ namespace ControlCanvas.Editor.Views
             m_DynamicContent.Clear();
             m_DynamicContent.Add(new Label($"This is a {type} node"));
             this.Q<EnumField>("type-enum").SetValueWithoutNotify(type);
+            switch (type)
+            {
+                case NodeType.State:
+                    HidePort2(true);
+                    break;
+                case NodeType.Behaviour:
+                    break;
+                case NodeType.Decision:
+                    HidePort2(false);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            }
         }
         
         private void SetNewClass(IState state)
@@ -81,6 +95,7 @@ namespace ControlCanvas.Editor.Views
             if (portIn != null)
             {
                 portIn.portName = "portIn";
+                portIn.name = "portIn";
                 inputContainer.Add(portIn);
             }
 
@@ -88,7 +103,17 @@ namespace ControlCanvas.Editor.Views
             if (portOut != null)
             {
                 portOut.portName = "portOut";
+                portOut.name = "portOut";
                 outputContainer.Add(portOut);
+            }
+            
+            portOut2 = InstantiatePort(Orientation.Vertical, Direction.Output, Port.Capacity.Multi, typeof(bool));
+            if (portOut2 != null)
+            {
+                portOut2.portName = "portOut-2";
+                portOut2.name = "portOut-2";
+                mainContainer.Q<VisualElement>("output-2").Add(portOut2);
+                //outputContainer.Add(portOut2);
             }
         }
         
@@ -185,8 +210,22 @@ namespace ControlCanvas.Editor.Views
                     this.RemoveFromClassList("debug-node");
                 }
             }).AddTo(disposables);
+            
+            //nodeViewModel.HidePort2.Subscribe(x => { HidePort2(x); }).AddTo(disposables);
         }
-        
+
+        private void HidePort2(bool x)
+        {
+            if (x)
+            {
+                this.Q<VisualElement>("output-2").AddToClassList("hide-port-2");
+            }
+            else
+            {
+                this.Q<VisualElement>("output-2").RemoveFromClassList("hide-port-2");
+            }
+        }
+
         private void UnbindViewFromViewModel()
         {
             disposables.Dispose();

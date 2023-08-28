@@ -21,7 +21,10 @@
             <ui:VisualElement name="top">
                 <ui:VisualElement name="input" />
                 <ui:VisualElement name="divider" class="vertical" />
-                <ui:VisualElement name="output" />
+                <ui:VisualElement name="output" class="output-port" />
+            </ui:VisualElement>
+            <ui:VisualElement name="bottom">
+                <ui:VisualElement name="output-2" class="output-port" style="flex-direction: row; align-items: auto; justify-content: center;" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

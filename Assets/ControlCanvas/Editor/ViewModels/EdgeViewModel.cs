@@ -34,11 +34,15 @@ namespace ControlCanvas.Editor.ViewModels
             return newData;
         }
         
-        public static EdgeData CreateEdgeData(string start, string end)
+        public static EdgeData CreateEdgeData(string start, string end, string startPortName = null, string endPortName = null)
         {
             EdgeData newData = CreateEdgeData();
             newData.StartNodeGuid = start;
             newData.EndNodeGuid = end;
+            //if(startPortName != "portOut")
+                newData.StartPortName = startPortName;
+            //if(endPortName != "portIn")
+                newData.EndPortName = endPortName;
             return newData;
         }
     }

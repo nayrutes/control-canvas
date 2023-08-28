@@ -5,7 +5,9 @@ using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Editor.Views;
 using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
+using NUnit.Framework.Constraints;
 using UniRx;
+using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels
 {
@@ -170,14 +172,19 @@ namespace ControlCanvas.Editor.ViewModels
             Nodes.Value.Remove(nodeData);
         }
 
-        public void CreateEdge(NodeData from, NodeData to)
+        public void CreateEdge(NodeData from, NodeData to, string startPortName = null, string endPortName = null)
         {
-            EdgeData edgeData = EdgeViewModel.CreateEdgeData(from.guid, to.guid);
+            EdgeData edgeData = EdgeViewModel.CreateEdgeData(from.guid, to.guid, startPortName, endPortName);
             Edges.Value.Add(edgeData);
         }
 
         public void DeleteEdge(EdgeData edgeData)
         {
+            if (edgeData == null)
+            {
+                Debug.LogWarning("Deleting null edgeData");
+                return;
+            }
             Edges.Value.Remove(edgeData);
         }
 

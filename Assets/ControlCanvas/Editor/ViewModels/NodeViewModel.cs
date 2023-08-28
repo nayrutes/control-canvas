@@ -22,7 +22,8 @@ namespace ControlCanvas.Editor.ViewModels
         public ReactiveProperty<bool> IsInitialNode { get; private set; } = new();
         
         public ReactiveProperty<bool> IsDebugNode { get; private set; } = new();
-        
+        //public ReactiveProperty<bool> HidePort2 { get; private set; } = new();
+
         //[NonSerialized]
         public Blackboard blackboardCanvas;
 

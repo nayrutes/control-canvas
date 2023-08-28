@@ -201,7 +201,7 @@
     flex: 1 0 auto;
 }
 
-#contents > #top > #output {
+.output-port {
     background-color: rgba(46, 46, 46, 0.8);
     padding-top: 4px;
     padding-bottom: 4px;
@@ -225,4 +225,9 @@
     border-right-width: 2px;
     border-top-width: 2px;
     border-bottom-width: 2px;
+}
+
+.hide-port-2 {
+    visibility: hidden;
+    display: none;
 }
