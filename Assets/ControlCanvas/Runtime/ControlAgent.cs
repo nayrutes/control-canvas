@@ -6,7 +6,10 @@ namespace ControlCanvas.Runtime
     {
         public Blackboard blackboardAgent;
         public string Name { get; set; }
-        
+
+        public bool testBool;
+        public bool testBoolSecond;
+
         public bool CheckTransitionCondition()
         {
             return false;

@@ -155,6 +155,8 @@ MonoBehaviour:
   blackboardAgent:
     moveToPosition: {x: 0, y: 0, z: 0}
     moveToObject: {fileID: 0}
+  testBool: 1
+  testBoolSecond: 1
 --- !u!4 &376851992
 Transform:
   m_ObjectHideFlags: 0
@@ -365,7 +367,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1833341338}
-  - component: {fileID: 1833341337}
+  - component: {fileID: 1833341339}
   m_Layer: 0
   m_Name: Runner
   m_TagString: Untagged
@@ -373,20 +375,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1833341337
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1833341336}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 408c120daacb89c44ac418366ed78520, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  AgentContext: {fileID: 376851991}
-  path: Assets/ControlFlows/StateFlowEx3.xml
 --- !u!4 &1833341338
 Transform:
   m_ObjectHideFlags: 0
@@ -402,6 +390,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1833341339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1833341336}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7298428f553741b4b3a50ffcaaf56763, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AgentContext: {fileID: 376851991}
+  path: Assets/ControlFlows/StateFlowEx5.xml
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

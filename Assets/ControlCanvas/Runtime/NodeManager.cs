@@ -16,13 +16,24 @@ namespace ControlCanvas.Runtime
             {"IdleState", typeof(IdleState)},
         };
         
-        private Dictionary<string, IState> stateCache = new();
-        
-        public IState GetStateForNode(string guid, CanvasData canvasData)
+        public static readonly Dictionary<string, Type> behaviourDictionary = new()
         {
-            if (stateCache.TryGetValue(guid, out var stateForNode))
+            
+        };
+        
+        public static readonly Dictionary<string, Type> decisionDictionary = new()
+        {
+            {"TestDecision", typeof(TestDecision)},
+            {"TestDecision2", typeof(TestDecisionSecond)},
+        };
+        
+        private Dictionary<string, IControl> controlCache = new();
+        
+        public IControl GetControlForNode(string guid, CanvasData canvasData)
+        {
+            if (controlCache.TryGetValue(guid, out var controlForNode))
             {
-                return stateForNode;
+                return controlForNode;
             }
             else
             {
@@ -36,16 +47,61 @@ namespace ControlCanvas.Runtime
                 // }
                 // IState state = (IState)Activator.CreateInstance(type);
                 
-                IState state = canvasData.Nodes.FirstOrDefault(x => x.guid == guid)?.specificState;
+                IControl control = canvasData.Nodes.FirstOrDefault(x => x.guid == guid)?.specificControl;
                 
-                stateCache.Add(guid, state);
-                return state;
+                controlCache.Add(guid, control);
+                return control;
             }
         }
         
-        public string GetGuidForState(IState state)
+        public IState GetStateForNode(string controlFlowInitialNode, CanvasData controlFlow)
         {
-            return stateCache.FirstOrDefault(x => x.Value == state).Key;
+            return GetControlForNode(controlFlowInitialNode, controlFlow) as IState;
+        }
+        
+        public string GetGuidForControl(IControl control)
+        {
+            return controlCache.FirstOrDefault(x => x.Value == control).Key;
+        }
+
+        public static IEnumerable<string> GetSpecificTypes(NodeType type)
+        {
+            switch (type)
+            {
+                case NodeType.State:
+                    return stateDictionary.Keys;
+                case NodeType.Behaviour:
+                    return behaviourDictionary.Keys;
+                case NodeType.Decision:
+                    return decisionDictionary.Keys;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            }
+        }
+
+
+        public static bool TryGetInstance(string className, out IControl o)
+        { 
+            if (stateDictionary.TryGetValue(className, out var type))
+            {
+                o = (IState)Activator.CreateInstance(type);
+                return true;
+            }
+            else if (behaviourDictionary.TryGetValue(className, out type))
+            {
+                o = (IControl)Activator.CreateInstance(type);
+                return true;
+            }
+            else if (decisionDictionary.TryGetValue(className, out type))
+            {
+                o = (IDecision)Activator.CreateInstance(type);
+                return true;
+            }
+            else
+            {
+                o = null;
+                return false;
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
 using UniRx;
+using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels
 {
@@ -18,7 +19,7 @@ namespace ControlCanvas.Editor.ViewModels
         public ReactiveProperty<string> ClassName { get;} = new();
         public List<string> ClassChoices { get;} = new();
 
-        public ReactiveProperty<IState> specificState { get; } = new();
+        public ReactiveProperty<IControl> specificControl { get; } = new();
         public ReactiveProperty<bool> IsInitialNode { get; private set; } = new();
         
         public ReactiveProperty<bool> IsDebugNode { get; private set; } = new();
@@ -50,34 +51,42 @@ namespace ControlCanvas.Editor.ViewModels
         void InitNode()
         {
             ClassChoices.Add("None");
-            ClassChoices.AddRange(NodeManager.stateDictionary.Keys);
-            
-            specificState.Subscribe(state =>
+
+            NodeType.Subscribe(type =>
             {
-                if (state != null)
+                ClassChoices.Clear();
+                ClassChoices.Add("None");
+                ClassChoices.AddRange(NodeManager.GetSpecificTypes(type));
+            }).AddTo(disposables);
+            
+            specificControl.Subscribe(control =>
+            {
+                if (control != null)
                 {
-                    ClassName.Value = state.GetType().Name;
+                    ClassName.Value = control.GetType().Name;
                 }
-            });
+                
+            }).AddTo(disposables);
             
             ClassName.Subscribe(className =>
             {
                 if (className == null || className == "None")
                 {
-                    specificState.Value = null;
+                    specificControl.Value = null;
                 }
-                else if(specificState.Value == null || specificState.Value.GetType().Name != className)
+                else if(specificControl.Value == null || specificControl.Value.GetType().Name != className)
                 {
-                    if (NodeManager.stateDictionary.TryGetValue(className, out var value))
+                    if (NodeManager.TryGetInstance(className, out var instance))
                     {
-                        specificState.Value = (IState)Activator.CreateInstance(value);
+                        specificControl.Value = instance;
                     }
                     else
                     {
-                        specificState.Value = null;
+                        Debug.LogError($"Could not get instance of {className}");
+                        specificControl.Value = null;
                     }
                 }
-            });
+            }).AddTo(disposables);
         }
         
         protected override NodeData CreateData()

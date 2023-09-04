@@ -85,7 +85,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         
         debugRunnerField.RegisterValueChangedCallback(evt =>
         {
-            var runner = evt.newValue as StateRunner;
+            var runner = evt.newValue as ControlRunner;
             if (runner == null) return;
             debugLinker = new DebugLinker(runner, m_CanvasViewModel);
             debugLinker.Link();

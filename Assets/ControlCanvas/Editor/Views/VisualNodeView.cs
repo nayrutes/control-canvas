@@ -62,22 +62,22 @@ namespace ControlCanvas.Editor.Views
             }
         }
         
-        private void SetNewClass(IState state)
+        private void SetNewClass(IControl control)
         {
             m_DynamicContent.Clear();
-            var label = new Label($"This Node represents class {state?.GetType()}");
+            var label = new Label($"This Node represents class {control?.GetType()}");
             m_DynamicContent.Add(label);
 
-            this.Q<DropdownField>("class-dropdown").value = state?.GetType().Name ?? "None";
+            this.Q<DropdownField>("class-dropdown").value = control?.GetType().Name ?? "None";
             
-            if (state != null)// && NodeManager.stateDictionary.TryGetValue(className, out var t))
+            if (control != null)// && NodeManager.stateDictionary.TryGetValue(className, out var t))
             {
-                if (state.GetType() == typeof(DebugState))
+                if (control.GetType() == typeof(DebugState))
                 {
                     //m_DynamicContent.Add(new DebugStateView());
                     TextField visualElement = new TextField("Message");
                     m_DynamicContent.Add(visualElement);
-                    var vm = ViewModelCreator.CreateViewModel(state.GetType(), state);
+                    var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
                     var vmBase = vm as BaseViewModel<DebugState>;
                     //var vm = nodeViewModel.GetChildViewModel(nodeViewModel.specificState.Value) as BaseViewModel<DebugState>;
                     var rp = vmBase.GetReactiveProperty<ReactiveProperty<string>>("nodeMessage");
@@ -185,7 +185,7 @@ namespace ControlCanvas.Editor.Views
             
             nodeViewModel.NodeType.Subscribe(type => SetNewType(type)).AddTo(disposables);
             
-            nodeViewModel.specificState.Subscribe(state => SetNewClass(state)).AddTo(disposables);
+            nodeViewModel.specificControl.Subscribe(control => SetNewClass(control)).AddTo(disposables);
             
             nodeViewModel.IsInitialNode.Subscribe(x =>
             {

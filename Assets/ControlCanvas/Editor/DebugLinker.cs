@@ -6,20 +6,20 @@ namespace ControlCanvas.Editor
 {
     public class DebugLinker
     {
-        StateRunner stateRunner;
+        ControlRunner controlRunner;
         CanvasViewModel canvasViewModel;
         
         CompositeDisposable disposables = new ();
 
-        public DebugLinker(StateRunner runner, CanvasViewModel canvasViewModel)
+        public DebugLinker(ControlRunner runner, CanvasViewModel canvasViewModel)
         {
-            this.stateRunner = runner;
+            this.controlRunner = runner;
             this.canvasViewModel = canvasViewModel;
         }
 
         public void Link()
         {
-            stateRunner.currentState.Subscribe(OnStateChanged).AddTo(disposables);
+            controlRunner.currentControl.Subscribe(OnStateChanged).AddTo(disposables);
         }
         
         public void Unlink()
@@ -29,9 +29,9 @@ namespace ControlCanvas.Editor
             disposables = new CompositeDisposable();
         }
         
-        private void OnStateChanged(IState state)
+        private void OnStateChanged(IControl control)
         {
-            canvasViewModel.SetCurrentDebugState(state);
+            canvasViewModel.SetCurrentDebugState(control);
         }
     }
     

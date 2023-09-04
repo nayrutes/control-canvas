@@ -22,7 +22,7 @@ namespace ControlCanvas.Serialization
         //public string className;
         public string specificGuid;
         
-        public IState specificState;
+        public IControl specificControl;
     }
     
     

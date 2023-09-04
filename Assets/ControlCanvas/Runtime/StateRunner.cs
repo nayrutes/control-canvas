@@ -1,37 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using ControlCanvas.Serialization;
 using UniRx;
 using UnityEngine;
 
 namespace ControlCanvas.Runtime
 {
-    public class StateRunner : MonoBehaviour
+    public class StateRunner
     {
         public ReactiveProperty<IState> currentState = new();
 
         public ControlAgent AgentContext;
 
         private CanvasData controlFlow;
-        public string path = "Assets/ControlFlows/StateFlowEx3.xml";
+        private ControlRunner controlRunner;
 
-            
-        
-        private void Start()
+
+        public void Init(IState initState, ControlAgent agent, CanvasData controlFlow, ControlRunner controlRunner)
         {
-            XMLHelper.DeserializeFromXML(path, out controlFlow);
-            //AgentContext = GetComponent<ControlAgent>();
-            if (controlFlow.InitialNode == null)
+            this.controlRunner = controlRunner;
+            currentState.Value = initState;
+            AgentContext = agent;
+            this.controlFlow = controlFlow;
+            if (currentState.Value == null)
             {
-                Debug.LogError($"No initial node set for control flow {controlFlow.Name}");
+                Debug.Log($"Initial node {controlFlow.InitialNode} is not a state");
                 return;
             }
-            currentState.Value = NodeManager.Instance.GetStateForNode(controlFlow.InitialNode, controlFlow);
-            currentState.Value.OnEnter(AgentContext);
+            currentState.Value?.OnEnter(AgentContext);
         }
 
-        public void FixedUpdate()
+        public void DoUpdate()
         {
             currentState.Value?.Execute(AgentContext, Time.deltaTime);
         }
@@ -40,16 +38,20 @@ namespace ControlCanvas.Runtime
         {
             currentState.Value?.OnExit(AgentContext);
             currentState.Value = newState;
-            currentState.Value.OnEnter(AgentContext);
+            currentState.Value?.OnEnter(AgentContext);
         }
-
-        [ContextMenu("AutoNext")]
+        
         public void AutoNext()
         {
-            EdgeData edgeData = controlFlow.Edges.First(x => x.StartNodeGuid == NodeManager.Instance.GetGuidForState(currentState.Value));
-            NodeData nodeData = controlFlow.Nodes.First(x => x.guid == edgeData.EndNodeGuid);
+            EdgeData edgeData = controlFlow.Edges.First(x => x.StartNodeGuid == NodeManager.Instance.GetGuidForControl(currentState.Value));
+            NodeData nodeData = controlFlow.Nodes.FirstOrDefault(x => x.guid == edgeData.EndNodeGuid);
             //IState state = nodeData.specificState;
-            IState state = NodeManager.Instance.GetStateForNode(nodeData.guid, controlFlow);
+            IState state = controlRunner.GetNextStateForNode(nodeData?.guid, controlFlow);
+            if(state == null)
+            {
+                Debug.LogError($"No next state found for node {NodeManager.Instance.GetGuidForControl(currentState.Value)} to {nodeData?.guid}");
+                return;
+            }
             TransitionToState(state);
         }
         
