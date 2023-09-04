@@ -53,6 +53,7 @@ namespace ControlCanvas.Editor.Views
                     HidePort2(true);
                     break;
                 case NodeType.Behaviour:
+                    HidePort2(false);
                     break;
                 case NodeType.Decision:
                     HidePort2(false);

@@ -23,7 +23,7 @@ namespace ControlCanvas.Runtime
             
         }
 
-        public IState CalculateUntilNextState(IDecision decision)
+        private IControl CalculateUntilNextNonState(IDecision decision)
         {
             _decisionsTracker.Clear();
             currentDecision.Value = decision;
@@ -48,22 +48,46 @@ namespace ControlCanvas.Runtime
                 }
                 NodeData nodeData = controlFlow.Nodes.First(x => x.guid == edgeData.EndNodeGuid);
                 IControl control = NodeManager.Instance.GetControlForNode(nodeData.guid, controlFlow);
-                if (control is IState state)
-                {
-                    return state;
-                }
-                else if (control is IDecision nextDecision)
+                
+                if (control is IDecision nextDecision)
                 {
                     currentDecision.Value = nextDecision;
                 }
                 else
                 {
-                    Debug.LogError($"Node {nodeData.guid} is not a state or decision");
-                    return null;
+                    return control;
                 }
             }
 
             return null;
+        }
+        
+        public IState CalculateUntilNextState(IDecision decision)
+        {
+            IControl control = CalculateUntilNextNonState(decision);
+            if(control is IState state)
+            {
+                return state;
+            }
+            else
+            {
+                Debug.LogError($"Node {NodeManager.Instance.GetGuidForControl(control)} is not a state");
+                return null;
+            }
+        }
+
+        public IBehaviour CalculateUntilNextBehaviour(IDecision decision)
+        {
+            IControl control = CalculateUntilNextNonState(decision);
+            if(control is IBehaviour behaviour)
+            {
+                return behaviour;
+            }
+            else
+            {
+                Debug.LogError($"Node {NodeManager.Instance.GetGuidForControl(control)} is not a behaviour");
+                return null;
+            }
         }
     }
 }

@@ -16,6 +16,7 @@ namespace ControlCanvas.Runtime
         
         StateRunner stateRunner = new ();
         DecisionRunner decisionRunner = new();
+        BehaviourRunner behaviourRunner = new();
         
         private void Start()
         {
@@ -30,11 +31,15 @@ namespace ControlCanvas.Runtime
             stateRunner.Init(initialControl as IState, AgentContext, controlFlow, this);
             stateRunner.currentState.Subscribe(x => currentControl.Value = x);
             decisionRunner.Init(initialControl as IDecision, AgentContext, controlFlow);
+            
+            behaviourRunner.Init(initialControl as IBehaviour, AgentContext, controlFlow, this);
+            
         }
 
         private void FixedUpdate()
         {
             stateRunner.DoUpdate();
+            behaviourRunner.DoUpdate();
         }
         
         public IState GetNextStateForNode(string nodeDataGuid, CanvasData controlFlow)
@@ -58,5 +63,20 @@ namespace ControlCanvas.Runtime
         
         [ContextMenu("AutoNext")]
         public void AutoNext() => stateRunner.AutoNext();
+
+        public IBehaviour GetNextBehaviourForNode(IControl behav, CanvasData canvasData)
+        {
+            IControl control = behav;//NodeManager.Instance.GetControlForNode(NodeManager.Instance.GetGuidForControl(nextBehaviour), controlFlow);
+            switch (control)
+            {
+                case IBehaviour behaviour:
+                    return behaviour;
+                case IDecision decision:
+                    return decisionRunner.CalculateUntilNextBehaviour(decision);
+                default:
+                    Debug.LogError($"Node of type {control.GetType()}, {NodeManager.Instance.GetGuidForControl(behav)} is not a behaviour or decision");
+                    return null;
+            }
+        }
     }
 }
