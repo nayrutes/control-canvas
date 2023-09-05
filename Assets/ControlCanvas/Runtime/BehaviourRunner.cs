@@ -8,117 +8,146 @@ namespace ControlCanvas.Runtime
 {
     public class BehaviourRunner
     {
-        public ReactiveProperty<BehaviourWrapper> currentBehaviourWrapper = new();
-        public ReactiveProperty<IBehaviour> currentBehaviour = new();
-        
-        public ControlAgent AgentContext;
+        public ReactiveProperty<BehaviourWrapper> CurrentBehaviourWrapper { get; } = new();
+        public ReactiveProperty<IBehaviour> CurrentBehaviour { get; } = new();
+        public ControlAgent AgentContext { get; set; }
 
-        private CanvasData controlFlow;
-        private ControlRunner controlRunner;
-        
-        private Dictionary<IBehaviour, BehaviourWrapper> behaviourWrappers = new ();
-        private Stack<BehaviourWrapper> behaviourStack = new Stack<BehaviourWrapper>();
-        private HashSet<BehaviourWrapper> behaviourTracker = new HashSet<BehaviourWrapper>();
-        
-        private IBehaviour initBehaviour;
-        
-        public void Init(IBehaviour initBehaviour, ControlAgent agent, CanvasData controlFlow, ControlRunner controlRunner)
+        private CanvasData _controlFlow;
+        private ControlRunner _controlRunner;
+        private readonly Dictionary<IBehaviour, BehaviourWrapper> _behaviourWrappers = new();
+        private readonly Stack<IBehaviour> _behaviourStack = new();
+        private readonly HashSet<IControl> _behaviourTracker = new();
+        private IBehaviour _initBehaviour;
+        private State _resultState;
+        private bool _endReached;
+
+        public void Init(ControlAgent agent, CanvasData controlFlow, ControlRunner controlRunner)
         {
-            this.controlRunner = controlRunner;
-            //currentBehaviour.Value = initBehaviour;
+            _controlRunner = controlRunner;
             AgentContext = agent;
-            this.controlFlow = controlFlow;
-            this.initBehaviour = initBehaviour;
-            
-            
-            //behaviourStack.Push(GetOrSetWrapper(initBehaviour));
-            currentBehaviourWrapper.Subscribe(x => currentBehaviour.Value = x?.Behaviour);
+            _controlFlow = controlFlow;
+            CurrentBehaviourWrapper.Subscribe(x => CurrentBehaviour.Value = x?.Behaviour);
         }
-        
+
         private BehaviourWrapper GetOrSetWrapper(IBehaviour behaviour)
         {
-            if (behaviourWrappers.TryGetValue(behaviour, out var wrapper))
+            if (!_behaviourWrappers.TryGetValue(behaviour, out var wrapper))
             {
-                return wrapper;
+                wrapper = new BehaviourWrapper(behaviour, _controlFlow);
+                _behaviourWrappers[behaviour] = wrapper;
+            }
+            return wrapper;
+        }
+
+        public IControl DoUpdate(IBehaviour behaviour)
+        {
+            if (!_behaviourStack.Contains(behaviour))
+            {
+                _behaviourStack.Push(behaviour);
+                return DoSubUpdate();
             }
             else
             {
-                behaviourWrappers.TryAdd(behaviour, new BehaviourWrapper(behaviour, controlFlow));
-                return behaviourWrappers[behaviour];
-            }
-        }
-        
-        public void DoUpdate()
-        {
-            
-            if(behaviourStack.Count == 0)
-            {
-                behaviourTracker.Clear();
-                if (initBehaviour == null)
+                if (_behaviourStack.Count == 1 && _behaviourStack.Peek() == behaviour)
                 {
-                    Debug.Log($"Initial node {controlFlow.InitialNode} is not a state");
-                    return;
+                    return DoSubUpdate();
                 }
-                Forward(initBehaviour);
+                
+                _behaviourStack.Pop();
+                return _behaviourStack.Peek();
             }
-            if (behaviourStack.TryPeek(out BehaviourWrapper topBehaviour))
+
+        }
+        // public void DoCompleteUpdate()
+        // {
+        //     
+        //
+        //     while (_behaviourStack.Count > 0)
+        //     {
+        //         if (DoSubUpdate()) return;
+        //     }
+        // }
+
+        private IControl DoSubUpdate()
+        {
+            if (!_behaviourStack.TryPeek(out var topBehaviour))
             {
-                currentBehaviourWrapper.Value = topBehaviour;
-            }else
-            {
-                Debug.LogWarning($"Behaviour stack is empty");
-                return;
+                Debug.LogWarning("Behaviour stack is empty");
+                return default;
             }
-            if(!behaviourTracker.Contains(currentBehaviourWrapper.Value))
+
+            CurrentBehaviourWrapper.Value = GetOrSetWrapper(topBehaviour);
+
+            if (!_behaviourTracker.Contains(CurrentBehaviourWrapper.Value.Behaviour))
             {
-                currentBehaviourWrapper.Value?.Update(AgentContext, Time.deltaTime);
+                CurrentBehaviourWrapper.Value?.Update(AgentContext, Time.deltaTime);
             }
-            switch (currentBehaviourWrapper.Value?.State)
+
+            _resultState = CurrentBehaviourWrapper.Value?.State ?? State.Failure;
+            HandleResult(_resultState, out var nextControl);
+            return nextControl;
+        }
+
+        private void HandleResult(State result, out IControl nextControl)
+        {
+            switch (result)
             {
                 case State.Success:
-                    behaviourTracker.Add(currentBehaviourWrapper.Value);
-                    if (!Forward(currentBehaviourWrapper.Value.SuccessChild))
-                    {
-                        Backward();
-                    }
+                    HandleState(CurrentBehaviourWrapper.Value.SuccessChild, out nextControl);
                     break;
                 case State.Failure:
-                    behaviourTracker.Add(currentBehaviourWrapper.Value);
-                    if (!Forward(currentBehaviourWrapper.Value.FailureChild))
-                    {
-                        Backward();
-                    }
+                    HandleState(CurrentBehaviourWrapper.Value.FailureChild, out nextControl);
                     break;
                 case State.Running:
-                    
-                    break;
-                case null:
-                    Debug.LogWarning($"state of BT is null");
+                    nextControl = CurrentBehaviourWrapper.Value.Behaviour;
                     break;
                 default:
-                    Debug.LogError($"Unknown state {currentBehaviourWrapper.Value?.State}");
+                    Debug.LogError($"Unknown state {CurrentBehaviourWrapper.Value?.State}");
                     throw new ArgumentOutOfRangeException();
             }
         }
-
-        private bool Forward(IControl child)
-        {
-            if (child == null)
-                return false;
-            BehaviourWrapper wrapper = GetOrSetWrapper(controlRunner.GetNextBehaviourForNode(child, controlFlow));
-            if(!behaviourTracker.Contains(wrapper))
-            {
-                behaviourStack.Push(wrapper);
-                return true;
-            }
-
-            return false;
-        }
         
-        private void Backward()
+        private void HandleState(IControl child, out IControl nextControl)
         {
-            behaviourStack.Pop();
-            //behaviourTracker.Add();
+            if (CurrentBehaviourWrapper.Value.SuccessChild == null)
+            {
+                //nextControl = CurrentBehaviourWrapper.Value.Behaviour;
+                if(_behaviourStack.Count == 1)
+                    nextControl = CurrentBehaviourWrapper.Value.Behaviour;
+                else
+                {
+                    _behaviourStack.Pop();
+                    nextControl = _behaviourStack.Peek();
+                }
+            }
+            else
+            {
+                nextControl = child;
+            }
         }
+        //
+        // private bool Forward(IControl child)
+        // {
+        //     if (child == null)
+        //         return false;
+        //
+        //     if (child is IBehaviour)
+        //     {
+        //         var wrapper = GetOrSetWrapper(child as IBehaviour);
+        //         if (!_behaviourTracker.Contains(wrapper))
+        //         {
+        //             _behaviourStack.Push(wrapper);
+        //             return true;
+        //         }
+        //         return false;
+        //     }
+        //     //var wrapper = GetOrSetWrapper(_controlRunner.GetNextBehaviourForNode(child, _controlFlow));
+        //     
+        // }
+        //
+        // private void Backward()
+        // {
+        //     _behaviourStack.Pop();
+        // }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using ControlCanvas.Serialization;
 using UniRx;
 using UnityEngine;
@@ -15,9 +16,12 @@ namespace ControlCanvas.Runtime
         public string path = "Assets/ControlFlows/StateFlowEx4.xml";
         
         StateRunner stateRunner = new ();
-        DecisionRunner decisionRunner = new();
+        DecisionRunner<IControl> decisionRunner = new();
         BehaviourRunner behaviourRunner = new();
-        
+        private ReactiveProperty<Mode> _mode = new();
+        private bool _waitFrameRequested;
+        private IControl _nextSuggestedControl;
+
         private void Start()
         {
             XMLHelper.DeserializeFromXML(path, out controlFlow);
@@ -28,55 +32,104 @@ namespace ControlCanvas.Runtime
                 return;
             }
             IControl initialControl = NodeManager.Instance.GetControlForNode(controlFlow.InitialNode, controlFlow);
-            stateRunner.Init(initialControl as IState, AgentContext, controlFlow, this);
-            stateRunner.currentState.Subscribe(x => currentControl.Value = x);
-            decisionRunner.Init(initialControl as IDecision, AgentContext, controlFlow);
+            _nextSuggestedControl = initialControl;
+            _mode.Value = Mode.SubUpdate;
+            stateRunner.Init(AgentContext, controlFlow, this);
+            //stateRunner.currentState.Subscribe(x => currentControl.Value = x);
             
-            behaviourRunner.Init(initialControl as IBehaviour, AgentContext, controlFlow, this);
-            behaviourRunner.currentBehaviour.Subscribe(x => currentControl.Value = x);
+            decisionRunner.Init(AgentContext, controlFlow);
+            //decisionRunner.CurrentDecision.Subscribe(x => currentControl.Value = x);
+           // _mode.Subscribe(x => decisionRunner.SetMode(x));
+            
+            behaviourRunner.Init(AgentContext, controlFlow, this);
+            //behaviourRunner.CurrentBehaviour.Subscribe(x => currentControl.Value = x);
+            //_mode.Subscribe(x => behaviourRunner.SetMode(x));
         }
 
         private void FixedUpdate()
         {
-            stateRunner.DoUpdate();
-            behaviourRunner.DoUpdate();
+            //stateRunner.DoUpdate();
+            //behaviourRunner.DoUpdate();
         }
-        
-        public IState GetNextStateForNode(string nodeDataGuid, CanvasData controlFlow)
+
+        [ContextMenu("DoUpdate")]
+        private void DoUpdate()
         {
-            IControl control = NodeManager.Instance.GetControlForNode(nodeDataGuid, controlFlow);
-            if(control is IState state)
-            {
-                return state;
-            }
-            else if (control is IDecision decision)
-            {
-                return decisionRunner.CalculateUntilNextState(decision);
-            }
+            if(_mode.Value == Mode.CompleteUpdate)
+                DoCompleteUpdate();
             else
+                DoSubUpdate();
+        }
+        private void DoCompleteUpdate()
+        {
+            while (_nextSuggestedControl != currentControl.Value)
             {
-                Debug.LogError($"Node {nodeDataGuid} is not a state or decision");
-                return null;
+                DoSubUpdate();
             }
         }
         
+        private void DoSubUpdate()
+        {
+            if (_nextSuggestedControl == null)
+            {
+                Debug.LogError("No next suggested control");
+                return;
+            }
+            currentControl.Value = _nextSuggestedControl;
+            _nextSuggestedControl = null;
+            if (currentControl.Value is not IDecision)
+            {
+                decisionRunner.ClearTracker();
+            }
+            switch (currentControl.Value)
+            {
+                case IState state:
+                    _nextSuggestedControl = stateRunner.DoUpdate(state);
+                    break;
+                case IDecision decision:
+                    _nextSuggestedControl = decisionRunner.DoUpdate(decision);
+                    break;
+                case IBehaviour behaviour:
+                    _nextSuggestedControl = behaviourRunner.DoUpdate(behaviour);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        
+        public IControl GetNextForNode(NodeData nodeData, CanvasData controlFlow)
+        {
+            IControl control = NodeManager.Instance.GetControlForNode(nodeData.guid, controlFlow);
+            return control;
+        }
         
         [ContextMenu("AutoNext")]
-        public void AutoNext() => stateRunner.AutoNext();
-
-        public IBehaviour GetNextBehaviourForNode(IControl behav, CanvasData canvasData)
-        {
-            IControl control = behav;//NodeManager.Instance.GetControlForNode(NodeManager.Instance.GetGuidForControl(nextBehaviour), controlFlow);
-            switch (control)
-            {
-                case IBehaviour behaviour:
-                    return behaviour;
-                case IDecision decision:
-                    return decisionRunner.CalculateUntilNextBehaviour(decision);
-                default:
-                    Debug.LogError($"Node of type {control.GetType()}, {NodeManager.Instance.GetGuidForControl(behav)} is not a behaviour or decision");
-                    return null;
-            }
+        public void AutoNext()
+        { 
+            EdgeData edgeData = controlFlow.Edges.First(x => x.StartNodeGuid == NodeManager.Instance.GetGuidForControl(currentControl.Value));
+            NodeData nodeData = controlFlow.Nodes.FirstOrDefault(x => x.guid == edgeData.EndNodeGuid);
+            //IState state = nodeData.specificState;
+            currentControl.Value = GetNextForNode(nodeData, controlFlow);
         }
+        
+
+        [ContextMenu("SetModeCompleteUpdate")]
+        public void SetModeCompleteUpdate()
+        {
+            _mode.Value = Mode.CompleteUpdate;
+        }
+        
+        [ContextMenu("SetModeSubUpdate")]
+        public void SetModeSubUpdate()
+        {
+            _mode.Value = Mode.SubUpdate;
+        }
+
+    }
+
+    public enum Mode
+    {
+        CompleteUpdate,
+        SubUpdate
     }
 }

@@ -13,12 +13,11 @@ namespace ControlCanvas.Runtime
 
         private CanvasData controlFlow;
         private ControlRunner controlRunner;
+        private IState _nextState;
 
-
-        public void Init(IState initState, ControlAgent agent, CanvasData controlFlow, ControlRunner controlRunner)
+        public void Init(ControlAgent agent, CanvasData controlFlow, ControlRunner controlRunner)
         {
             this.controlRunner = controlRunner;
-            currentState.Value = initState;
             AgentContext = agent;
             this.controlFlow = controlFlow;
             if (currentState.Value == null)
@@ -29,31 +28,18 @@ namespace ControlCanvas.Runtime
             currentState.Value?.OnEnter(AgentContext);
         }
 
-        public void DoUpdate()
+        public IControl DoUpdate(IState behaviour)
         {
-            currentState.Value?.Execute(AgentContext, Time.deltaTime);
-        }
-
-        public void TransitionToState(IState newState)
-        {
-            currentState.Value?.OnExit(AgentContext);
-            currentState.Value = newState;
-            currentState.Value?.OnEnter(AgentContext);
-        }
-        
-        public void AutoNext()
-        {
-            EdgeData edgeData = controlFlow.Edges.First(x => x.StartNodeGuid == NodeManager.Instance.GetGuidForControl(currentState.Value));
-            NodeData nodeData = controlFlow.Nodes.FirstOrDefault(x => x.guid == edgeData.EndNodeGuid);
-            //IState state = nodeData.specificState;
-            IState state = controlRunner.GetNextStateForNode(nodeData?.guid, controlFlow);
-            if(state == null)
+            if(behaviour == null)
+                return null;
+            if(behaviour != currentState.Value)
             {
-                Debug.LogError($"No next state found for node {NodeManager.Instance.GetGuidForControl(currentState.Value)} to {nodeData?.guid}");
-                return;
+                currentState.Value?.OnExit(AgentContext);
+                currentState.Value = behaviour;
+                currentState.Value?.OnEnter(AgentContext);
             }
-            TransitionToState(state);
+            currentState.Value?.Execute(AgentContext, Time.deltaTime);
+            return currentState.Value;
         }
-        
     }
 }

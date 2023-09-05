@@ -6,88 +6,118 @@ using UnityEngine;
 
 namespace ControlCanvas.Runtime
 {
-    public class DecisionRunner
+    public class DecisionRunner<T> where T : IControl
     {
-        public ReactiveProperty<IDecision> currentDecision = new();
+        public ReactiveProperty<IDecision> CurrentDecision = new();
 
         public ControlAgent AgentContext;
 
         private CanvasData controlFlow;
         
         private List<IDecision> _decisionsTracker = new List<IDecision>();
-        public void Init(IDecision initialControl, ControlAgent agentContext, CanvasData controlFlow)
+        private Mode _mode;
+        private IControl _result;
+
+        public void Init(ControlAgent agentContext, CanvasData controlFlow)
         {
-            currentDecision.Value = initialControl;
             AgentContext = agentContext;
             this.controlFlow = controlFlow;
             
         }
 
-        private IControl CalculateUntilNextNonState(IDecision decision)
+        public IControl DoUpdate(IDecision decision)
+        {
+            CurrentDecision.Value = decision;
+            if (SubUpdate(out var calculateUntilNext))
+            {
+                _result = calculateUntilNext;
+            }
+
+            return _result;
+        }
+
+        private bool SubUpdate(out IControl calculateUntilNext)
+        {
+            calculateUntilNext = null;
+            if (_decisionsTracker.Contains(CurrentDecision.Value))
+            {
+                Debug.LogError(
+                    $"Decision {CurrentDecision.Value} is already in the decision tracker. This will cause an infinite loop");
+                {
+                    calculateUntilNext = null;
+                    return true;
+                }
+            }
+
+            _decisionsTracker.Add(CurrentDecision.Value);
+
+            List<EdgeData> edgeDatas = controlFlow.Edges
+                .Where(x => x.StartNodeGuid == NodeManager.Instance.GetGuidForControl(CurrentDecision.Value)).ToList();
+            EdgeData edgeData;
+            if (CurrentDecision.Value.Decide(AgentContext))
+            {
+                edgeData = edgeDatas.First(x => x.StartPortName == "portOut");
+            }
+            else
+            {
+                edgeData = edgeDatas.First(x => x.StartPortName != "portOut");
+            }
+
+            NodeData nodeData = controlFlow.Nodes.First(x => x.guid == edgeData.EndNodeGuid);
+            IControl control = NodeManager.Instance.GetControlForNode(nodeData.guid, controlFlow);
+
+            if (control is IDecision nextDecision)
+            {
+                CurrentDecision.Value = nextDecision;
+            }
+            else
+            {
+                {
+                    calculateUntilNext = control;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // public void CalculateUntilNext(IDecision decision)
+        // {
+        //     if (CurrentDecision.Value != null)
+        //     {
+        //         Debug.LogError($"Currently the decision is occupied by {CurrentDecision.Value}");
+        //         return;
+        //     }
+        //     CurrentDecision.Value = decision;
+        //     _result = null;
+        //     
+        // }
+        //
+        // public bool GetResult<T>(out T result)
+        // {
+        //     result = default;
+        //     if (_result == null)
+        //     {
+        //         return false;
+        //     }
+        //     if(_result is T typedControl)
+        //     {
+        //         result = typedControl;
+        //         return true;
+        //     }
+        //     else
+        //     {
+        //         throw new System.Exception($"Node {NodeManager.Instance.GetGuidForControl(_result)} is not a {typeof(T)}");
+        //     }
+        // }
+        //
+        // public void SetMode(Mode mode)
+        // {
+        //     _mode = mode;
+        // }
+        public void ClearTracker()
         {
             _decisionsTracker.Clear();
-            currentDecision.Value = decision;
-            while (currentDecision.Value != null)
-            {
-                if (_decisionsTracker.Contains(currentDecision.Value))
-                {
-                    Debug.LogError($"Decision {currentDecision.Value} is already in the decision tracker. This will cause an infinite loop");
-                    return null;
-                }
-                _decisionsTracker.Add(currentDecision.Value);
-                
-                List<EdgeData> edgeDatas = controlFlow.Edges.Where(x => x.StartNodeGuid == NodeManager.Instance.GetGuidForControl(currentDecision.Value)).ToList();
-                EdgeData edgeData;
-                if (currentDecision.Value.Decide(AgentContext))
-                {
-                    edgeData = edgeDatas.First(x => x.StartPortName == "portOut");
-                }
-                else
-                {
-                    edgeData = edgeDatas.First(x => x.StartPortName != "portOut");
-                }
-                NodeData nodeData = controlFlow.Nodes.First(x => x.guid == edgeData.EndNodeGuid);
-                IControl control = NodeManager.Instance.GetControlForNode(nodeData.guid, controlFlow);
-                
-                if (control is IDecision nextDecision)
-                {
-                    currentDecision.Value = nextDecision;
-                }
-                else
-                {
-                    return control;
-                }
-            }
-
-            return null;
-        }
-        
-        public IState CalculateUntilNextState(IDecision decision)
-        {
-            IControl control = CalculateUntilNextNonState(decision);
-            if(control is IState state)
-            {
-                return state;
-            }
-            else
-            {
-                Debug.LogError($"Node {NodeManager.Instance.GetGuidForControl(control)} is not a state");
-                return null;
-            }
-        }
-
-        public IBehaviour CalculateUntilNextBehaviour(IDecision decision)
-        {
-            IControl control = CalculateUntilNextNonState(decision);
-            if(control is IBehaviour behaviour)
-            {
-                return behaviour;
-            }
-            else
-            {
-                Debug.LogError($"Node {NodeManager.Instance.GetGuidForControl(control)} is not a behaviour");
-                return null;
-            }
         }
     }
 }
