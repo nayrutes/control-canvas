@@ -8,8 +8,9 @@ namespace ControlCanvas.Runtime
 {
     public class BehaviourRunner
     {
-        public ReactiveProperty<BehaviourWrapper> currentBehaviour = new();
-
+        public ReactiveProperty<BehaviourWrapper> currentBehaviourWrapper = new();
+        public ReactiveProperty<IBehaviour> currentBehaviour = new();
+        
         public ControlAgent AgentContext;
 
         private CanvasData controlFlow;
@@ -17,7 +18,9 @@ namespace ControlCanvas.Runtime
         
         private Dictionary<IBehaviour, BehaviourWrapper> behaviourWrappers = new ();
         private Stack<BehaviourWrapper> behaviourStack = new Stack<BehaviourWrapper>();
+        private HashSet<BehaviourWrapper> behaviourTracker = new HashSet<BehaviourWrapper>();
         
+        private IBehaviour initBehaviour;
         
         public void Init(IBehaviour initBehaviour, ControlAgent agent, CanvasData controlFlow, ControlRunner controlRunner)
         {
@@ -25,13 +28,11 @@ namespace ControlCanvas.Runtime
             //currentBehaviour.Value = initBehaviour;
             AgentContext = agent;
             this.controlFlow = controlFlow;
-            if (initBehaviour == null)
-            {
-                Debug.Log($"Initial node {controlFlow.InitialNode} is not a state");
-                return;
-            }
+            this.initBehaviour = initBehaviour;
             
-            behaviourStack.Push(GetOrSetWrapper(initBehaviour));
+            
+            //behaviourStack.Push(GetOrSetWrapper(initBehaviour));
+            currentBehaviourWrapper.Subscribe(x => currentBehaviour.Value = x?.Behaviour);
         }
         
         private BehaviourWrapper GetOrSetWrapper(IBehaviour behaviour)
@@ -49,37 +50,43 @@ namespace ControlCanvas.Runtime
         
         public void DoUpdate()
         {
+            
+            if(behaviourStack.Count == 0)
+            {
+                behaviourTracker.Clear();
+                if (initBehaviour == null)
+                {
+                    Debug.Log($"Initial node {controlFlow.InitialNode} is not a state");
+                    return;
+                }
+                Forward(initBehaviour);
+            }
             if (behaviourStack.TryPeek(out BehaviourWrapper topBehaviour))
             {
-                currentBehaviour.Value = topBehaviour;
+                currentBehaviourWrapper.Value = topBehaviour;
             }else
             {
-                //Debug.LogWarning($"Behaviour stack is empty");
+                Debug.LogWarning($"Behaviour stack is empty");
                 return;
             }
-            
-            currentBehaviour.Value?.Update(AgentContext, Time.deltaTime);
-            switch (currentBehaviour.Value?.State)
+            if(!behaviourTracker.Contains(currentBehaviourWrapper.Value))
+            {
+                currentBehaviourWrapper.Value?.Update(AgentContext, Time.deltaTime);
+            }
+            switch (currentBehaviourWrapper.Value?.State)
             {
                 case State.Success:
-                    if (currentBehaviour.Value.SuccessChild != null)
+                    behaviourTracker.Add(currentBehaviourWrapper.Value);
+                    if (!Forward(currentBehaviourWrapper.Value.SuccessChild))
                     {
-                        behaviourStack.Push(GetOrSetWrapper(controlRunner.GetNextBehaviourForNode(currentBehaviour.Value.SuccessChild, controlFlow)));
-                        
-                    }
-                    else
-                    {
-                        behaviourStack.Pop();
+                        Backward();
                     }
                     break;
                 case State.Failure:
-                    if(currentBehaviour.Value.FailureChild != null)
+                    behaviourTracker.Add(currentBehaviourWrapper.Value);
+                    if (!Forward(currentBehaviourWrapper.Value.FailureChild))
                     {
-                        behaviourStack.Push(GetOrSetWrapper(controlRunner.GetNextBehaviourForNode(currentBehaviour.Value.FailureChild, controlFlow)));
-                    }
-                    else
-                    {
-                        behaviourStack.Pop();
+                        Backward();
                     }
                     break;
                 case State.Running:
@@ -89,9 +96,29 @@ namespace ControlCanvas.Runtime
                     Debug.LogWarning($"state of BT is null");
                     break;
                 default:
-                    Debug.LogError($"Unknown state {currentBehaviour.Value?.State}");
+                    Debug.LogError($"Unknown state {currentBehaviourWrapper.Value?.State}");
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private bool Forward(IControl child)
+        {
+            if (child == null)
+                return false;
+            BehaviourWrapper wrapper = GetOrSetWrapper(controlRunner.GetNextBehaviourForNode(child, controlFlow));
+            if(!behaviourTracker.Contains(wrapper))
+            {
+                behaviourStack.Push(wrapper);
+                return true;
+            }
+
+            return false;
+        }
+        
+        private void Backward()
+        {
+            behaviourStack.Pop();
+            //behaviourTracker.Add();
         }
     }
 }

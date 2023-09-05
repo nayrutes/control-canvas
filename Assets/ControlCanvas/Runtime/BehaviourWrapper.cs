@@ -4,11 +4,11 @@ using ControlCanvas.Serialization;
 
 namespace ControlCanvas.Runtime
 {
-    public class BehaviourWrapper : IControl
+    public class BehaviourWrapper
     {
         public State State { get; private set; } = State.Running;
         bool Started { get; set; }
-        IBehaviour Behaviour { get; set; }
+        public IBehaviour Behaviour { get; private set; }
 
         public IControl SuccessChild { get; private set; }
         public IControl FailureChild { get; private set; }

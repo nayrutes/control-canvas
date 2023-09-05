@@ -188,7 +188,7 @@ namespace ControlCanvas.Editor.ViewModels
             Edges.Value.Remove(edgeData);
         }
 
-        public void SetCurrentDebugState(IControl control)
+        public void SetCurrentDebugControl(IControl control)
         {
             CurrentDebugNode.Value = NodeManager.Instance.GetGuidForControl(control);
         }

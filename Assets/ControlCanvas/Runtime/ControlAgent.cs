@@ -9,6 +9,7 @@ namespace ControlCanvas.Runtime
 
         public bool testBool;
         public bool testBoolSecond;
+        public State testState;
 
         public bool CheckTransitionCondition()
         {

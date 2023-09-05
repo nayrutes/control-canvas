@@ -19,19 +19,19 @@ namespace ControlCanvas.Editor
 
         public void Link()
         {
-            controlRunner.currentControl.Subscribe(OnStateChanged).AddTo(disposables);
+            controlRunner.currentControl.Subscribe(OnControlChanged).AddTo(disposables);
         }
         
         public void Unlink()
         {
-            OnStateChanged(null);
+            OnControlChanged(null);
             disposables.Dispose();
             disposables = new CompositeDisposable();
         }
         
-        private void OnStateChanged(IControl control)
+        private void OnControlChanged(IControl control)
         {
-            canvasViewModel.SetCurrentDebugState(control);
+            canvasViewModel.SetCurrentDebugControl(control);
         }
     }
     

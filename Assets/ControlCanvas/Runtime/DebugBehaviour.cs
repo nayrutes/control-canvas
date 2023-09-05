@@ -4,6 +4,7 @@ namespace ControlCanvas.Runtime
 {
     public class DebugBehaviour : IBehaviour
     {
+        
         public void OnStart(ControlAgent agentContext)
         {
             Debug.Log($"DebugBehaviour.OnStart of {NodeManager.Instance.GetGuidForControl(this)}");
@@ -12,7 +13,7 @@ namespace ControlCanvas.Runtime
         public State OnUpdate(ControlAgent agentContext, float deltaTime)
         {
             Debug.Log($"DebugBehaviour.OnUpdate of {NodeManager.Instance.GetGuidForControl(this)}");
-            return State.Success;
+            return agentContext.testState;
         }
 
         public void OnStop(ControlAgent agentContext)

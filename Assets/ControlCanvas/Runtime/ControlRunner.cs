@@ -33,7 +33,7 @@ namespace ControlCanvas.Runtime
             decisionRunner.Init(initialControl as IDecision, AgentContext, controlFlow);
             
             behaviourRunner.Init(initialControl as IBehaviour, AgentContext, controlFlow, this);
-            
+            behaviourRunner.currentBehaviour.Subscribe(x => currentControl.Value = x);
         }
 
         private void FixedUpdate()
