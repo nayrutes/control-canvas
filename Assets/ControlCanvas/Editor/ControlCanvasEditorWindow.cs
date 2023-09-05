@@ -28,6 +28,10 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
 
     DebugLinker debugLinker;
     
+    private Button playButton;
+    private Button stopButton;
+    private Button stepButton;
+
     [MenuItem("Window/UI Toolkit/ControlCanvasEditorWindow")]
     public static void OpenWindow()
     {
@@ -64,6 +68,9 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         canvasPathLabel = rootVisualElement.Q<Label>("canvas-path");
         debugRunnerField = rootVisualElement.Q<ObjectField>("debug-runner");
         
+        playButton = rootVisualElement.Q<Button>("Play");
+        stopButton = rootVisualElement.Q<Button>("Stop");
+        stepButton = rootVisualElement.Q<Button>("Step");
     }
 
     private void SetUpSubscriptions()
@@ -88,6 +95,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
             var runner = evt.newValue as ControlRunner;
             if (runner == null) return;
             debugLinker = new DebugLinker(runner, m_CanvasViewModel);
+            debugLinker.SetButtons(playButton, stopButton, stepButton);
             debugLinker.Link();
         });
     }

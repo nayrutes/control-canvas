@@ -212,6 +212,28 @@ namespace ControlCanvas.Editor.Views
                 }
             }).AddTo(disposables);
             
+            nodeViewModel.CurrentDebugBehaviourState.Subscribe(x =>
+            {
+                this.RemoveFromClassList("debug-node-success");
+                this.RemoveFromClassList("debug-node-failure");
+                this.RemoveFromClassList("debug-node-running");
+                switch (x)
+                {
+                    case State.Success:
+                        this.AddToClassList("debug-node-success");
+                        break;
+                    case State.Failure:
+                        this.AddToClassList("debug-node-failure");
+                        break;
+                    case State.Running:
+                        this.AddToClassList("debug-node-running");
+                        break;
+                    case null:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(x), x, null);
+                }
+            }).AddTo(disposables);
             //nodeViewModel.HidePort2.Subscribe(x => { HidePort2(x); }).AddTo(disposables);
         }
 

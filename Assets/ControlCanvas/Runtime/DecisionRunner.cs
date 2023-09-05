@@ -15,8 +15,8 @@ namespace ControlCanvas.Runtime
         private CanvasData controlFlow;
         
         private List<IDecision> _decisionsTracker = new List<IDecision>();
-        private Mode _mode;
-        private IControl _result;
+        //private Mode _mode;
+        //private IControl _result;
 
         public void Init(ControlAgent agentContext, CanvasData controlFlow)
         {
@@ -28,25 +28,14 @@ namespace ControlCanvas.Runtime
         public IControl DoUpdate(IDecision decision)
         {
             CurrentDecision.Value = decision;
-            if (SubUpdate(out var calculateUntilNext))
-            {
-                _result = calculateUntilNext;
-            }
-
-            return _result;
+            return SubUpdate();
         }
 
-        private bool SubUpdate(out IControl calculateUntilNext)
+        private IControl SubUpdate()
         {
-            calculateUntilNext = null;
             if (_decisionsTracker.Contains(CurrentDecision.Value))
             {
-                Debug.LogError(
-                    $"Decision {CurrentDecision.Value} is already in the decision tracker. This will cause an infinite loop");
-                {
-                    calculateUntilNext = null;
-                    return true;
-                }
+                return null;
             }
 
             _decisionsTracker.Add(CurrentDecision.Value);
@@ -65,20 +54,7 @@ namespace ControlCanvas.Runtime
 
             NodeData nodeData = controlFlow.Nodes.First(x => x.guid == edgeData.EndNodeGuid);
             IControl control = NodeManager.Instance.GetControlForNode(nodeData.guid, controlFlow);
-
-            if (control is IDecision nextDecision)
-            {
-                CurrentDecision.Value = nextDecision;
-            }
-            else
-            {
-                {
-                    calculateUntilNext = control;
-                    return true;
-                }
-            }
-
-            return false;
+            return control;
         }
 
         // public void CalculateUntilNext(IDecision decision)

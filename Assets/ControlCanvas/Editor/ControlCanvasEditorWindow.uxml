@@ -21,7 +21,19 @@
             </ControlCanvas.Editor.SplitView>
         </ui:VisualElement>
         <ui:VisualElement name="right-panel" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">
-            <ui:Label tabindex="-1" text="Canvas Name" display-tooltip-when-elided="true" name="canvas-name" />
+            <ui:VisualElement name="ToolbarZone" style="flex-grow: 1; background-color: rgb(0, 0, 0); flex-direction: row; align-items: flex-start; max-height: 30px;">
+                <ui:VisualElement name="ZoneLeft" class="custom-toolbar-zone-element" style="width: 30%;">
+                    <ui:Label tabindex="-1" text="Canvas Name" display-tooltip-when-elided="true" name="canvas-name" />
+                </ui:VisualElement>
+                <ui:VisualElement name="ZoneCenter" class="custom-toolbar-zone-element" style="justify-content: center; width: 40%;">
+                    <ui:VisualElement style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); min-height: 20px; flex-direction: row; flex-shrink: 0; justify-content: center;">
+                        <ui:Button text="Play" display-tooltip-when-elided="true" name="Play" />
+                        <ui:Button text="Stop" display-tooltip-when-elided="true" name="Stop" />
+                        <ui:Button text="Step" display-tooltip-when-elided="true" name="Step" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="ZoneRight" class="custom-toolbar-zone-element" style="flex-direction: row-reverse; flex-grow: 1; width: 30%;" />
+            </ui:VisualElement>
             <ControlCanvas.Editor.Views.ControlGraphView focusable="true" style="flex-grow: 1;" />
         </ui:VisualElement>
     </ControlCanvas.Editor.SplitView>

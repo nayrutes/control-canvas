@@ -1,6 +1,7 @@
 ﻿using ControlCanvas.Editor.ViewModels;
 using ControlCanvas.Runtime;
 using UniRx;
+using UnityEngine.UIElements;
 
 namespace ControlCanvas.Editor
 {
@@ -19,7 +20,7 @@ namespace ControlCanvas.Editor
 
         public void Link()
         {
-            controlRunner.currentControl.Subscribe(OnControlChanged).AddTo(disposables);
+            controlRunner.CurrentControl.Subscribe(OnControlChanged).AddTo(disposables);
         }
         
         public void Unlink()
@@ -32,6 +33,18 @@ namespace ControlCanvas.Editor
         private void OnControlChanged(IControl control)
         {
             canvasViewModel.SetCurrentDebugControl(control);
+            if (control is IBehaviour)
+            {
+                canvasViewModel.SetDebugBehaviourState(controlRunner.LatestPop, null);
+                canvasViewModel.SetDebugBehaviourState(control, controlRunner.LatestBehaviourState);
+            }
+        }
+
+        public void SetButtons(Button playButton, Button stopButton, Button stepButton)
+        {
+            playButton.clickable.clicked += () => controlRunner.Play();
+            stopButton.clickable.clicked += () => controlRunner.Stop();
+            stepButton.clickable.clicked += () => controlRunner.Step();
         }
     }
     

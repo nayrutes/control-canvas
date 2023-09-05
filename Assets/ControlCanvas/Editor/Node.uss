@@ -213,7 +213,7 @@
 }
 
 .initial-node {
-    background-color: rgba(53, 132, 94, 0.98);
+    background-color: rgba(53, 128, 132, 0.98);
 }
 
 .debug-node {
@@ -230,4 +230,16 @@
 .hide-port-2 {
     visibility: hidden;
     display: none;
+}
+
+.debug-node-success {
+    background-color: rgb(7, 142, 0);
+}
+
+.debug-node-failure {
+    background-color: rgb(152, 11, 0);
+}
+
+.debug-node-running {
+    background-color: rgb(190, 106, 0);
 }

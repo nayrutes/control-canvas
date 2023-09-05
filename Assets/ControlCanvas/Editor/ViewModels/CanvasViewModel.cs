@@ -192,5 +192,10 @@ namespace ControlCanvas.Editor.ViewModels
         {
             CurrentDebugNode.Value = NodeManager.Instance.GetGuidForControl(control);
         }
+
+        public void SetDebugBehaviourState(IControl control, State? controlRunnerLatestBehaviourState)
+        {
+            GetViewModelByGuid(NodeManager.Instance.GetGuidForControl(control))?.SetCurrentDebugBehaviourState(controlRunnerLatestBehaviourState);
+        }
     }
 }

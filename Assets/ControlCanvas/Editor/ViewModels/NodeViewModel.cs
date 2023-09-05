@@ -25,6 +25,8 @@ namespace ControlCanvas.Editor.ViewModels
         public ReactiveProperty<bool> IsDebugNode { get; private set; } = new();
         //public ReactiveProperty<bool> HidePort2 { get; private set; } = new();
 
+        public ReactiveProperty<State?> CurrentDebugBehaviourState { get; private set; } = new();
+        
         //[NonSerialized]
         public Blackboard blackboardCanvas;
 
@@ -101,6 +103,10 @@ namespace ControlCanvas.Editor.ViewModels
             newData.guid = System.Guid.NewGuid().ToString();
             return newData;
         }
-        
+
+        public void SetCurrentDebugBehaviourState(State? controlRunnerLatestBehaviourState)
+        {
+            CurrentDebugBehaviourState.Value = controlRunnerLatestBehaviourState;
+        }
     }
 }

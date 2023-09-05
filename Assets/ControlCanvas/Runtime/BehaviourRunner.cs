@@ -18,8 +18,9 @@ namespace ControlCanvas.Runtime
         private readonly Stack<IBehaviour> _behaviourStack = new();
         private readonly HashSet<IControl> _behaviourTracker = new();
         private IBehaviour _initBehaviour;
-        private State _resultState;
+        public State ResultState { get; private set; }
         private bool _endReached;
+        public IBehaviour LatestPop;
 
         public void Init(ControlAgent agent, CanvasData controlFlow, ControlRunner controlRunner)
         {
@@ -53,20 +54,11 @@ namespace ControlCanvas.Runtime
                     return DoSubUpdate();
                 }
                 
-                _behaviourStack.Pop();
+                LatestPop = _behaviourStack.Pop();
                 return _behaviourStack.Peek();
             }
 
         }
-        // public void DoCompleteUpdate()
-        // {
-        //     
-        //
-        //     while (_behaviourStack.Count > 0)
-        //     {
-        //         if (DoSubUpdate()) return;
-        //     }
-        // }
 
         private IControl DoSubUpdate()
         {
@@ -83,8 +75,8 @@ namespace ControlCanvas.Runtime
                 CurrentBehaviourWrapper.Value?.Update(AgentContext, Time.deltaTime);
             }
 
-            _resultState = CurrentBehaviourWrapper.Value?.State ?? State.Failure;
-            HandleResult(_resultState, out var nextControl);
+            ResultState = CurrentBehaviourWrapper.Value?.State ?? State.Failure;
+            HandleResult(ResultState, out var nextControl);
             return nextControl;
         }
 
@@ -116,7 +108,7 @@ namespace ControlCanvas.Runtime
                     nextControl = CurrentBehaviourWrapper.Value.Behaviour;
                 else
                 {
-                    _behaviourStack.Pop();
+                    LatestPop = _behaviourStack.Pop();
                     nextControl = _behaviourStack.Peek();
                 }
             }
