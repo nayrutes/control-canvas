@@ -19,6 +19,7 @@ namespace ControlCanvas.Runtime
         public static readonly Dictionary<string, Type> behaviourDictionary = new()
         {
             {"DebugBehaviour", typeof(DebugBehaviour)},
+            {"WaitBehaviour", typeof(WaitBehaviour)},
         };
         
         public static readonly Dictionary<string, Type> decisionDictionary = new()
