@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ControlCanvas.Serialization;
 using UniRx;
@@ -9,7 +10,9 @@ namespace ControlCanvas.Runtime
     public class ControlRunner : MonoBehaviour
     {
         public ReactiveProperty<IControl> CurrentControl { get; private set; } = new ReactiveProperty<IControl>();
+        public Subject<IControl> StepDone { get; } = new Subject<IControl>();
 
+        public Subject<List<IBehaviour>> ClearingBt { get; set; } = new();
         [SerializeField]
         private ControlAgent agentContext;
 
@@ -27,9 +30,12 @@ namespace ControlCanvas.Runtime
         private IControl initialControl;
         private bool stopped = true;
         private bool startedComplete;
+        private bool _autoRestart = true;
+        private List<IBehaviour> _btTracker = new();
 
-        public State LatestBehaviourState => behaviourRunner.ResultState;
-        public IControl LatestPop => behaviourRunner.LatestPop;
+        public State LatestBehaviourState => behaviourRunner.LastCombinedResult;
+
+        //public IControl LatestPop => behaviourRunner.LatestPop;
 
         private void Start()
         {
@@ -75,37 +81,53 @@ namespace ControlCanvas.Runtime
                 SubUpdate();
         }
 
+        bool _safetyBreak = false;
+        bool _running = false;
         private void CompleteUpdate()
         {
-            while (true)
+            _running = true;
+            while (_running)
             {
+                if (_safetyBreak)
+                    return;
+                
                 if (IsUpdateComplete())
-                    break;
+                {
+                    _running = false;
+                    
+                }
+                SubUpdate();
 
                 startedComplete = true;
-                if (nextSuggestedControl == null)
-                    return;
-
-                SubUpdate();
             }
             startedComplete = false;
         }
 
         private bool IsUpdateComplete()
         {
-            return nextSuggestedControl == CurrentControl.Value || nextSuggestedControl == null || (nextSuggestedControl == initialControl && startedComplete);
+            return nextSuggestedControl == CurrentControl.Value || (nextSuggestedControl == initialControl && startedComplete);
         }
 
         private void SubUpdate()
         {
-            CurrentControl.Value = nextSuggestedControl;
             if (nextSuggestedControl == null)
             {
-                Debug.LogError("No next suggested control");
-                return;
+                if (_autoRestart)
+                {
+                    Debug.Log("Restarting control flow because no next suggested control");
+                    nextSuggestedControl = initialControl;
+                    ClearBtMarker();
+                }
+                else
+                {
+                    Debug.LogError("No next suggested control");
+                    return;   
+                }
             }
+            CurrentControl.Value = nextSuggestedControl;
             nextSuggestedControl = null;
             UpdateBasedOnControlType();
+            StepDone.OnNext(CurrentControl.Value);
         }
 
         private void UpdateBasedOnControlType()
@@ -120,6 +142,7 @@ namespace ControlCanvas.Runtime
                     ClearDecisionTrackerIfNecessary();
                     break;
                 case IBehaviour behaviour:
+                    _btTracker.Add(behaviour);
                     nextSuggestedControl = behaviourRunner.DoUpdate(behaviour);
                     break;
                 default:
@@ -135,6 +158,12 @@ namespace ControlCanvas.Runtime
             }
         }
 
+        private void ClearBtMarker()
+        {
+            ClearingBt.OnNext(_btTracker);
+            _btTracker.Clear();
+        }
+        
         public IControl GetNextForNode(NodeData nodeData, CanvasData controlFlow)
         {
             return NodeManager.Instance.GetControlForNode(nodeData.guid, controlFlow);

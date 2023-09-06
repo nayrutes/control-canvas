@@ -6,35 +6,38 @@ namespace ControlCanvas.Runtime
 {
     public class BehaviourWrapper
     {
-        public State State { get; private set; } = State.Running;
-        bool Started { get; set; }
+        //public State ExecutedResultState { get; private set; } = State.Running;
+        public State CombinedResultState { get; set; } = State.Running;
+        public bool ChoseFailRoute { get; set; }
+        public bool Started { get; private set; }
         public IBehaviour Behaviour { get; private set; }
 
         public IControl SuccessChild { get; private set; }
         public IControl FailureChild { get; private set; }
 
+        private readonly NodeManager _nodeManager = NodeManager.Instance;
+
         public BehaviourWrapper(IBehaviour behaviour, CanvasData controlFlow)
         {
             Behaviour = behaviour;
-            List<EdgeData> edgeDatas = controlFlow.Edges
-                .Where(x => x.StartNodeGuid == NodeManager.Instance.GetGuidForControl(Behaviour)).ToList();
-            EdgeData edgeData;
-            {
-                edgeData = edgeDatas.FirstOrDefault(x => x.StartPortName == "portOut");
-                if (edgeData != null)
-                {
-                    NodeData nodeData = controlFlow.Nodes.First(x => x.guid == edgeData.EndNodeGuid);
-                    SuccessChild = NodeManager.Instance.GetControlForNode(nodeData.guid, controlFlow);
-                }
-            }
-            {
-                edgeData = edgeDatas.FirstOrDefault(x => x.StartPortName != "portOut");
-                if (edgeData != null)
-                {
-                    NodeData nodeData = controlFlow.Nodes.First(x => x.guid == edgeData.EndNodeGuid);
-                    FailureChild = NodeManager.Instance.GetControlForNode(nodeData.guid, controlFlow);
-                }
-            }
+            SuccessChild = GetChild(controlFlow, "portOut");
+            FailureChild = GetChild(controlFlow, portName: null, excludePortName: "portOut");
+        }
+
+        private IControl GetChild(CanvasData controlFlow, string portName, string excludePortName = null)
+        {
+            var edgeDatas = controlFlow.Edges
+                .Where(x => x.StartNodeGuid == _nodeManager.GetGuidForControl(Behaviour))
+                .ToList();
+
+            var edgeData = edgeDatas.FirstOrDefault(x => 
+                (portName != null && x.StartPortName == portName) || 
+                (excludePortName != null && x.StartPortName != excludePortName));
+
+            if (edgeData == null) return null;
+
+            var nodeData = controlFlow.Nodes.FirstOrDefault(x => x.guid == edgeData.EndNodeGuid);
+            return nodeData != null ? _nodeManager.GetControlForNode(nodeData.guid, controlFlow) : null;
         }
 
         public void Update(ControlAgent agentContext, float deltaTime)
@@ -45,9 +48,10 @@ namespace ControlCanvas.Runtime
                 Started = true;
             }
 
-            State = Behaviour.OnUpdate(agentContext, deltaTime);
+            //ExecutedResultState = 
+            CombinedResultState = Behaviour.OnUpdate(agentContext, deltaTime);
 
-            if (State != State.Running)
+            if (CombinedResultState != State.Running)
             {
                 Behaviour.OnStop(agentContext);
                 Started = false;

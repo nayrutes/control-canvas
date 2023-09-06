@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <CanvasData xmlns:sys="https://extendedxmlserializer.github.io/system" xmlns:exs="https://extendedxmlserializer.github.io/v2" xmlns:ns1="clr-namespace:ControlCanvas.Runtime;assembly=Assembly-CSharp" InitialNode="0070330c-acc7-4b6e-a2d9-de330ca25302">
-  <Nodes Capacity="8">
+  <Nodes Capacity="9">
     <NodeData Name="New Node" Guid="0070330c-acc7-4b6e-a2d9-de330ca25302" nodeType="Behaviour" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp">
       <Position x="545" y="312" />
-      <Size x="444" y="158" />
-      <specificControl exs:type="ns1:DebugBehaviour" />
+      <Size x="444" y="178" />
+      <specificControl exs:type="ns1:DebugBehaviour" nodeState="Success" />
     </NodeData>
     <NodeData Name="New Node" Guid="688f026d-5c99-4a49-8a2d-81e882c0f6f1" nodeType="Behaviour" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp">
       <Position x="1191" y="312" />
-      <Size x="444" y="158" />
-      <specificControl exs:type="ns1:DebugBehaviour" />
+      <Size x="444" y="178" />
+      <specificControl exs:type="ns1:DebugBehaviour" nodeState="Success" />
     </NodeData>
     <NodeData Name="New Node" Guid="2721f83d-bd9b-4d7d-8f8e-401ff32cce58" nodeType="Behaviour" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp">
       <Position x="1191" y="601" />
-      <Size x="444" y="158" />
-      <specificControl exs:type="ns1:DebugBehaviour" />
+      <Size x="444" y="178" />
+      <specificControl exs:type="ns1:DebugBehaviour" nodeState="Failure" />
     </NodeData>
     <NodeData Name="New Node" Guid="259b536e-668a-4c00-b190-cacc36b68c34" nodeType="Behaviour" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp">
       <Position x="2246" y="312" />
-      <Size x="444" y="158" />
-      <specificControl exs:type="ns1:DebugBehaviour" />
+      <Size x="444" y="178" />
+      <specificControl exs:type="ns1:DebugBehaviour" nodeState="Failure" />
     </NodeData>
     <NodeData Name="New Node" Guid="810ce88a-88ff-44c9-b73a-d302a4974cf3" nodeType="Decision" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp">
       <Position x="1719" y="312" />
@@ -28,8 +28,8 @@
     </NodeData>
     <NodeData Name="New Node" Guid="76bebc22-a800-4a90-9878-ecb56352141d" nodeType="Behaviour" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp">
       <Position x="2246" y="629" />
-      <Size x="444" y="158" />
-      <specificControl exs:type="ns1:DebugBehaviour" />
+      <Size x="444" y="178" />
+      <specificControl exs:type="ns1:DebugBehaviour" nodeState="Failure" />
     </NodeData>
     <NodeData Name="New Node" Guid="3b709125-46af-40b2-9571-28d5ca2afceb" nodeType="Decision" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp">
       <Position x="1679" y="629" />
@@ -38,11 +38,16 @@
     </NodeData>
     <NodeData Name="New Node" Guid="5b45939c-c343-4d54-9eb3-b5e621d7dfaa" nodeType="Behaviour" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp">
       <Position x="1679" y="914" />
-      <Size x="444" y="158" />
-      <specificControl exs:type="ns1:DebugBehaviour" />
+      <Size x="444" y="178" />
+      <specificControl exs:type="ns1:DebugBehaviour" nodeState="Failure" />
+    </NodeData>
+    <NodeData Name="New Node" Guid="15206ebb-f265-4807-afe7-a1783d7e7bb4" nodeType="Behaviour" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp">
+      <Position x="1191" y="851" />
+      <Size x="444" y="178" />
+      <specificControl exs:type="ns1:DebugBehaviour" nodeState="Success" />
     </NodeData>
   </Nodes>
-  <Edges Capacity="7">
+  <Edges Capacity="8">
     <EdgeData Guid="7980a0e1-f5b3-4b43-9afb-de3fdbcc729a" StartNodeGuid="0070330c-acc7-4b6e-a2d9-de330ca25302" EndNodeGuid="688f026d-5c99-4a49-8a2d-81e882c0f6f1" StartPortName="portOut" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp" />
     <EdgeData Guid="ab4355f9-722a-40b3-83b7-57a5c52edcbc" StartNodeGuid="688f026d-5c99-4a49-8a2d-81e882c0f6f1" EndNodeGuid="2721f83d-bd9b-4d7d-8f8e-401ff32cce58" StartPortName="portOut-2" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp" />
     <EdgeData Guid="005b330b-86c6-4ce5-a1ce-394e913e8867" StartNodeGuid="688f026d-5c99-4a49-8a2d-81e882c0f6f1" EndNodeGuid="810ce88a-88ff-44c9-b73a-d302a4974cf3" StartPortName="portOut" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp" />
@@ -50,5 +55,6 @@
     <EdgeData Guid="f3ab59ed-6422-458f-8d67-626776b2bcf8" StartNodeGuid="810ce88a-88ff-44c9-b73a-d302a4974cf3" EndNodeGuid="3b709125-46af-40b2-9571-28d5ca2afceb" StartPortName="portOut-2" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp" />
     <EdgeData Guid="590f3922-2e60-402f-86a7-6d56262632d3" StartNodeGuid="3b709125-46af-40b2-9571-28d5ca2afceb" EndNodeGuid="5b45939c-c343-4d54-9eb3-b5e621d7dfaa" StartPortName="portOut-2" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp" />
     <EdgeData Guid="82169100-d96b-4157-a29a-33dacb16485e" StartNodeGuid="3b709125-46af-40b2-9571-28d5ca2afceb" EndNodeGuid="76bebc22-a800-4a90-9878-ecb56352141d" StartPortName="portOut" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp" />
+    <EdgeData Guid="afed5a03-54f9-4f0b-94ae-29ebb25888ce" StartNodeGuid="2721f83d-bd9b-4d7d-8f8e-401ff32cce58" EndNodeGuid="15206ebb-f265-4807-afe7-a1783d7e7bb4" StartPortName="portOut-2" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp" />
   </Edges>
 </CanvasData>

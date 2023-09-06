@@ -8,26 +8,42 @@ namespace ControlCanvas.Runtime
 {
     public class BehaviourRunner
     {
+        
         public ReactiveProperty<BehaviourWrapper> CurrentBehaviourWrapper { get; } = new();
-        public ReactiveProperty<IBehaviour> CurrentBehaviour { get; } = new();
         public ControlAgent AgentContext { get; set; }
+        public State LastCombinedResult { get; private set; }
 
+        
         private CanvasData _controlFlow;
         private ControlRunner _controlRunner;
         private readonly Dictionary<IBehaviour, BehaviourWrapper> _behaviourWrappers = new();
         private readonly Stack<IBehaviour> _behaviourStack = new();
         private readonly HashSet<IControl> _behaviourTracker = new();
-        private IBehaviour _initBehaviour;
-        public State ResultState { get; private set; }
         private bool _endReached;
-        public IBehaviour LatestPop;
 
         public void Init(ControlAgent agent, CanvasData controlFlow, ControlRunner controlRunner)
         {
             _controlRunner = controlRunner;
             AgentContext = agent;
             _controlFlow = controlFlow;
-            CurrentBehaviourWrapper.Subscribe(x => CurrentBehaviour.Value = x?.Behaviour);
+        }
+
+        public IControl DoUpdate(IBehaviour behaviour)
+        {
+            CurrentBehaviourWrapper.Value = GetOrSetWrapper(behaviour);
+
+            if (!_endReached)
+            {
+                TryAddToStack(CurrentBehaviourWrapper.Value.Behaviour);
+                if (!_behaviourTracker.Contains(CurrentBehaviourWrapper.Value.Behaviour))
+                {
+                    CurrentBehaviourWrapper.Value.Update(AgentContext, Time.deltaTime);
+                }
+
+                LastCombinedResult = CurrentBehaviourWrapper.Value.CombinedResultState;
+            }
+
+            return HandleResult();
         }
 
         private BehaviourWrapper GetOrSetWrapper(IBehaviour behaviour)
@@ -40,106 +56,83 @@ namespace ControlCanvas.Runtime
             return wrapper;
         }
 
-        public IControl DoUpdate(IBehaviour behaviour)
+        private void TryAddToStack(IBehaviour behaviour)
         {
             if (!_behaviourStack.Contains(behaviour))
             {
                 _behaviourStack.Push(behaviour);
-                return DoSubUpdate();
+                _endReached = false;
+            }
+        }
+
+        private IControl HandleResult()
+        {
+            IControl nextControl = null;
+
+            if (_endReached)
+            {
+                if (!CurrentBehaviourWrapper.Value.ChoseFailRoute)
+                {
+                    if (LastCombinedResult == State.Failure)
+                    {
+                        _endReached = false;
+                        nextControl = CurrentBehaviourWrapper.Value.FailureChild;
+                        CurrentBehaviourWrapper.Value.CombinedResultState = State.Failure;
+                        //CurrentBehaviourWrapper.Value.ChoseFailRoute = true;
+                    }
+                    
+                }
             }
             else
             {
-                if (_behaviourStack.Count == 1 && _behaviourStack.Peek() == behaviour)
+                switch (CurrentBehaviourWrapper.Value.CombinedResultState)
                 {
-                    return DoSubUpdate();
+                    case State.Success:
+                        nextControl = CurrentBehaviourWrapper.Value.SuccessChild;
+                        break;
+                    case State.Failure:
+                        nextControl = CurrentBehaviourWrapper.Value.FailureChild;
+                        CurrentBehaviourWrapper.Value.ChoseFailRoute = true;
+                        break;
+                    case State.Running:
+                        nextControl = CurrentBehaviourWrapper.Value.Behaviour;
+                        break;
+                    default:
+                        Debug.LogError($"Unknown state {CurrentBehaviourWrapper.Value?.CombinedResultState}");
+                        throw new ArgumentOutOfRangeException();
                 }
-                
-                LatestPop = _behaviourStack.Pop();
-                return _behaviourStack.Peek();
+
+                _endReached = nextControl == null;
             }
 
-        }
-
-        private IControl DoSubUpdate()
-        {
-            if (!_behaviourStack.TryPeek(out var topBehaviour))
+            if (_endReached)
             {
-                Debug.LogWarning("Behaviour stack is empty");
-                return default;
+                _behaviourStack.Pop();
+                if (_behaviourStack.TryPeek(out IBehaviour topBehaviour))
+                {
+                    nextControl = topBehaviour;
+                }
+                else
+                {
+                    _endReached = false;
+                }
             }
 
-            CurrentBehaviourWrapper.Value = GetOrSetWrapper(topBehaviour);
-
-            if (!_behaviourTracker.Contains(CurrentBehaviourWrapper.Value.Behaviour))
-            {
-                CurrentBehaviourWrapper.Value?.Update(AgentContext, Time.deltaTime);
-            }
-
-            ResultState = CurrentBehaviourWrapper.Value?.State ?? State.Failure;
-            HandleResult(ResultState, out var nextControl);
             return nextControl;
         }
 
-        private void HandleResult(State result, out IControl nextControl)
-        {
-            switch (result)
-            {
-                case State.Success:
-                    HandleState(CurrentBehaviourWrapper.Value.SuccessChild, out nextControl);
-                    break;
-                case State.Failure:
-                    HandleState(CurrentBehaviourWrapper.Value.FailureChild, out nextControl);
-                    break;
-                case State.Running:
-                    nextControl = CurrentBehaviourWrapper.Value.Behaviour;
-                    break;
-                default:
-                    Debug.LogError($"Unknown state {CurrentBehaviourWrapper.Value?.State}");
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-        
-        private void HandleState(IControl child, out IControl nextControl)
-        {
-            if (CurrentBehaviourWrapper.Value.SuccessChild == null)
-            {
-                //nextControl = CurrentBehaviourWrapper.Value.Behaviour;
-                if(_behaviourStack.Count == 1)
-                    nextControl = CurrentBehaviourWrapper.Value.Behaviour;
-                else
-                {
-                    LatestPop = _behaviourStack.Pop();
-                    nextControl = _behaviourStack.Peek();
-                }
-            }
-            else
-            {
-                nextControl = child;
-            }
-        }
-        //
-        // private bool Forward(IControl child)
+        // private void CombineResults()
         // {
-        //     if (child == null)
-        //         return false;
-        //
-        //     if (child is IBehaviour)
+        //     State currentResult = CurrentBehaviourWrapper.Value.CombinedResultState;
+        //     if (!CurrentBehaviourWrapper.Value.ChoseFailRoute)
         //     {
-        //         var wrapper = GetOrSetWrapper(child as IBehaviour);
-        //         if (!_behaviourTracker.Contains(wrapper))
-        //         {
-        //             _behaviourStack.Push(wrapper);
-        //             return true;
-        //         }
-        //         return false;
+        //         CurrentBehaviourWrapper.Value.CombinedResultState = (currentResult == State.Failure || LastCombinedResult == State.Failure)
         //     }
-        //     //var wrapper = GetOrSetWrapper(_controlRunner.GetNextBehaviourForNode(child, _controlFlow));
         //     
-        // }
+        //     currentResult = (currentResult == State.Failure || LastCombinedResult == State.Failure) ? State.Failure : currentResult;
         //
-        // private void Backward()
-        // {
-        //     _behaviourStack.Pop();
+        //     CurrentBehaviourWrapper.Value.CombinedResultState = currentResult;
         // }
+
     }
 }

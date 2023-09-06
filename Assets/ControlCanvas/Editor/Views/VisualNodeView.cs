@@ -86,6 +86,18 @@ namespace ControlCanvas.Editor.Views
                     visualElement.RegisterValueChangedCallback(evt => rp.Value = evt.newValue);
                     
                     //visualElement.RegisterValueChangedCallback(evt => nodeViewModel.Message.Value = evt.newValue);
+                }else if (control.GetType() == typeof(DebugBehaviour))
+                {
+                    EnumField enumField = new EnumField("State");
+                    enumField.Init(State.Running);
+                    m_DynamicContent.Add(enumField);
+                    var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
+                    var vmBase = vm as BaseViewModel<DebugBehaviour>;
+                    //var vm = nodeViewModel.GetChildViewModel(nodeViewModel.specificState.Value) as BaseViewModel<DebugState>;
+                    
+                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<State>>("nodeState");
+                    rp.Subscribe(x=> enumField.SetValueWithoutNotify(x));
+                    enumField.RegisterValueChangedCallback(evt => rp.Value = (State)evt.newValue);
                 }
             }
         }

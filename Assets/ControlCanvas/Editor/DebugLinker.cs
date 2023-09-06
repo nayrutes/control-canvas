@@ -1,4 +1,5 @@
-﻿using ControlCanvas.Editor.ViewModels;
+﻿using System.Collections.Generic;
+using ControlCanvas.Editor.ViewModels;
 using ControlCanvas.Runtime;
 using UniRx;
 using UnityEngine.UIElements;
@@ -20,26 +21,46 @@ namespace ControlCanvas.Editor
 
         public void Link()
         {
-            controlRunner.CurrentControl.Subscribe(OnControlChanged).AddTo(disposables);
+            //controlRunner.CurrentControl.Subscribe(OnControlChanged).AddTo(disposables);
+            controlRunner.StepDone.Subscribe(OnStepDone).AddTo(disposables);
+            controlRunner.ClearingBt.Subscribe(ClearDebugMarker).AddTo(disposables);
         }
         
         public void Unlink()
         {
-            OnControlChanged(null);
+            //OnControlChanged(null);
+            OnStepDone(null);
             disposables.Dispose();
             disposables = new CompositeDisposable();
         }
         
-        private void OnControlChanged(IControl control)
+        // private void OnControlChanged(IControl control)
+        // {
+        //     canvasViewModel.SetCurrentDebugControl(control);
+        //     if (control is IBehaviour)
+        //     {
+        //         //canvasViewModel.SetDebugBehaviourState(controlRunner.LatestPop, null);
+        //         canvasViewModel.SetDebugBehaviourState(control, controlRunner.LatestBehaviourState);
+        //     }
+        // }
+
+        private void OnStepDone(IControl control)
         {
             canvasViewModel.SetCurrentDebugControl(control);
             if (control is IBehaviour)
             {
-                canvasViewModel.SetDebugBehaviourState(controlRunner.LatestPop, null);
                 canvasViewModel.SetDebugBehaviourState(control, controlRunner.LatestBehaviourState);
             }
         }
-
+        
+        private void ClearDebugMarker(List<IBehaviour> behaviours)
+        {
+            foreach (IBehaviour behaviour in behaviours)
+            {
+                canvasViewModel.SetDebugBehaviourState(behaviour, null);
+            }
+        }
+        
         public void SetButtons(Button playButton, Button stopButton, Button stepButton)
         {
             playButton.clickable.clicked += () => controlRunner.Play();
