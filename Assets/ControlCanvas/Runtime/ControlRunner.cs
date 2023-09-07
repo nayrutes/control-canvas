@@ -116,7 +116,7 @@ namespace ControlCanvas.Runtime
                 {
                     Debug.Log("Restarting control flow because no next suggested control");
                     nextSuggestedControl = initialControl;
-                    ClearBtMarker();
+                    ResetRunner();
                 }
                 else
                 {
@@ -158,8 +158,9 @@ namespace ControlCanvas.Runtime
             }
         }
 
-        private void ClearBtMarker()
+        private void ResetRunner()
         {
+            behaviourRunner.ResetWrappers();
             ClearingBt.OnNext(_btTracker);
             _btTracker.Clear();
         }

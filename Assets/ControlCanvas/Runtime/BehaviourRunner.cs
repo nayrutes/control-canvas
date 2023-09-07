@@ -78,7 +78,7 @@ namespace ControlCanvas.Runtime
                         _endReached = false;
                         nextControl = CurrentBehaviourWrapper.Value.FailureChild;
                         CurrentBehaviourWrapper.Value.CombinedResultState = State.Failure;
-                        //CurrentBehaviourWrapper.Value.ChoseFailRoute = true;
+                        CurrentBehaviourWrapper.Value.ChoseFailRoute = true;
                     }
                     
                 }
@@ -121,6 +121,14 @@ namespace ControlCanvas.Runtime
             return nextControl;
         }
 
+        public void ResetWrappers()
+        {
+            foreach (var wrapper in _behaviourWrappers.Values)
+            {
+                wrapper.Reset();
+            }
+        }
+        
         // private void CombineResults()
         // {
         //     State currentResult = CurrentBehaviourWrapper.Value.CombinedResultState;

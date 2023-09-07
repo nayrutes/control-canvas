@@ -7,7 +7,7 @@ namespace ControlCanvas.Runtime
     public class BehaviourWrapper
     {
         //public State ExecutedResultState { get; private set; } = State.Running;
-        public State CombinedResultState { get; set; } = State.Running;
+        public State CombinedResultState { get; set; }
         public bool ChoseFailRoute { get; set; }
         public bool Started { get; private set; }
         public IBehaviour Behaviour { get; private set; }
@@ -22,6 +22,7 @@ namespace ControlCanvas.Runtime
             Behaviour = behaviour;
             SuccessChild = GetChild(controlFlow, "portOut");
             FailureChild = GetChild(controlFlow, portName: null, excludePortName: "portOut");
+            Reset();
         }
 
         private IControl GetChild(CanvasData controlFlow, string portName, string excludePortName = null)
@@ -56,6 +57,13 @@ namespace ControlCanvas.Runtime
                 Behaviour.OnStop(agentContext);
                 Started = false;
             }
+        }
+
+        public void Reset()
+        {
+            CombinedResultState = State.Running;
+            ChoseFailRoute = false;
+            Started = false;
         }
     }
 }
