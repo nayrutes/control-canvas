@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace ControlCanvas
 {
@@ -7,5 +8,7 @@ namespace ControlCanvas
     {
         public Vector3 moveToPosition;
         public GameObject moveToObject;
+        
+        public List<Transform> patrolPoints;
     }
 }
