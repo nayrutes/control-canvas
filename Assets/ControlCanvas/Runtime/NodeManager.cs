@@ -20,6 +20,7 @@ namespace ControlCanvas.Runtime
         {
             {"DebugBehaviour", typeof(DebugBehaviour)},
             {"WaitBehaviour", typeof(WaitBehaviour)},
+            {"MoveToBehaviour", typeof(MoveToBehaviour)},
         };
         
         public static readonly Dictionary<string, Type> decisionDictionary = new()
