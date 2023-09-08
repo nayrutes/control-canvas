@@ -132,32 +132,60 @@ namespace ControlCanvas.Runtime
 
         private void UpdateBasedOnControlType()
         {
-            switch (CurrentControl.Value)
+            // switch (CurrentControl.Value)
+            // {
+            //     case IState state:
+            //         nextSuggestedControl = stateRunner.DoUpdate(state);
+            //         break;
+            //     case IDecision decision:
+            //         nextSuggestedControl = decisionRunner.DoUpdate(decision);
+            //         ClearDecisionTrackerIfNecessary();
+            //         break;
+            //     case IBehaviour behaviour:
+            //         _btTracker.Add(behaviour);
+            //         nextSuggestedControl = behaviourRunner.DoUpdate(behaviour);
+            //         break;
+            //     default:
+            //         throw new ArgumentOutOfRangeException();
+            // }
+            Type executionType = NodeManager.Instance.GetExecutionTypeOfNode(CurrentControl.Value, controlFlow);
+            if (executionType == typeof(IState))
             {
-                case IState state:
-                    nextSuggestedControl = stateRunner.DoUpdate(state);
-                    break;
-                case IDecision decision:
-                    nextSuggestedControl = decisionRunner.DoUpdate(decision);
-                    ClearDecisionTrackerIfNecessary();
-                    break;
-                case IBehaviour behaviour:
-                    _btTracker.Add(behaviour);
-                    nextSuggestedControl = behaviourRunner.DoUpdate(behaviour);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                nextSuggestedControl = stateRunner.DoUpdate(CurrentControl.Value as IState);
+                //ClearStateRunnerIfNecessary();
+            }
+            else if (executionType == typeof(IDecision))
+            {
+                nextSuggestedControl = decisionRunner.DoUpdate(CurrentControl.Value as IDecision);
+                ClearDecisionTrackerIfNecessary();
+            }
+            else if (executionType == typeof(IBehaviour))
+            {
+                _btTracker.Add(CurrentControl.Value as IBehaviour);
+                nextSuggestedControl = behaviourRunner.DoUpdate(CurrentControl.Value as IBehaviour);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException();
             }
         }
 
         private void ClearDecisionTrackerIfNecessary()
         {
-            if (nextSuggestedControl is not IDecision)
+            if (NodeManager.Instance.GetExecutionTypeOfNode(nextSuggestedControl, controlFlow) != typeof(IDecision))
             {
                 decisionRunner.ClearTracker();
             }
         }
 
+        private void ClearStateRunnerIfNecessary()
+        {
+            if (NodeManager.Instance.GetExecutionTypeOfNode(nextSuggestedControl, controlFlow) != typeof(IState))
+            {
+                stateRunner.ClearRunner();
+            }
+        }
+        
         private void ResetRunner()
         {
             behaviourRunner.ResetWrappers();
@@ -176,6 +204,7 @@ namespace ControlCanvas.Runtime
             EdgeData edgeData = controlFlow.Edges.First(x => x.StartNodeGuid == NodeManager.Instance.GetGuidForControl(CurrentControl.Value));
             NodeData nodeData = controlFlow.Nodes.FirstOrDefault(x => x.guid == edgeData.EndNodeGuid);
             nextSuggestedControl = GetNextForNode(nodeData, controlFlow);
+            ClearStateRunnerIfNecessary();
         }
 
         public void Play()

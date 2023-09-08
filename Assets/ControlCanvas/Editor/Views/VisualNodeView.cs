@@ -98,12 +98,12 @@ namespace ControlCanvas.Editor.Views
                     var rp = vmBase.GetReactiveProperty<ReactiveProperty<State>>("nodeState");
                     rp.Subscribe(x=> enumField.SetValueWithoutNotify(x));
                     enumField.RegisterValueChangedCallback(evt => rp.Value = (State)evt.newValue);
-                }else if (control.GetType() == typeof(MoveToBehaviour))
+                }else if (control.GetType() == typeof(MoveToControl))
                 {
                     IntegerField integerField = new IntegerField("Index");
                     m_DynamicContent.Add(integerField);
                     var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
-                    var vmBase = vm as BaseViewModel<MoveToBehaviour>;
+                    var vmBase = vm as BaseViewModel<MoveToControl>;
                     
                     var rp = vmBase.GetReactiveProperty<ReactiveProperty<int>>("index");
                     rp.Subscribe(x=> integerField.SetValueWithoutNotify(x));

@@ -1,6 +1,6 @@
 ﻿namespace ControlCanvas.Runtime
 {
-    public class MoveToBehaviour : IBehaviour
+    public class MoveToControl : IBehaviour, IState
     {
         public int index; 
         public void OnStart(ControlAgent agentContext)
@@ -28,6 +28,21 @@
         public void OnStop(ControlAgent agentContext)
         {
             
+        }
+
+        public void Execute(ControlAgent agentContext, float deltaTime)
+        {
+            OnUpdate(agentContext, deltaTime);
+        }
+
+        public void OnEnter(ControlAgent agentContext)
+        {
+            OnStart(agentContext);
+        }
+
+        public void OnExit(ControlAgent agentContext)
+        {
+            OnStop(agentContext);
         }
     }
 }

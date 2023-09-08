@@ -41,5 +41,11 @@ namespace ControlCanvas.Runtime
             currentState.Value?.Execute(AgentContext, Time.deltaTime);
             return currentState.Value;
         }
+
+        public void ClearRunner()
+        {
+            currentState.Value?.OnExit(AgentContext);
+            currentState.Value = null;
+        }
     }
 }
