@@ -109,6 +109,18 @@ namespace ControlCanvas.Editor.Views
                     rp.Subscribe(x=> integerField.SetValueWithoutNotify(x));
                     integerField.RegisterValueChangedCallback(evt => rp.Value = evt.newValue);
                     
+                }else if (control.GetType() == typeof(Repeater))
+                {
+                    EnumField enumField = new EnumField("Mode");
+                    enumField.Init(RepeaterMode.Loop);
+                    m_DynamicContent.Add(enumField);
+                    var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
+                    var vmBase = vm as BaseViewModel<Repeater>;
+                    //var vm = nodeViewModel.GetChildViewModel(nodeViewModel.specificState.Value) as BaseViewModel<DebugState>;
+
+                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<RepeaterMode>>("mode");
+                    rp.Subscribe(x => enumField.SetValueWithoutNotify(x));
+                    enumField.RegisterValueChangedCallback(evt => rp.Value = (RepeaterMode)evt.newValue);
                 }
             }
         }

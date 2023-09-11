@@ -8,7 +8,7 @@ namespace ControlCanvas.Runtime
         
         public void OnStart(ControlAgent agentContext)
         {
-            Debug.Log($"DebugBehaviour.OnStart of {NodeManager.Instance.GetGuidForControl(this)}");
+            //Debug.Log($"DebugBehaviour.OnStart of {NodeManager.Instance.GetGuidForControl(this)}");
         }
 
         public State OnUpdate(ControlAgent agentContext, float deltaTime)
@@ -20,7 +20,7 @@ namespace ControlCanvas.Runtime
 
         public void OnStop(ControlAgent agentContext)
         {
-            Debug.Log($"DebugBehaviour.OnStop of {NodeManager.Instance.GetGuidForControl(this)}");
+            //Debug.Log($"DebugBehaviour.OnStop of {NodeManager.Instance.GetGuidForControl(this)}");
         }
     }
 }

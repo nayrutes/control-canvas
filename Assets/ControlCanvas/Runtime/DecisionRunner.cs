@@ -45,13 +45,18 @@ namespace ControlCanvas.Runtime
             EdgeData edgeData;
             if (CurrentDecision.Value.Decide(AgentContext))
             {
-                edgeData = edgeDatas.First(x => x.StartPortName == "portOut");
+                edgeData = edgeDatas.FirstOrDefault(x => x.StartPortName == "portOut");
             }
             else
             {
-                edgeData = edgeDatas.First(x => x.StartPortName != "portOut");
+                edgeData = edgeDatas.FirstOrDefault(x => x.StartPortName != "portOut");
             }
-
+            if(edgeData == null)
+            {
+                Debug.LogError($"No edge found for decision {NodeManager.Instance.GetGuidForControl(CurrentDecision.Value)}");
+                return null;
+            }
+            
             NodeData nodeData = controlFlow.Nodes.First(x => x.guid == edgeData.EndNodeGuid);
             IControl control = NodeManager.Instance.GetControlForNode(nodeData.guid, controlFlow);
             return control;

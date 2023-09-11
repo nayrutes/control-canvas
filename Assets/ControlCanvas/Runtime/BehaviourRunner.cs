@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ControlCanvas.Serialization;
 using UniRx;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace ControlCanvas.Runtime
@@ -19,7 +20,9 @@ namespace ControlCanvas.Runtime
         private readonly Dictionary<IBehaviour, BehaviourWrapper> _behaviourWrappers = new();
         private readonly Stack<IBehaviour> _behaviourStack = new();
         private readonly HashSet<IControl> _behaviourTracker = new();
-        private bool _endReached;
+        private bool _goingBackwards;
+        //private IBehaviour _behaviourConnectingToRepeater;
+        private Stack<Repeater> _repeaterStack = new();
 
         public void Init(ControlAgent agent, CanvasData controlFlow, ControlRunner controlRunner)
         {
@@ -28,16 +31,34 @@ namespace ControlCanvas.Runtime
             _controlFlow = controlFlow;
         }
 
-        public IControl DoUpdate(IBehaviour behaviour)
+        public IControl DoUpdate(IBehaviour behaviour, float deltaTime)
         {
             CurrentBehaviourWrapper.Value = GetOrSetWrapper(behaviour);
 
-            if (!_endReached)
+            if (!_goingBackwards)
             {
                 TryAddToStack(CurrentBehaviourWrapper.Value.Behaviour);
-                if (!_behaviourTracker.Contains(CurrentBehaviourWrapper.Value.Behaviour))
+                
+                //skip all behaviours that are before the repeater that is currently running
+                bool skipExecute = false;
+                if(_repeaterStack.Count > 0)
                 {
-                    CurrentBehaviourWrapper.Value.Update(AgentContext, Time.deltaTime);
+                    skipExecute = true;
+                    if(_repeaterStack.Peek() == CurrentBehaviourWrapper.Value.Behaviour)
+                    {
+                        skipExecute = false;
+                        _repeaterStack.Pop();
+                    }
+                }
+                
+                if (!skipExecute)
+                {
+                    CurrentBehaviourWrapper.Value.Update(AgentContext, deltaTime);
+                }
+                else
+                {
+                    Debug.Log($"Skipping {NodeManager.Instance.GetGuidForControl(CurrentBehaviourWrapper.Value.Behaviour)} " +
+                              $"because it is before the repeater {NodeManager.Instance.GetGuidForControl(_repeaterStack.Peek())}");
                 }
 
                 LastCombinedResult = CurrentBehaviourWrapper.Value.CombinedResultState;
@@ -61,7 +82,7 @@ namespace ControlCanvas.Runtime
             if (!_behaviourStack.Contains(behaviour))
             {
                 _behaviourStack.Push(behaviour);
-                _endReached = false;
+                _goingBackwards = false;
             }
         }
 
@@ -69,13 +90,13 @@ namespace ControlCanvas.Runtime
         {
             IControl nextControl = null;
 
-            if (_endReached)
+            if (_goingBackwards)
             {
                 if (!CurrentBehaviourWrapper.Value.ChoseFailRoute)
                 {
-                    if (LastCombinedResult == State.Failure)
+                    if (LastCombinedResult == State.Failure && CurrentBehaviourWrapper.Value.FailureChild != null)
                     {
-                        _endReached = false;
+                        _goingBackwards = false;
                         nextControl = CurrentBehaviourWrapper.Value.FailureChild;
                         CurrentBehaviourWrapper.Value.CombinedResultState = State.Failure;
                         CurrentBehaviourWrapper.Value.ChoseFailRoute = true;
@@ -102,22 +123,39 @@ namespace ControlCanvas.Runtime
                         throw new ArgumentOutOfRangeException();
                 }
 
-                _endReached = nextControl == null;
+                _goingBackwards = nextControl == null;
             }
 
-            if (_endReached)
+            
+            if (!_goingBackwards && nextControl is Repeater repeater)
             {
+                if (repeater.mode == RepeaterMode.Loop && _behaviourStack.Contains(repeater))
+                {
+                    _goingBackwards = true;
+                    _repeaterStack.Push(repeater);
+                }
+            }
+            
+            if (_goingBackwards)
+            {
+                
                 _behaviourStack.Pop();
                 if (_behaviourStack.TryPeek(out IBehaviour topBehaviour))
                 {
+                    if(CurrentBehaviourWrapper.Value.Behaviour is Repeater repeater3 && repeater3.mode == RepeaterMode.Always)
+                    {
+                        _repeaterStack.Push(repeater3);
+                    }
+                    
                     nextControl = topBehaviour;
                 }
                 else
                 {
-                    _endReached = false;
+                    _goingBackwards = false;
                 }
             }
 
+            
             return nextControl;
         }
 

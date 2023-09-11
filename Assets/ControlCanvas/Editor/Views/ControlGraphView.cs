@@ -49,7 +49,8 @@ namespace ControlCanvas.Editor.Views
 
         private Vector2 EvtMousePosition(MouseMoveEvent evt)
         {
-            return mousePosition = evt.mousePosition;
+            //mouse position in the graph view
+            return mousePosition = viewTransform.matrix.inverse.MultiplyPoint(evt.localMousePosition);
         }
 
         private void OnSelectionChangedHandler(SelectedChangedArgs obj)

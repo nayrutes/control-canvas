@@ -35,6 +35,7 @@ namespace ControlCanvas.Runtime
 
         public State LatestBehaviourState => behaviourRunner.LastCombinedResult;
 
+        private float _currentDeltaTimeForSubUpdate;
         //public IControl LatestPop => behaviourRunner.LatestPop;
 
         private void Start()
@@ -45,6 +46,7 @@ namespace ControlCanvas.Runtime
 
         private void FixedUpdate()
         {
+            _currentDeltaTimeForSubUpdate += Time.fixedDeltaTime;
             if (!stopped)
                 UpdateControlFlow();
         }
@@ -83,6 +85,7 @@ namespace ControlCanvas.Runtime
 
         bool _safetyBreak = false;
         bool _running = false;
+
         private void CompleteUpdate()
         {
             _running = true;
@@ -126,11 +129,12 @@ namespace ControlCanvas.Runtime
             }
             CurrentControl.Value = nextSuggestedControl;
             nextSuggestedControl = null;
-            UpdateBasedOnControlType();
+            UpdateBasedOnControlType(_currentDeltaTimeForSubUpdate);
             StepDone.OnNext(CurrentControl.Value);
+            _currentDeltaTimeForSubUpdate = 0;
         }
 
-        private void UpdateBasedOnControlType()
+        private void UpdateBasedOnControlType(float deltaTime)
         {
             // switch (CurrentControl.Value)
             // {
@@ -162,7 +166,7 @@ namespace ControlCanvas.Runtime
             else if (executionType == typeof(IBehaviour))
             {
                 _btTracker.Add(CurrentControl.Value as IBehaviour);
-                nextSuggestedControl = behaviourRunner.DoUpdate(CurrentControl.Value as IBehaviour);
+                nextSuggestedControl = behaviourRunner.DoUpdate(CurrentControl.Value as IBehaviour, deltaTime);
             }
             else
             {

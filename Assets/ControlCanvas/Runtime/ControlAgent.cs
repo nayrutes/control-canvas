@@ -1,4 +1,4 @@
-﻿using Demo;
+﻿//using Demo;
 using UnityEngine;
 
 namespace ControlCanvas.Runtime
@@ -17,9 +17,21 @@ namespace ControlCanvas.Runtime
             return false;
         }
         
-        public void SetDestination(Vector3 destination) => GetComponent<NpcController>().SetDestination(destination);
-        public bool CheckDestinationReached(Vector3 destination) => GetComponent<NpcController>().CheckDestinationReached(destination);
-        public bool CheckDestinationReachable( ) => GetComponent<NpcController>().CheckDestinationReachable();
-        
+        public void SetDestination(Vector3 destination)
+        {
+            //GetComponent<NpcController>().SetDestination(destination);
+        }
+
+        public bool CheckDestinationReached(Vector3 destination)
+        {
+            return true;
+            //return GetComponent<NpcController>().CheckDestinationReached(destination);
+        }
+
+        public bool CheckDestinationReachable( )
+        {
+            return true;
+            //return GetComponent<NpcController>().CheckDestinationReachable();
+        }
     }
 }

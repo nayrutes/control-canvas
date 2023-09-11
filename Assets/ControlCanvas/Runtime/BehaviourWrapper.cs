@@ -61,7 +61,7 @@ namespace ControlCanvas.Runtime
 
         public void Reset()
         {
-            CombinedResultState = State.Running;
+            //CombinedResultState = State.Running;
             ChoseFailRoute = false;
             Started = false;
         }

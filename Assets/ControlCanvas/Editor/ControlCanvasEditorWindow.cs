@@ -62,7 +62,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         m_VisualTreeAsset.CloneTree(rootVisualElement);
         graphView = rootVisualElement.Q<ControlGraphView>();
         inspectorView = rootVisualElement.Q<InspectorView>();
-        rootVisualElement.Q<ToolbarButton>("save-button").clicked += () => SerializeDataAsXML();
+        rootVisualElement.Q<ToolbarButton>("save-button").clicked += () => SerializeDataAsXML(true);
         rootVisualElement.Q<ToolbarButton>("load-button").clicked += () => DeserializeDataFromXML();
         canvasNameLabel = rootVisualElement.Q<Label>("canvas-name");
         canvasPathLabel = rootVisualElement.Q<Label>("canvas-path");
@@ -98,6 +98,30 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
             debugLinker.SetButtons(playButton, stopButton, stepButton);
             debugLinker.Link();
         });
+        
+        Selection.selectionChanged += OnSelectionChanged;
+        OnSelectionChanged();
+        
+        //register ctrl+s key event
+        rootVisualElement.RegisterCallback<KeyDownEvent>(evt =>
+        {
+            if (evt.keyCode == KeyCode.S && evt.ctrlKey)
+            {
+                SerializeDataAsXML(evt.shiftKey);
+                evt.StopPropagation();
+            }
+        });
+    }
+
+    private void OnSelectionChanged()
+    {
+        var selectedObject = Selection.activeObject;
+        if (selectedObject == null) return;
+        var controlRunnerGo = selectedObject as GameObject;
+        if (controlRunnerGo == null) return;
+        var controlRunner = controlRunnerGo.GetComponent<ControlRunner>();
+        if (controlRunner == null) return;
+        debugRunnerField.value = controlRunner;
     }
 
     private void AutoLoadLastFile()
@@ -166,9 +190,22 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         Dispose();
     }
 
-    public void SerializeDataAsXML()
+    public void SerializeDataAsXML(bool forcePopup = false)
     {
-        var path = EditorUtility.SaveFilePanel("Save ControlCanvasSO as XML", "", "ControlCanvasSO", "xml");
+        string directory = "";
+        string fileName = "ControlCanvasSO";
+        string path = "";
+        if (m_CanvasViewModel.canvasPath.Value != null)
+        {
+            path = m_CanvasViewModel.canvasPath.Value;
+            directory = System.IO.Path.GetDirectoryName(m_CanvasViewModel.canvasPath.Value);
+            fileName = System.IO.Path.GetFileNameWithoutExtension(m_CanvasViewModel.canvasPath.Value);
+        }
+
+        if(forcePopup || string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(fileName))
+        {
+            path = EditorUtility.SaveFilePanel("Save ControlCanvasSO as XML", directory, fileName, "xml");
+        }
         if (path.Length != 0)
         {
             m_CanvasViewModel.SerializeData(path);
