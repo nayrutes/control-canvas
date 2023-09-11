@@ -14,13 +14,14 @@ namespace ControlCanvas.Runtime
         {
             {"DebugState", typeof(DebugState)},
             {"IdleState", typeof(IdleState)},
+            {"MoveToState", typeof(MoveToControl)},
         };
         
         public static readonly Dictionary<string, Type> behaviourDictionary = new()
         {
             {"DebugBehaviour", typeof(DebugBehaviour)},
             {"WaitBehaviour", typeof(WaitBehaviour)},
-            {"MoveToBehaviour", typeof(MoveToBehaviour)},
+            {"MoveToBehaviour", typeof(MoveToControl)},
         };
         
         public static readonly Dictionary<string, Type> decisionDictionary = new()
@@ -53,6 +54,27 @@ namespace ControlCanvas.Runtime
                 
                 controlCache.Add(guid, control);
                 return control;
+            }
+        }
+
+        public Type GetExecutionTypeOfNode(IControl control, CanvasData canvasData)
+        {
+            NodeType? nodeType = canvasData.Nodes.FirstOrDefault(x => x.specificControl == control)?.nodeType;
+            if (nodeType == null)
+            {
+                Debug.LogError($"No node type found for {control}");
+                return null;
+            }
+            switch (nodeType)
+            {
+                case NodeType.State:
+                    return typeof(IState);
+                case NodeType.Behaviour:
+                    return typeof(IBehaviour);
+                case NodeType.Decision:
+                    return typeof(IDecision);
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
         
