@@ -65,6 +65,9 @@ namespace ControlCanvas.Editor.ViewModels
                         MakeInitialNodeCommand.Execute(z);
                     }).AddTo(disposables);
                 }).AddTo(disposables);
+                
+                x.ObserveRemove().Subscribe(RemoveEdgesOfNode).AddTo(disposables);
+                
             }).AddTo(disposables);
 
             MakeInitialNodeCommand.Subscribe(x =>
@@ -178,6 +181,17 @@ namespace ControlCanvas.Editor.ViewModels
             Edges.Value.Add(edgeData);
         }
 
+        private void RemoveEdgesOfNode(CollectionRemoveEvent<NodeData> nodeData)
+        {
+            foreach (var edge in Edges.Value.ToList())
+            {
+                if (edge.StartNodeGuid == nodeData.Value.guid || edge.EndNodeGuid == nodeData.Value.guid)
+                {
+                    DeleteEdge(edge);
+                }
+            }
+        }
+        
         public void DeleteEdge(EdgeData edgeData)
         {
             if (edgeData == null)

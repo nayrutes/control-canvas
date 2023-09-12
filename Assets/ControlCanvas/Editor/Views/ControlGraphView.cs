@@ -21,6 +21,7 @@ namespace ControlCanvas.Editor.Views
         Vector2 mousePosition = new Vector2();
         private CompositeDisposable disposables = new();
         private bool _ignoreAddEdge;
+        private Dictionary<EdgeData,Edge> _visualEdgeMap = new();
 
         //Selected Objects changed
         public event Action<SelectedChangedArgs> OnSelectionChanged;
@@ -212,11 +213,27 @@ namespace ControlCanvas.Editor.Views
                 //edgeGV.capabilities &= ~Capabilities.Deletable;
 
                 AddElement(edgeGV);
+                _visualEdgeMap.Add(edgeData, edgeGV);
+            }
+            else
+            {
+                if (startNode == null)
+                {
+                    Debug.LogWarning($"Could not find start node {edgeData.StartNodeGuid} for edge {edgeData.Guid} and end node {edgeData.EndNodeGuid}");
+                }else if(endNode == null)
+                {
+                    Debug.LogWarning($"Could not find end node {edgeData.EndNodeGuid} for edge {edgeData.Guid} and start node {edgeData.StartNodeGuid}");
+                }
             }
         }
 
         private void RemoveVisualEdge(EdgeData edgeData)
         {
+            if (_visualEdgeMap.ContainsKey(edgeData))
+            {
+                RemoveElement(_visualEdgeMap[edgeData]);
+                _visualEdgeMap.Remove(edgeData);
+            }
         }
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)

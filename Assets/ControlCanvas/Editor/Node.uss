@@ -203,8 +203,6 @@
 
 .output-port {
     background-color: rgba(46, 46, 46, 0.8);
-    padding-top: 4px;
-    padding-bottom: 4px;
     flex: 1 0 auto;
 }
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <CanvasData xmlns:sys="https://extendedxmlserializer.github.io/system" xmlns:exs="https://extendedxmlserializer.github.io/v2" xmlns:ns1="clr-namespace:ControlCanvas.Runtime;assembly=Assembly-CSharp" InitialNode="c53b8511-82e9-49fe-8c04-2de10f7bb489">
-  <Nodes Capacity="8">
+  <Nodes Capacity="7">
     <NodeData Name="New Node" Guid="c53b8511-82e9-49fe-8c04-2de10f7bb489" nodeType="Behaviour" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp">
       <Position x="504" y="311" />
       <Size x="444" y="162" />
@@ -13,11 +13,6 @@
     </NodeData>
     <NodeData Name="New Node" Guid="26a488d9-6488-4da7-a24a-7d6a07f8fa23" nodeType="Behaviour" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp">
       <Position x="2713" y="-155" />
-      <Size x="444" y="162" />
-      <specificControl exs:type="ns1:DebugBehaviour" nodeState="Success" />
-    </NodeData>
-    <NodeData Name="New Node" Guid="87097096-13e4-4abd-b814-1a2f83c88e9d" nodeType="Behaviour" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp">
-      <Position x="1915" y="312" />
       <Size x="444" y="162" />
       <specificControl exs:type="ns1:DebugBehaviour" nodeState="Success" />
     </NodeData>

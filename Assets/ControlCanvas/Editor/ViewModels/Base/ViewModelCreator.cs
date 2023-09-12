@@ -37,7 +37,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
                 Initialize();
             if (!viewModelTypes.TryGetValue(dataType, out var viewModelType))
             {
-                Debug.LogWarning("Usage of DynamicViewModel is not tested!");
+                //Debug.LogWarning("Usage of DynamicViewModel is not tested!");
                 viewModelType = typeof(DynamicViewModel<>).MakeGenericType(dataType);
             }
 
