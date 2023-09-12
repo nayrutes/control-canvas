@@ -203,7 +203,7 @@ MonoBehaviour:
     moveToObject: {fileID: 0}
     patrolPoints: []
   testBool: 1
-  testBoolSecond: 0
+  testBoolSecond: 1
   testState: 0
 --- !u!4 &376851992
 Transform:
@@ -482,7 +482,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   agentContext: {fileID: 376851991}
-  path: Assets/ControlFlows/RepEx1.xml
+  path: Assets/ControlFlows/RepEx2.xml
 --- !u!4 &1830584338
 Transform:
   m_ObjectHideFlags: 0

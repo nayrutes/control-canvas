@@ -40,26 +40,9 @@ namespace ControlCanvas.Runtime
 
             _decisionsTracker.Add(CurrentDecision.Value);
 
-            List<EdgeData> edgeDatas = controlFlow.Edges
-                .Where(x => x.StartNodeGuid == NodeManager.Instance.GetGuidForControl(CurrentDecision.Value)).ToList();
-            EdgeData edgeData;
-            if (CurrentDecision.Value.Decide(AgentContext))
-            {
-                edgeData = edgeDatas.FirstOrDefault(x => x.StartPortName == "portOut");
-            }
-            else
-            {
-                edgeData = edgeDatas.FirstOrDefault(x => x.StartPortName != "portOut");
-            }
-            if(edgeData == null)
-            {
-                Debug.LogError($"No edge found for decision {NodeManager.Instance.GetGuidForControl(CurrentDecision.Value)}");
-                return null;
-            }
+            bool decision = CurrentDecision.Value.Decide(AgentContext);
             
-            NodeData nodeData = controlFlow.Nodes.First(x => x.guid == edgeData.EndNodeGuid);
-            IControl control = NodeManager.Instance.GetControlForNode(nodeData.guid, controlFlow);
-            return control;
+            return NodeManager.Instance.GetNextForNode(CurrentDecision.Value, decision, controlFlow);
         }
 
         // public void CalculateUntilNext(IDecision decision)

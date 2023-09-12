@@ -164,9 +164,9 @@ namespace ControlCanvas.Editor.ViewModels
             InspectorViewModel.OnSelectionChanged(obj, DataProperty.Value);
         }
 
-        public NodeViewModel CreateNode()
+        public NodeViewModel CreateNode(NodeType nodeType = NodeType.State)
         {
-            NodeViewModel cvm = AddChildViewModel<NodeViewModel, NodeData>(new NodeViewModel(), Nodes);
+            NodeViewModel cvm = AddChildViewModel<NodeViewModel, NodeData>(new NodeViewModel(nodeType), Nodes);
             return cvm;
         }
 
@@ -210,6 +210,22 @@ namespace ControlCanvas.Editor.ViewModels
         public void SetDebugBehaviourState(IControl control, State? controlRunnerLatestBehaviourState)
         {
             GetViewModelByGuid(NodeManager.Instance.GetGuidForControl(control))?.SetCurrentDebugBehaviourState(controlRunnerLatestBehaviourState);
+        }
+
+        public NodeViewModel CreateRoutingNode(NodeData node1, NodeData node2)
+        {
+            EdgeData oldEdge = Edges.Value.ToList().Find(x => x.StartNodeGuid == node1.guid && x.EndNodeGuid == node2.guid);
+            if (oldEdge != null)
+            {
+                DeleteEdge(oldEdge);
+                NodeViewModel routingNode = CreateNode(NodeType.Routing);
+                routingNode.NodeType.Value = NodeType.Routing;
+                
+                CreateEdge(node1, routingNode.DataProperty.Value, oldEdge.StartPortName, "In/Out");
+                CreateEdge(routingNode.DataProperty.Value, node2, "In/Out", oldEdge.EndPortName);
+                return routingNode;
+            }
+            return null;
         }
     }
 }

@@ -197,17 +197,13 @@ namespace ControlCanvas.Runtime
             _btTracker.Clear();
         }
         
-        public IControl GetNextForNode(NodeData nodeData, CanvasData controlFlow)
-        {
-            return NodeManager.Instance.GetControlForNode(nodeData.guid, controlFlow);
-        }
+        
 
         [ContextMenu("AutoNext")]
         public void AutoNext()
         {
-            EdgeData edgeData = controlFlow.Edges.First(x => x.StartNodeGuid == NodeManager.Instance.GetGuidForControl(CurrentControl.Value));
-            NodeData nodeData = controlFlow.Nodes.FirstOrDefault(x => x.guid == edgeData.EndNodeGuid);
-            nextSuggestedControl = GetNextForNode(nodeData, controlFlow);
+            
+            nextSuggestedControl = NodeManager.Instance.GetNextForNode(CurrentControl.Value, controlFlow);
             ClearStateRunnerIfNecessary();
         }
 

@@ -30,6 +30,7 @@ namespace ControlCanvas.Serialization
     {
         State,
         Behaviour,
-        Decision
+        Decision,
+        Routing
     }
 }

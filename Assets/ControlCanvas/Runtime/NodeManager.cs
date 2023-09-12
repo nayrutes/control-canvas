@@ -100,7 +100,8 @@ namespace ControlCanvas.Runtime
                 case NodeType.Decision:
                     return decisionDictionary.Keys;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+                    //throw new ArgumentOutOfRangeException(nameof(type), type, null);
+                    return new List<string>();
             }
         }
 
@@ -128,5 +129,50 @@ namespace ControlCanvas.Runtime
                 return false;
             }
         }
+
+        public IControl GetNextForNode(IControl currentControlValue, CanvasData controlFlow)
+        {
+            return GetNextForNode(currentControlValue, controlFlow, "portOut");
+        }
+        
+        public IControl GetNextForNode(IControl currentControlValue, bool decision, CanvasData controlFlow)
+        {
+            return GetNextForNode(currentControlValue, controlFlow, decision ? "portOut" : "portOut-2");
+        }
+
+        public IControl GetNextForNode(IControl currentControlValue, CanvasData controlFlow, string portName)
+        {
+            var currentGuid = GetGuidForControl(currentControlValue);
+            var nodeData = GetNextForNode(currentGuid, controlFlow, portName);
+            return nodeData != null ? GetControlForNode(nodeData.guid, controlFlow) : null;
+        }
+        
+        public NodeData GetNextForNode(string currentNodeDataGuid, CanvasData controlFlow, string portName, string previousNodeGuid = null)
+        {
+            var edgeDatas = controlFlow.Edges
+                .Where(x => x.StartNodeGuid == currentNodeDataGuid)
+                .ToList();
+
+            EdgeData edgeData;
+            if(previousNodeGuid != null)
+            {
+                edgeData = edgeDatas.First(x => x.EndNodeGuid != previousNodeGuid);
+            }else{
+                edgeData = edgeDatas.FirstOrDefault(x =>
+                (portName != null && x.StartPortName == portName));
+            }
+
+            if (edgeData == null) return null;
+
+            NodeData nodeData = controlFlow.Nodes.FirstOrDefault(x => x.guid == edgeData.EndNodeGuid);
+            if (nodeData is { nodeType: NodeType.Routing })
+            {
+                Debug.Log($"Routing node {nodeData.guid} found. Getting next...");
+                nodeData = GetNextForNode(nodeData.guid, controlFlow, portName, currentNodeDataGuid);
+            }
+
+            return nodeData;
+        }
+        
     }
 }

@@ -15,30 +15,19 @@ namespace ControlCanvas.Runtime
         public IControl SuccessChild { get; private set; }
         public IControl FailureChild { get; private set; }
 
-        private readonly NodeManager _nodeManager = NodeManager.Instance;
+        //private readonly NodeManager _nodeManager = NodeManager.Instance;
 
         public BehaviourWrapper(IBehaviour behaviour, CanvasData controlFlow)
         {
             Behaviour = behaviour;
             SuccessChild = GetChild(controlFlow, "portOut");
-            FailureChild = GetChild(controlFlow, portName: null, excludePortName: "portOut");
+            FailureChild = GetChild(controlFlow, "portOut-2");
             Reset();
         }
 
-        private IControl GetChild(CanvasData controlFlow, string portName, string excludePortName = null)
+        private IControl GetChild(CanvasData controlFlow, string portName)
         {
-            var edgeDatas = controlFlow.Edges
-                .Where(x => x.StartNodeGuid == _nodeManager.GetGuidForControl(Behaviour))
-                .ToList();
-
-            var edgeData = edgeDatas.FirstOrDefault(x => 
-                (portName != null && x.StartPortName == portName) || 
-                (excludePortName != null && x.StartPortName != excludePortName));
-
-            if (edgeData == null) return null;
-
-            var nodeData = controlFlow.Nodes.FirstOrDefault(x => x.guid == edgeData.EndNodeGuid);
-            return nodeData != null ? _nodeManager.GetControlForNode(nodeData.guid, controlFlow) : null;
+            return NodeManager.Instance.GetNextForNode(Behaviour, controlFlow, portName);
         }
 
         public void Update(ControlAgent agentContext, float deltaTime)

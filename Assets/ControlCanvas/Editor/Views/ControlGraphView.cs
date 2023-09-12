@@ -121,7 +121,7 @@ namespace ControlCanvas.Editor.Views
             {
                 foreach (var element in graphviewchange.movedElements)
                 {
-                    if (element is VisualNodeView node)
+                    if (element is IVisualNode node)
                     {
                         //viewModel.Nodes.ToList().Find(x => x.Guid.Value == node.nodeViewModel.Guid.Value).Position.Value = node.GetPosition().position;
                     }
@@ -132,10 +132,10 @@ namespace ControlCanvas.Editor.Views
             {
                 foreach (var edge in graphviewchange.edgesToCreate)
                 {
-                    if (edge.input.node is VisualNodeView inputNode && edge.output.node is VisualNodeView outputNode)
+                    if (edge.input.node is IVisualNode inputNode && edge.output.node is IVisualNode outputNode)
                     {
                         _ignoreAddEdge = true;
-                        viewModel.CreateEdge(outputNode.nodeViewModel, inputNode.nodeViewModel, edge.output.portName, edge.input.portName);
+                        viewModel.CreateEdge(outputNode.GetViewModel(), inputNode.GetViewModel(), edge.output.portName, edge.input.portName);
                         _ignoreAddEdge = false;
                     }
                 }
@@ -149,20 +149,20 @@ namespace ControlCanvas.Editor.Views
             {
                 foreach (var element in graphviewchange.elementsToRemove)
                 {
-                    if (element is VisualNodeView node)
+                    if (element is IVisualNode node)
                     {
-                        viewModel.DeleteNode(node.nodeViewModel);
+                        viewModel.DeleteNode(node.GetViewModel());
                     }
                     else if (element is UnityEditor.Experimental.GraphView.Edge edge)
                     {
                         //RemoveVisualEdge(edge);
-                        if (edge.input.node is VisualNodeView inputNode &&
-                            edge.output.node is VisualNodeView outputNode)
+                        if (edge.input.node is IVisualNode inputNode &&
+                            edge.output.node is IVisualNode outputNode)
                         {
                             viewModel.DeleteEdge(viewModel.Edges.ToList().Find(x =>
-                                x.StartNodeGuid == outputNode.nodeViewModel.Guid.Value &&
+                                x.StartNodeGuid == outputNode.GetVmGuid() &&
                                 (x.StartPortName == null || x.StartPortName == edge.output.portName) &&
-                                x.EndNodeGuid == inputNode.nodeViewModel.Guid.Value &&
+                                x.EndNodeGuid == inputNode.GetVmGuid() &&
                                 (x.EndPortName == null || x.EndPortName == edge.input.portName)));
 
                         }
@@ -173,12 +173,21 @@ namespace ControlCanvas.Editor.Views
             return graphviewchange;
         }
 
-        void CreateVisualNode(NodeData nodeData)
+        private void CreateVisualNode(NodeData nodeData)
         {
-            VisualNodeView visualNodeView = new VisualNodeView();
             NodeViewModel nodeViewModel = (NodeViewModel)viewModel.GetChildViewModel(nodeData);
-            visualNodeView.SetViewModel(nodeViewModel);
-            AddElement(visualNodeView);
+            if (nodeData.nodeType == NodeType.Routing)
+            {
+                RoutingNodeView routingNodeView = new RoutingNodeView();
+                routingNodeView.SetViewModel(nodeViewModel);
+                AddElement(routingNodeView);
+            }
+            else
+            {
+                VisualNodeView visualNodeView = new VisualNodeView();
+                visualNodeView.SetViewModel(nodeViewModel);
+                AddElement(visualNodeView);
+            }
         }
 
         private void RemoveVisualNode(NodeData nodeData)
@@ -190,25 +199,15 @@ namespace ControlCanvas.Editor.Views
             if (_ignoreAddEdge)
                 return;
 
-            var startNode = nodes.ToList().Find(x =>
-                x is VisualNodeView node && node.nodeViewModel.Guid.Value == edgeData.StartNodeGuid);
-            var endNode = nodes.ToList().Find(x =>
-                x is VisualNodeView node && node.nodeViewModel.Guid.Value == edgeData.EndNodeGuid);
+            IVisualNode startNode = nodes.ToList().Find(x =>
+                x is IVisualNode node && node.GetVmGuid() == edgeData.StartNodeGuid) as IVisualNode;
+            IVisualNode endNode = nodes.ToList().Find(x =>
+                x is IVisualNode node && node.GetVmGuid() == edgeData.EndNodeGuid) as IVisualNode;
             if (startNode != null && endNode != null)
             {
-                var edgeGV = new UnityEditor.Experimental.GraphView.Edge();
-                Port portIn = endNode.inputContainer.Q<Port>();
-                Port portOut = startNode.outputContainer.Q<Port>();
-                if (edgeData.StartPortName is not (null or ""))
-                {
-                    portOut = startNode.Q<Port>(edgeData.StartPortName);
-                }
-                if (edgeData.EndPortName is not (null or ""))
-                {
-                    portIn = endNode.Q<Port>(edgeData.EndPortName);
-                }
-                edgeGV.input = portIn;
-                edgeGV.output = portOut;
+                var edgeGV = new Edge();
+                edgeGV.input = endNode.GetPort(string.IsNullOrEmpty(edgeData.EndPortName)? "portIn" : edgeData.EndPortName);
+                edgeGV.output = startNode.GetPort(string.IsNullOrEmpty(edgeData.StartPortName)? "portOut" : edgeData.StartPortName);
                 
                 //edgeGV.capabilities &= ~Capabilities.Deletable;
 
@@ -246,6 +245,36 @@ namespace ControlCanvas.Editor.Views
             // }
             evt.menu.AppendAction("Create Node", (a) => viewModel.CreateNode(mousePosition),
                 DropdownMenuAction.AlwaysEnabled);
+            if (selection.All(x => x is Edge))
+            {
+                evt.menu.AppendAction("CreateRoutingNode", (a) =>
+                    {
+                        List<ISelectable> selectablesCopy = new List<ISelectable>(selection);
+                        foreach (var selectable in selectablesCopy)
+                        {
+                            var edge = (Edge)selectable;
+                            CreateRoutingNode(edge);
+                        }
+                    },
+                    DropdownMenuAction.AlwaysEnabled);
+            }
+        }
+
+        private void CreateRoutingNode(Edge edge)
+        {
+            if (edge.output.node is IVisualNode startNode && edge.input.node is IVisualNode endNode)
+            {
+                Vector2 pos = edge.edgeControl.controlPoints[0] + (edge.edgeControl.controlPoints[^1] - edge.edgeControl.controlPoints[0]) / 2;
+                viewModel.CreateRoutingNode(startNode.GetViewModel(), endNode.GetViewModel(), pos);
+                // CreateVisualNode(routingNode);
+                // viewModel.CreateEdge(startNode.nodeViewModel, routingNode);
+                // viewModel.CreateEdge(routingNode, endNode.nodeViewModel);
+                // viewModel.DeleteEdge(viewModel.Edges.ToList().Find(x =>
+                //     x.StartNodeGuid == startNode.nodeViewModel.Guid.Value &&
+                //     (x.StartPortName == null || x.StartPortName == edge.output.portName) &&
+                //     x.EndNodeGuid == endNode.nodeViewModel.Guid.Value &&
+                //     (x.EndPortName == null || x.EndPortName == edge.input.portName)));
+            }
         }
 
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)

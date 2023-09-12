@@ -44,6 +44,12 @@ namespace ControlCanvas.Editor.ViewModels
             canvasViewModel.CreateEdge(outputNodeNodeViewModel.DataProperty.Value, inputNodeNodeViewModel.DataProperty.Value, outputPortName, inputPortName);
         }
         
+        public void CreateRoutingNode(NodeViewModel startNodeNodeViewModel, NodeViewModel endNodeNodeViewModel,
+            Vector2 vector2)
+        {
+            NodeViewModel nvm = canvasViewModel.CreateRoutingNode(startNodeNodeViewModel.DataProperty.Value, endNodeNodeViewModel.DataProperty.Value);
+            nvm.Position.Value = vector2;
+        }
         public void DeleteEdge(EdgeData edgeData) => canvasViewModel.DeleteEdge(edgeData);
 
         private void ReleaseUnmanagedResources()

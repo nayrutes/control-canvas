@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 
 namespace ControlCanvas.Editor.Views
 {
-    public class VisualNodeView : Node, IView<NodeViewModel>
+    public class VisualNodeView : Node, IView<NodeViewModel>, IVisualNode
     {
         //public Node node;
         public NodeViewModel nodeViewModel;
@@ -310,6 +310,34 @@ namespace ControlCanvas.Editor.Views
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
             evt.menu.AppendAction("Make Start Node", (a) => nodeViewModel.MakeStartNodeCommand.Execute(nodeViewModel), DropdownMenuAction.AlwaysEnabled);
+        }
+
+        public string GetVmGuid()
+        {
+            return nodeViewModel.Guid.Value;
+        }
+
+        public Port GetPort(string portName)
+        {
+            Port portIn = inputContainer.Q<Port>();
+            Port portOut = outputContainer.Q<Port>();
+            Port portOut2 = mainContainer.Q<VisualElement>("output-2").Q<Port>();
+            switch (portName)
+            {
+                case "portIn":
+                    return portIn;
+                case "portOut":
+                    return portOut;
+                case "portOut-2":
+                    return portOut2;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(portName), portName, null);
+            }
+        }
+        
+        public NodeViewModel GetViewModel()
+        {
+            return nodeViewModel;
         }
     }
 }

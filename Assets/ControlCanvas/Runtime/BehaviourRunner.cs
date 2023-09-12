@@ -129,9 +129,9 @@ namespace ControlCanvas.Runtime
             
             if (!_goingBackwards && nextControl is Repeater repeater)
             {
+                _goingBackwards = true;
                 if (repeater.mode == RepeaterMode.Loop && _behaviourStack.Contains(repeater))
                 {
-                    _goingBackwards = true;
                     _repeaterStack.Push(repeater);
                 }
             }

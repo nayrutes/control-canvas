@@ -40,6 +40,12 @@ namespace ControlCanvas.Editor.ViewModels
             InitNode();
         }
 
+        public NodeViewModel(NodeType nodeType): base()
+        {
+            NodeType.Value = nodeType;
+            InitNode();
+        }
+        
         public NodeViewModel() : base()
         {
             InitNode();
