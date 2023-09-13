@@ -7,15 +7,15 @@ using UnityEngine;
 
 namespace ControlCanvas.Runtime
 {
-    public class BehaviourRunner
+    public class BehaviourRunner : IRunner<IBehaviour>
     {
         
         public ReactiveProperty<BehaviourWrapper> CurrentBehaviourWrapper { get; } = new();
-        public ControlAgent AgentContext { get; set; }
+        //public ControlAgent AgentContext { get; set; }
         public State LastCombinedResult { get; private set; }
 
         
-        private CanvasData _controlFlow;
+        //private CanvasData _controlFlow;
         private ControlRunner _controlRunner;
         private readonly Dictionary<IBehaviour, BehaviourWrapper> _behaviourWrappers = new();
         private readonly Stack<IBehaviour> _behaviourStack = new();
@@ -24,14 +24,14 @@ namespace ControlCanvas.Runtime
         //private IBehaviour _behaviourConnectingToRepeater;
         private Stack<Repeater> _repeaterStack = new();
 
-        public void Init(ControlAgent agent, CanvasData controlFlow, ControlRunner controlRunner)
-        {
-            _controlRunner = controlRunner;
-            AgentContext = agent;
-            _controlFlow = controlFlow;
-        }
+        // public void InitRunner(ControlAgent agentContext, CanvasData controlFlow)
+        // {
+        //     //_controlRunner = controlRunner;
+        //     //AgentContext = agent;
+        //     //_controlFlow = controlFlow;
+        // }
 
-        public IControl DoUpdate(IBehaviour behaviour, float deltaTime)
+        public void DoUpdate(IBehaviour behaviour, ControlAgent agentContext,  float deltaTime)
         {
             CurrentBehaviourWrapper.Value = GetOrSetWrapper(behaviour);
 
@@ -53,7 +53,7 @@ namespace ControlCanvas.Runtime
                 
                 if (!skipExecute)
                 {
-                    CurrentBehaviourWrapper.Value.Update(AgentContext, deltaTime);
+                    CurrentBehaviourWrapper.Value.Update(agentContext, deltaTime);
                 }
                 else
                 {
@@ -64,14 +64,19 @@ namespace ControlCanvas.Runtime
                 LastCombinedResult = CurrentBehaviourWrapper.Value.CombinedResultState;
             }
 
-            return HandleResult();
+            //return HandleResult();
         }
 
+        public IControl GetNext(IBehaviour behaviour, CanvasData controlFlow)
+        {
+            return HandleResult(controlFlow);
+        }
+        
         private BehaviourWrapper GetOrSetWrapper(IBehaviour behaviour)
         {
             if (!_behaviourWrappers.TryGetValue(behaviour, out var wrapper))
             {
-                wrapper = new BehaviourWrapper(behaviour, _controlFlow);
+                wrapper = new BehaviourWrapper(behaviour);
                 _behaviourWrappers[behaviour] = wrapper;
             }
             return wrapper;
@@ -86,7 +91,7 @@ namespace ControlCanvas.Runtime
             }
         }
 
-        private IControl HandleResult()
+        private IControl HandleResult(CanvasData controlFlow)
         {
             IControl nextControl = null;
 
@@ -94,10 +99,10 @@ namespace ControlCanvas.Runtime
             {
                 if (!CurrentBehaviourWrapper.Value.ChoseFailRoute)
                 {
-                    if (LastCombinedResult == State.Failure && CurrentBehaviourWrapper.Value.FailureChild != null)
+                    if (LastCombinedResult == State.Failure && CurrentBehaviourWrapper.Value.FailureChild(controlFlow) != null)
                     {
                         _goingBackwards = false;
-                        nextControl = CurrentBehaviourWrapper.Value.FailureChild;
+                        nextControl = CurrentBehaviourWrapper.Value.FailureChild(controlFlow);
                         CurrentBehaviourWrapper.Value.CombinedResultState = State.Failure;
                         CurrentBehaviourWrapper.Value.ChoseFailRoute = true;
                     }
@@ -109,10 +114,10 @@ namespace ControlCanvas.Runtime
                 switch (CurrentBehaviourWrapper.Value.CombinedResultState)
                 {
                     case State.Success:
-                        nextControl = CurrentBehaviourWrapper.Value.SuccessChild;
+                        nextControl = CurrentBehaviourWrapper.Value.SuccessChild(controlFlow);
                         break;
                     case State.Failure:
-                        nextControl = CurrentBehaviourWrapper.Value.FailureChild;
+                        nextControl = CurrentBehaviourWrapper.Value.FailureChild(controlFlow);
                         CurrentBehaviourWrapper.Value.ChoseFailRoute = true;
                         break;
                     case State.Running:
@@ -159,7 +164,7 @@ namespace ControlCanvas.Runtime
             return nextControl;
         }
 
-        public void ResetWrappers()
+        public void ResetRunner(ControlAgent agentContext)
         {
             foreach (var wrapper in _behaviourWrappers.Values)
             {

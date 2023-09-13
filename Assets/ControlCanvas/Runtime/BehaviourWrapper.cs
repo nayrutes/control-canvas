@@ -12,16 +12,23 @@ namespace ControlCanvas.Runtime
         public bool Started { get; private set; }
         public IBehaviour Behaviour { get; private set; }
 
-        public IControl SuccessChild { get; private set; }
-        public IControl FailureChild { get; private set; }
+        //public IControl SuccessChild { get; private set; }
+        public IControl SuccessChild(CanvasData controlFlow)
+        {
+            return GetChild(controlFlow, "portOut");
+        }
 
-        //private readonly NodeManager _nodeManager = NodeManager.Instance;
+        //public IControl FailureChild { get; private set; }
+        public IControl FailureChild(CanvasData controlFlow)
+        {
+            return GetChild(controlFlow, "portOut-2");
+        }
 
-        public BehaviourWrapper(IBehaviour behaviour, CanvasData controlFlow)
+        public BehaviourWrapper(IBehaviour behaviour)//, CanvasData controlFlow)
         {
             Behaviour = behaviour;
-            SuccessChild = GetChild(controlFlow, "portOut");
-            FailureChild = GetChild(controlFlow, "portOut-2");
+            //SuccessChild = GetChild(controlFlow, "portOut");
+            //FailureChild = GetChild(controlFlow, "portOut-2");
             Reset();
         }
 

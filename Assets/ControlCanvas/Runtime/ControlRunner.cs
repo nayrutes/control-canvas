@@ -19,11 +19,16 @@ namespace ControlCanvas.Runtime
         [SerializeField]
         private string path = "Assets/ControlFlows/StateFlowEx4.xml";
 
-        private CanvasData controlFlow;
+        private Stack<CanvasData> _controlFlowStack = new ();
+        private CanvasData controlFlow => _controlFlowStack.Peek();
 
-        private StateRunner stateRunner = new StateRunner();
-        private DecisionRunner<IControl> decisionRunner = new DecisionRunner<IControl>();
-        private BehaviourRunner behaviourRunner = new BehaviourRunner();
+        private Dictionary<Type, IRunnerBase> runnerDict = new ();
+        
+        private Dictionary<Type, Action<float>> updateByType = new ();
+        
+        //private StateRunner stateRunner = new StateRunner();
+        //private DecisionRunner decisionRunner = new DecisionRunner();
+        //private BehaviourRunner behaviourRunner = new BehaviourRunner();
 
         private ReactiveProperty<Mode> mode = new ReactiveProperty<Mode>();
         private IControl nextSuggestedControl;
@@ -31,17 +36,25 @@ namespace ControlCanvas.Runtime
         private bool stopped = true;
         private bool startedComplete;
         private bool _autoRestart = true;
-        private List<IBehaviour> _btTracker = new();
+        //private List<IBehaviour> _btTracker = new();
 
-        public State LatestBehaviourState => behaviourRunner.LastCombinedResult;
+        public State LatestBehaviourState => ((BehaviourRunner)runnerDict[typeof(IBehaviour)]).LastCombinedResult;
 
         private float _currentDeltaTimeForSubUpdate;
         //public IControl LatestPop => behaviourRunner.LatestPop;
 
         private void Start()
         {
-            InitializeControlFlow();
-            InitializeRunners();
+            mode.Value = Mode.CompleteUpdate;
+            InitializeControlFlow(path);
+            runnerDict.Add(typeof(IState), new StateRunner());
+            runnerDict.Add(typeof(IDecision), new DecisionRunner());
+            runnerDict.Add(typeof(IBehaviour), new BehaviourRunner());
+            //InitializeRunners();
+            
+            updateByType.Add(typeof(IState), RunRunner<IState>);
+            updateByType.Add(typeof(IDecision), RunRunner<IDecision>);
+            updateByType.Add(typeof(IBehaviour), RunRunner<IBehaviour>);
         }
 
         private void FixedUpdate()
@@ -51,29 +64,31 @@ namespace ControlCanvas.Runtime
                 UpdateControlFlow();
         }
 
-        private void InitializeControlFlow()
+        private void InitializeControlFlow(string currentPath)
         {
-            XMLHelper.DeserializeFromXML(path, out controlFlow);
-            if (controlFlow.InitialNode == null)
+            CanvasData initControlFlow = null;
+            XMLHelper.DeserializeFromXML(currentPath, out initControlFlow);
+            if (initControlFlow == null)
             {
                 Debug.LogError($"No initial node set for control flow {controlFlow.Name}");
                 return;
             }
+            _controlFlowStack.Push(initControlFlow);
             initialControl = NodeManager.Instance.GetControlForNode(controlFlow.InitialNode, controlFlow);
             nextSuggestedControl = initialControl;
-            mode.Value = Mode.CompleteUpdate;
+            //mode.Value = Mode.CompleteUpdate;
             if (agentContext == null)
             {
                 Debug.LogError("No agent context set");
             }
         }
 
-        private void InitializeRunners()
-        {
-            stateRunner.Init(agentContext, controlFlow, this);
-            decisionRunner.Init(agentContext, controlFlow);
-            behaviourRunner.Init(agentContext, controlFlow, this);
-        }
+        // private void InitializeRunners()
+        // {
+        //     // stateRunner.Init(agentContext, controlFlow, this);
+        //     // decisionRunner.Init(agentContext, controlFlow);
+        //     // behaviourRunner.Init(agentContext, controlFlow, this);
+        // }
 
         private void UpdateControlFlow()
         {
@@ -129,72 +144,35 @@ namespace ControlCanvas.Runtime
             }
             CurrentControl.Value = nextSuggestedControl;
             nextSuggestedControl = null;
-            UpdateBasedOnControlType(_currentDeltaTimeForSubUpdate);
+            
+            Type executionType = NodeManager.Instance.GetExecutionTypeOfNode(CurrentControl.Value, controlFlow);
+            updateByType[executionType](_currentDeltaTimeForSubUpdate);
+            
             StepDone.OnNext(CurrentControl.Value);
             _currentDeltaTimeForSubUpdate = 0;
         }
 
-        private void UpdateBasedOnControlType(float deltaTime)
+        private void RunRunner<T>(float deltaTime) where T : class, IControl
         {
-            // switch (CurrentControl.Value)
-            // {
-            //     case IState state:
-            //         nextSuggestedControl = stateRunner.DoUpdate(state);
-            //         break;
-            //     case IDecision decision:
-            //         nextSuggestedControl = decisionRunner.DoUpdate(decision);
-            //         ClearDecisionTrackerIfNecessary();
-            //         break;
-            //     case IBehaviour behaviour:
-            //         _btTracker.Add(behaviour);
-            //         nextSuggestedControl = behaviourRunner.DoUpdate(behaviour);
-            //         break;
-            //     default:
-            //         throw new ArgumentOutOfRangeException();
-            // }
-            Type executionType = NodeManager.Instance.GetExecutionTypeOfNode(CurrentControl.Value, controlFlow);
-            if (executionType == typeof(IState))
-            {
-                nextSuggestedControl = stateRunner.DoUpdate(CurrentControl.Value as IState);
-                //ClearStateRunnerIfNecessary();
-            }
-            else if (executionType == typeof(IDecision))
-            {
-                nextSuggestedControl = decisionRunner.DoUpdate(CurrentControl.Value as IDecision);
-                ClearDecisionTrackerIfNecessary();
-            }
-            else if (executionType == typeof(IBehaviour))
-            {
-                _btTracker.Add(CurrentControl.Value as IBehaviour);
-                nextSuggestedControl = behaviourRunner.DoUpdate(CurrentControl.Value as IBehaviour, deltaTime);
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        private void ClearDecisionTrackerIfNecessary()
-        {
-            if (NodeManager.Instance.GetExecutionTypeOfNode(nextSuggestedControl, controlFlow) != typeof(IDecision))
-            {
-                decisionRunner.ClearTracker();
-            }
+            IRunner<T> runner = runnerDict[typeof(T)] as IRunner<T>;
+            runner.DoUpdate(CurrentControl.Value as T, agentContext, deltaTime);
+            nextSuggestedControl = runner.GetNext(CurrentControl.Value as T, controlFlow);
         }
 
         private void ClearStateRunnerIfNecessary()
         {
             if (NodeManager.Instance.GetExecutionTypeOfNode(nextSuggestedControl, controlFlow) != typeof(IState))
             {
-                stateRunner.ClearRunner();
+                runnerDict[typeof(IState)].ResetRunner(agentContext);
             }
         }
         
         private void ResetRunner()
         {
-            behaviourRunner.ResetWrappers();
-            ClearingBt.OnNext(_btTracker);
-            _btTracker.Clear();
+            runnerDict[typeof(IBehaviour)].ResetRunner(agentContext);
+            //behaviourRunner.ResetRunner();
+            //ClearingBt.OnNext(_btTracker);
+            //_btTracker.Clear();
         }
         
         

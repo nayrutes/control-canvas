@@ -5,46 +5,45 @@ using UnityEngine;
 
 namespace ControlCanvas.Runtime
 {
-    public class StateRunner
+    public class StateRunner : IRunner<IState>
     {
         public ReactiveProperty<IState> currentState = new();
 
-        public ControlAgent AgentContext;
+        //private ControlRunner controlRunner;
 
-        private CanvasData controlFlow;
-        private ControlRunner controlRunner;
-        private IState _nextState;
+        // public void InitRunner(ControlAgent agentContext, CanvasData controlFlow)//, ControlRunner controlRunner)
+        // {
+        //     //this.controlRunner = controlRunner;
+        //     // currentState.Value = initialState;
+        //     // if (currentState.Value == null)
+        //     // {
+        //     //     Debug.Log($"Initial node {initialState} is not a state");
+        //     //     return;
+        //     // }
+        //     // currentState.Value?.OnEnter(agentContext);
+        // }
 
-        public void Init(ControlAgent agent, CanvasData controlFlow, ControlRunner controlRunner)
-        {
-            this.controlRunner = controlRunner;
-            AgentContext = agent;
-            this.controlFlow = controlFlow;
-            if (currentState.Value == null)
-            {
-                Debug.Log($"Initial node {controlFlow.InitialNode} is not a state");
-                return;
-            }
-            currentState.Value?.OnEnter(AgentContext);
-        }
-
-        public IControl DoUpdate(IState behaviour)
+        public void DoUpdate(IState behaviour, ControlAgent agentContext, float deltaTime)
         {
             if(behaviour == null)
-                return null;
+                return;
             if(behaviour != currentState.Value)
             {
-                currentState.Value?.OnExit(AgentContext);
+                currentState.Value?.OnExit(agentContext);
                 currentState.Value = behaviour;
-                currentState.Value?.OnEnter(AgentContext);
+                currentState.Value?.OnEnter(agentContext);
             }
-            currentState.Value?.Execute(AgentContext, Time.deltaTime);
-            return currentState.Value;
+            currentState.Value?.Execute(agentContext, deltaTime);
         }
 
-        public void ClearRunner()
+        public IControl GetNext(IState state, CanvasData controlFlow)
         {
-            currentState.Value?.OnExit(AgentContext);
+            return currentState.Value;
+        }
+        
+        public void ResetRunner(ControlAgent agentContext)
+        {
+            currentState.Value?.OnExit(agentContext);
             currentState.Value = null;
         }
     }
