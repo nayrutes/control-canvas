@@ -24,6 +24,7 @@ namespace ControlCanvas.Editor
             //controlRunner.CurrentControl.Subscribe(OnControlChanged).AddTo(disposables);
             controlRunner.StepDone.Subscribe(OnStepDone).AddTo(disposables);
             controlRunner.ClearingBt.Subscribe(ClearDebugMarker).AddTo(disposables);
+            controlRunner.ControlFlowChanged.Subscribe(x=>canvasViewModel.DeserializeData(x.currentPath)).AddTo(disposables);
         }
         
         public void Unlink()

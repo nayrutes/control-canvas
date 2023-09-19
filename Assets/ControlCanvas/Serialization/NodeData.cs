@@ -31,6 +31,7 @@ namespace ControlCanvas.Serialization
         State,
         Behaviour,
         Decision,
-        Routing
+        Routing,
+        SubFlow
     }
 }

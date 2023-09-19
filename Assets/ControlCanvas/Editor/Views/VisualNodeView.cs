@@ -58,6 +58,9 @@ namespace ControlCanvas.Editor.Views
                 case NodeType.Decision:
                     HidePort2(false);
                     break;
+                case NodeType.SubFlow:
+                    HidePort2(true);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
@@ -81,7 +84,7 @@ namespace ControlCanvas.Editor.Views
                     var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
                     var vmBase = vm as BaseViewModel<DebugState>;
                     //var vm = nodeViewModel.GetChildViewModel(nodeViewModel.specificState.Value) as BaseViewModel<DebugState>;
-                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<string>>("nodeMessage");
+                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<string>>(nameof(DebugState.nodeMessage));
                     rp.Subscribe(x=> visualElement.value = x);
                     visualElement.RegisterValueChangedCallback(evt => rp.Value = evt.newValue);
                     
@@ -95,7 +98,7 @@ namespace ControlCanvas.Editor.Views
                     var vmBase = vm as BaseViewModel<DebugBehaviour>;
                     //var vm = nodeViewModel.GetChildViewModel(nodeViewModel.specificState.Value) as BaseViewModel<DebugState>;
                     
-                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<State>>("nodeState");
+                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<State>>( nameof(DebugBehaviour.nodeState));
                     rp.Subscribe(x=> enumField.SetValueWithoutNotify(x));
                     enumField.RegisterValueChangedCallback(evt => rp.Value = (State)evt.newValue);
                 }else if (control.GetType() == typeof(MoveToControl))
@@ -105,7 +108,7 @@ namespace ControlCanvas.Editor.Views
                     var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
                     var vmBase = vm as BaseViewModel<MoveToControl>;
                     
-                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<int>>("index");
+                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<int>>(nameof(MoveToControl.index));
                     rp.Subscribe(x=> integerField.SetValueWithoutNotify(x));
                     integerField.RegisterValueChangedCallback(evt => rp.Value = evt.newValue);
                     
@@ -116,11 +119,19 @@ namespace ControlCanvas.Editor.Views
                     m_DynamicContent.Add(enumField);
                     var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
                     var vmBase = vm as BaseViewModel<Repeater>;
-                    //var vm = nodeViewModel.GetChildViewModel(nodeViewModel.specificState.Value) as BaseViewModel<DebugState>;
 
-                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<RepeaterMode>>("mode");
+                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<RepeaterMode>>(nameof(Repeater.mode));
                     rp.Subscribe(x => enumField.SetValueWithoutNotify(x));
                     enumField.RegisterValueChangedCallback(evt => rp.Value = (RepeaterMode)evt.newValue);
+                }else if (control.GetType() == typeof(SubFlow))
+                {
+                    TextField textField = new TextField("Path");
+                    m_DynamicContent.Add(textField);
+                    var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
+                    var vmBase = vm as BaseViewModel<SubFlow>;
+                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<string>>(nameof(SubFlow.path));
+                    rp.Subscribe(x=> textField.SetValueWithoutNotify(x));
+                    textField.RegisterValueChangedCallback(evt => rp.Value = evt.newValue);
                 }
             }
         }

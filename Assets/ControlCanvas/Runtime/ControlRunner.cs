@@ -4,23 +4,36 @@ using System.Linq;
 using ControlCanvas.Serialization;
 using UniRx;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace ControlCanvas.Runtime
 {
+    public class FlowTracker
+    {
+        public CanvasData currentFlow;
+        public IControl currentControl;
+        public string currentPath;
+    }
+    
     public class ControlRunner : MonoBehaviour
     {
-        public ReactiveProperty<IControl> CurrentControl { get; private set; } = new ReactiveProperty<IControl>();
-        public Subject<IControl> StepDone { get; } = new Subject<IControl>();
+        private Stack<FlowTracker> _controlFlowStack = new ();
+        private CanvasData ControlFlow => _controlFlowStack.Peek().currentFlow;
+        public IControl CurrentControl
+        {
+            get => _controlFlowStack.Peek().currentControl;
+            set => _controlFlowStack.Peek().currentControl = value;
+        }
 
+        public Subject<IControl> StepDone { get; } = new Subject<IControl>();
+        public Subject<FlowTracker> ControlFlowChanged { get; } = new Subject<FlowTracker>();
         public Subject<List<IBehaviour>> ClearingBt { get; set; } = new();
         [SerializeField]
         private ControlAgent agentContext;
 
-        [SerializeField]
-        private string path = "Assets/ControlFlows/StateFlowEx4.xml";
+        [FormerlySerializedAs("path")] [SerializeField]
+        private string startPath = "";
 
-        private Stack<CanvasData> _controlFlowStack = new ();
-        private CanvasData controlFlow => _controlFlowStack.Peek();
 
         private Dictionary<Type, IRunnerBase> runnerDict = new ();
         
@@ -46,7 +59,7 @@ namespace ControlCanvas.Runtime
         private void Start()
         {
             mode.Value = Mode.CompleteUpdate;
-            InitializeControlFlow(path);
+            InitializeControlFlow(startPath);
             runnerDict.Add(typeof(IState), new StateRunner());
             runnerDict.Add(typeof(IDecision), new DecisionRunner());
             runnerDict.Add(typeof(IBehaviour), new BehaviourRunner());
@@ -55,6 +68,42 @@ namespace ControlCanvas.Runtime
             updateByType.Add(typeof(IState), RunRunner<IState>);
             updateByType.Add(typeof(IDecision), RunRunner<IDecision>);
             updateByType.Add(typeof(IBehaviour), RunRunner<IBehaviour>);
+            updateByType.Add(typeof(ISubFlow), EnterSubFlow);
+        }
+
+        private void EnterSubFlow(float deltaTime)
+        {
+            ISubFlow subFlow = CurrentControl as ISubFlow;
+            string subFlowPath = subFlow.GetSubFlowPath(agentContext);
+            InitializeControlFlow(subFlowPath);
+        }
+        private void InitializeControlFlow(string currentPath)
+        {
+            CanvasData initControlFlow = null;
+            XMLHelper.DeserializeFromXML(currentPath, out initControlFlow);
+            if (initControlFlow == null)
+            {
+                Debug.LogError($"No canvasData for path {currentPath}");
+                return;
+            }
+            InitializeControlFlow(initControlFlow, currentPath);
+        }
+
+        private void InitializeControlFlow(CanvasData canvasData, string path = null)
+        {
+            _controlFlowStack.Push(new FlowTracker
+            {
+                currentFlow = canvasData,
+                currentControl = null,
+                currentPath = path
+            });
+            ControlFlowChanged.OnNext(_controlFlowStack.Peek());
+            initialControl = NodeManager.Instance.GetControlForNode(ControlFlow.InitialNode, ControlFlow);
+            nextSuggestedControl = initialControl;
+            if (agentContext == null)
+            {
+                Debug.LogError("No agent context set");
+            }
         }
 
         private void FixedUpdate()
@@ -63,33 +112,6 @@ namespace ControlCanvas.Runtime
             if (!stopped)
                 UpdateControlFlow();
         }
-
-        private void InitializeControlFlow(string currentPath)
-        {
-            CanvasData initControlFlow = null;
-            XMLHelper.DeserializeFromXML(currentPath, out initControlFlow);
-            if (initControlFlow == null)
-            {
-                Debug.LogError($"No initial node set for control flow {controlFlow.Name}");
-                return;
-            }
-            _controlFlowStack.Push(initControlFlow);
-            initialControl = NodeManager.Instance.GetControlForNode(controlFlow.InitialNode, controlFlow);
-            nextSuggestedControl = initialControl;
-            //mode.Value = Mode.CompleteUpdate;
-            if (agentContext == null)
-            {
-                Debug.LogError("No agent context set");
-            }
-        }
-
-        // private void InitializeRunners()
-        // {
-        //     // stateRunner.Init(agentContext, controlFlow, this);
-        //     // decisionRunner.Init(agentContext, controlFlow);
-        //     // behaviourRunner.Init(agentContext, controlFlow, this);
-        // }
-
         private void UpdateControlFlow()
         {
             if (mode.Value == Mode.CompleteUpdate)
@@ -123,13 +145,21 @@ namespace ControlCanvas.Runtime
 
         private bool IsUpdateComplete()
         {
-            return nextSuggestedControl == CurrentControl.Value || (nextSuggestedControl == initialControl && startedComplete);
+            return nextSuggestedControl == CurrentControl || (nextSuggestedControl == initialControl && startedComplete);
         }
 
         private void SubUpdate()
         {
             if (nextSuggestedControl == null)
             {
+                if(_controlFlowStack.Count > 1)
+                {
+                    _controlFlowStack.Pop();
+                    ControlFlowChanged.OnNext(_controlFlowStack.Peek());
+                    nextSuggestedControl = NodeManager.Instance.GetNextForNode(CurrentControl, ControlFlow);
+                    return;
+                }
+                
                 if (_autoRestart)
                 {
                     Debug.Log("Restarting control flow because no next suggested control");
@@ -142,26 +172,26 @@ namespace ControlCanvas.Runtime
                     return;   
                 }
             }
-            CurrentControl.Value = nextSuggestedControl;
+            CurrentControl = nextSuggestedControl;
             nextSuggestedControl = null;
             
-            Type executionType = NodeManager.Instance.GetExecutionTypeOfNode(CurrentControl.Value, controlFlow);
+            Type executionType = NodeManager.Instance.GetExecutionTypeOfNode(CurrentControl, ControlFlow);
             updateByType[executionType](_currentDeltaTimeForSubUpdate);
             
-            StepDone.OnNext(CurrentControl.Value);
+            StepDone.OnNext(CurrentControl);
             _currentDeltaTimeForSubUpdate = 0;
         }
 
         private void RunRunner<T>(float deltaTime) where T : class, IControl
         {
             IRunner<T> runner = runnerDict[typeof(T)] as IRunner<T>;
-            runner.DoUpdate(CurrentControl.Value as T, agentContext, deltaTime);
-            nextSuggestedControl = runner.GetNext(CurrentControl.Value as T, controlFlow);
+            runner.DoUpdate(CurrentControl as T, agentContext, deltaTime);
+            nextSuggestedControl = runner.GetNext(CurrentControl as T, ControlFlow);
         }
 
         private void ClearStateRunnerIfNecessary()
         {
-            if (NodeManager.Instance.GetExecutionTypeOfNode(nextSuggestedControl, controlFlow) != typeof(IState))
+            if (NodeManager.Instance.GetExecutionTypeOfNode(nextSuggestedControl, ControlFlow) != typeof(IState))
             {
                 runnerDict[typeof(IState)].ResetRunner(agentContext);
             }
@@ -181,7 +211,7 @@ namespace ControlCanvas.Runtime
         public void AutoNext()
         {
             
-            nextSuggestedControl = NodeManager.Instance.GetNextForNode(CurrentControl.Value, controlFlow);
+            nextSuggestedControl = NodeManager.Instance.GetNextForNode(CurrentControl, ControlFlow);
             ClearStateRunnerIfNecessary();
         }
 

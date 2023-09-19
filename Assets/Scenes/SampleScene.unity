@@ -202,7 +202,7 @@ MonoBehaviour:
     moveToPosition: {x: 0, y: 0, z: 0}
     moveToObject: {fileID: 0}
     patrolPoints: []
-  testBool: 1
+  testBool: 0
   testBoolSecond: 1
   testState: 0
 --- !u!4 &376851992

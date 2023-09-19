@@ -31,6 +31,11 @@ namespace ControlCanvas.Runtime
             {"TestDecision2", typeof(TestDecisionSecond)},
         };
         
+        public static readonly Dictionary<string, Type> otherDictionary = new()
+        {
+            {"SubFlow", typeof(SubFlow)},
+        };
+        
         private Dictionary<string, IControl> controlCache = new();
         
         public IControl GetControlForNode(string guid, CanvasData canvasData)
@@ -74,6 +79,8 @@ namespace ControlCanvas.Runtime
                     return typeof(IBehaviour);
                 case NodeType.Decision:
                     return typeof(IDecision);
+                case NodeType.SubFlow:
+                    return typeof(ISubFlow);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -101,7 +108,7 @@ namespace ControlCanvas.Runtime
                     return decisionDictionary.Keys;
                 default:
                     //throw new ArgumentOutOfRangeException(nameof(type), type, null);
-                    return new List<string>();
+                    return otherDictionary.Keys;
             }
         }
 
@@ -121,6 +128,11 @@ namespace ControlCanvas.Runtime
             else if (decisionDictionary.TryGetValue(className, out type))
             {
                 o = (IDecision)Activator.CreateInstance(type);
+                return true;
+            }
+            else if (otherDictionary.TryGetValue(className, out type))
+            {
+                o = (IControl)Activator.CreateInstance(type);
                 return true;
             }
             else
