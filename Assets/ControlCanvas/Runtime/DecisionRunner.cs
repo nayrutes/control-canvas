@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using ControlCanvas.Serialization;
 using UniRx;
-using UnityEngine;
 
 namespace ControlCanvas.Runtime
 {
@@ -30,7 +29,8 @@ namespace ControlCanvas.Runtime
             _decision = CurrentDecision.Value.Decide(agentContext);
         }
 
-        public IControl GetNext(IDecision decision, CanvasData controlFlow)
+        public IControl GetNext(IDecision decision, CanvasData controlFlow, ControlAgent agentContext,
+            Func<string, CanvasData> getFlow)
         {
             IControl next = NodeManager.Instance.GetNextForNode(decision, _decision, controlFlow);
             if (NodeManager.Instance.GetExecutionTypeOfNode(next, controlFlow) != typeof(IDecision))

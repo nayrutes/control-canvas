@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using ControlCanvas.Serialization;
 using UniRx;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace ControlCanvas.Runtime
@@ -67,9 +66,89 @@ namespace ControlCanvas.Runtime
             //return HandleResult();
         }
 
-        public IControl GetNext(IBehaviour behaviour, CanvasData controlFlow)
+        public IControl GetNext(IBehaviour behaviour, CanvasData controlFlow, ControlAgent agentContext,
+            Func<string, CanvasData> getFlow)
         {
-            return HandleResult(controlFlow);
+            IControl nextControl = null;
+
+            if (_goingBackwards)
+            {
+                if (!CurrentBehaviourWrapper.Value.ChoseFailRoute)
+                {
+                    if (LastCombinedResult == State.Failure && CurrentBehaviourWrapper.Value.FailureChild(controlFlow) != null)
+                    {
+                        _goingBackwards = false;
+                        nextControl = CurrentBehaviourWrapper.Value.FailureChild(controlFlow);
+                        CurrentBehaviourWrapper.Value.CombinedResultState = State.Failure;
+                        CurrentBehaviourWrapper.Value.ChoseFailRoute = true;
+                    }
+                    
+                }   
+            }
+            else
+            {
+                if (CurrentBehaviourWrapper.Value.Behaviour is ISubFlow subFlowControl)
+                {
+                    CanvasData subFlow = getFlow(subFlowControl.GetSubFlowPath(agentContext));
+                    nextControl = NodeManager.Instance.GetInitControl(subFlow);
+                    //_goingBackwards = false;
+                }
+                else
+                {
+                    switch (CurrentBehaviourWrapper.Value.CombinedResultState)
+                    {
+                        case State.Success:
+                            nextControl = CurrentBehaviourWrapper.Value.SuccessChild(controlFlow);
+                            break;
+                        case State.Failure:
+                            nextControl = CurrentBehaviourWrapper.Value.FailureChild(controlFlow);
+                            CurrentBehaviourWrapper.Value.ChoseFailRoute = true;
+                            break;
+                        case State.Running:
+                            nextControl = CurrentBehaviourWrapper.Value.Behaviour;
+                            break;
+                        default:
+                            Debug.LogError($"Unknown state {CurrentBehaviourWrapper.Value?.CombinedResultState}");
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                    _goingBackwards = nextControl == null;
+                }
+            }
+
+            
+            if (!_goingBackwards && nextControl is Repeater repeater)
+            {
+                if (_behaviourStack.Contains(repeater))
+                {
+                    _goingBackwards = true;
+                    if (repeater.mode == RepeaterMode.Loop)
+                    {
+                        _repeaterStack.Push(repeater);   
+                    }
+                }
+            }
+            
+            if (_goingBackwards)
+            {
+                _behaviourStack.Pop();
+                if (_behaviourStack.TryPeek(out IBehaviour topBehaviour))
+                {
+                    if(CurrentBehaviourWrapper.Value.Behaviour is Repeater repeater3 && repeater3.mode == RepeaterMode.Always)
+                    {
+                        _repeaterStack.Push(repeater3);
+                    }
+                    
+                    nextControl = topBehaviour;
+                }
+                else
+                {
+                    _goingBackwards = false;
+                }
+            }
+
+            
+            return nextControl;
         }
         
         private BehaviourWrapper GetOrSetWrapper(IBehaviour behaviour)
@@ -89,82 +168,6 @@ namespace ControlCanvas.Runtime
                 _behaviourStack.Push(behaviour);
                 _goingBackwards = false;
             }
-        }
-
-        private IControl HandleResult(CanvasData controlFlow)
-        {
-            IControl nextControl = null;
-
-            if (_goingBackwards)
-            {
-                if (!CurrentBehaviourWrapper.Value.ChoseFailRoute)
-                {
-                    if (LastCombinedResult == State.Failure && CurrentBehaviourWrapper.Value.FailureChild(controlFlow) != null)
-                    {
-                        _goingBackwards = false;
-                        nextControl = CurrentBehaviourWrapper.Value.FailureChild(controlFlow);
-                        CurrentBehaviourWrapper.Value.CombinedResultState = State.Failure;
-                        CurrentBehaviourWrapper.Value.ChoseFailRoute = true;
-                    }
-                    
-                }
-            }
-            else
-            {
-                switch (CurrentBehaviourWrapper.Value.CombinedResultState)
-                {
-                    case State.Success:
-                        nextControl = CurrentBehaviourWrapper.Value.SuccessChild(controlFlow);
-                        break;
-                    case State.Failure:
-                        nextControl = CurrentBehaviourWrapper.Value.FailureChild(controlFlow);
-                        CurrentBehaviourWrapper.Value.ChoseFailRoute = true;
-                        break;
-                    case State.Running:
-                        nextControl = CurrentBehaviourWrapper.Value.Behaviour;
-                        break;
-                    default:
-                        Debug.LogError($"Unknown state {CurrentBehaviourWrapper.Value?.CombinedResultState}");
-                        throw new ArgumentOutOfRangeException();
-                }
-
-                _goingBackwards = nextControl == null;
-            }
-
-            
-            if (!_goingBackwards && nextControl is Repeater repeater)
-            {
-                if (_behaviourStack.Contains(repeater))
-                {
-                    _goingBackwards = true;
-                    if (repeater.mode == RepeaterMode.Loop)
-                    {
-                        _repeaterStack.Push(repeater);   
-                    }
-                }
-            }
-            
-            if (_goingBackwards)
-            {
-                
-                _behaviourStack.Pop();
-                if (_behaviourStack.TryPeek(out IBehaviour topBehaviour))
-                {
-                    if(CurrentBehaviourWrapper.Value.Behaviour is Repeater repeater3 && repeater3.mode == RepeaterMode.Always)
-                    {
-                        _repeaterStack.Push(repeater3);
-                    }
-                    
-                    nextControl = topBehaviour;
-                }
-                else
-                {
-                    _goingBackwards = false;
-                }
-            }
-
-            
-            return nextControl;
         }
 
         public void ResetRunner(ControlAgent agentContext)

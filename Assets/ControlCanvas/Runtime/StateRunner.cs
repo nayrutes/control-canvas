@@ -1,7 +1,6 @@
-﻿using System.Linq;
+﻿using System;
 using ControlCanvas.Serialization;
 using UniRx;
-using UnityEngine;
 
 namespace ControlCanvas.Runtime
 {
@@ -36,10 +35,19 @@ namespace ControlCanvas.Runtime
             currentState.Value?.Execute(agentContext, deltaTime);
         }
 
-        public IControl GetNext(IState state, CanvasData controlFlow)
+        public IControl GetNext(IState state, CanvasData controlFlow, ControlAgent agentContext,
+            Func<string, CanvasData> getFlow)
         {
             return currentState.Value;
         }
+        
+        // public IControl AfterExitingSubFlow(IState control, CanvasData currentFlow)
+        // {
+        //     //IControl autonext = NodeManager.Instance.GetNextForNode(control, currentFlow);
+        //     //return NodeManager.Instance.GetControlForNode(currentFlow.InitialNode, currentFlow);
+        //     return currentState.Value;
+        // }
+        
         
         public void ResetRunner(ControlAgent agentContext)
         {

@@ -1,4 +1,7 @@
-﻿using ControlCanvas.Serialization;
+﻿using System;
+using System.Collections.Generic;
+using ControlCanvas.Serialization;
+using UnityEngine;
 
 namespace ControlCanvas.Runtime
 {
@@ -11,7 +14,8 @@ namespace ControlCanvas.Runtime
     {
         
         void DoUpdate(T control, ControlAgent agentContext, float deltaTime);
-        
-        IControl GetNext(T control, CanvasData controlFlow);
+
+        IControl GetNext(T control, CanvasData currentFlow, ControlAgent agentContext,
+            Func<string, CanvasData> getFlow);
     }
 }

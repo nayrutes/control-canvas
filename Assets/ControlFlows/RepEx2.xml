@@ -44,7 +44,7 @@
       <Position x="3414" y="112" />
       <Size x="73" y="32" />
     </NodeData>
-    <NodeData Name="New Node" Guid="f77db69c-2aa4-4a5a-979e-169bf3e1b0b5" nodeType="SubFlow" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp">
+    <NodeData Name="New Node" Guid="f77db69c-2aa4-4a5a-979e-169bf3e1b0b5" nodeType="Behaviour" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=Assembly-CSharp">
       <Position x="1794" y="631" />
       <Size x="394" y="137" />
       <specificControl exs:type="ns1:SubFlow" path="Assets/ControlFlows/SubEx1.xml" />

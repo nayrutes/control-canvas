@@ -15,6 +15,7 @@ namespace ControlCanvas.Runtime
             {"DebugState", typeof(DebugState)},
             {"IdleState", typeof(IdleState)},
             {"MoveToState", typeof(MoveToControl)},
+            {"SubFlow", typeof(SubFlow)},
         };
         
         public static readonly Dictionary<string, Type> behaviourDictionary = new()
@@ -23,17 +24,19 @@ namespace ControlCanvas.Runtime
             {"WaitBehaviour", typeof(WaitBehaviour)},
             {"MoveToBehaviour", typeof(MoveToControl)},
             {"Repeater", typeof(Repeater)},
+            {"SubFlow", typeof(SubFlow)},
         };
         
         public static readonly Dictionary<string, Type> decisionDictionary = new()
         {
             {"TestDecision", typeof(TestDecision)},
             {"TestDecision2", typeof(TestDecisionSecond)},
+            {"SubFlow", typeof(SubFlow)},
         };
         
         public static readonly Dictionary<string, Type> otherDictionary = new()
         {
-            {"SubFlow", typeof(SubFlow)},
+            
         };
         
         private Dictionary<string, IControl> controlCache = new();
@@ -68,7 +71,7 @@ namespace ControlCanvas.Runtime
             NodeType? nodeType = canvasData.Nodes.FirstOrDefault(x => x.specificControl == control)?.nodeType;
             if (nodeType == null)
             {
-                Debug.LogError($"No node type found for {control}");
+                Debug.LogError($"No node or node type found for {control}");
                 return null;
             }
             switch (nodeType)
@@ -79,8 +82,6 @@ namespace ControlCanvas.Runtime
                     return typeof(IBehaviour);
                 case NodeType.Decision:
                     return typeof(IDecision);
-                case NodeType.SubFlow:
-                    return typeof(ISubFlow);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -185,6 +186,10 @@ namespace ControlCanvas.Runtime
 
             return nodeData;
         }
-        
+
+        public IControl GetInitControl(CanvasData flow)
+        {
+            return GetControlForNode(flow.InitialNode, flow);
+        }
     }
 }

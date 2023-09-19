@@ -58,9 +58,6 @@ namespace ControlCanvas.Editor.Views
                 case NodeType.Decision:
                     HidePort2(false);
                     break;
-                case NodeType.SubFlow:
-                    HidePort2(true);
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }

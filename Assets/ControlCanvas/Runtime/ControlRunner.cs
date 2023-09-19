@@ -8,25 +8,15 @@ using UnityEngine.Serialization;
 
 namespace ControlCanvas.Runtime
 {
-    public class FlowTracker
-    {
-        public CanvasData currentFlow;
-        public IControl currentControl;
-        public string currentPath;
-    }
+
     
     public class ControlRunner : MonoBehaviour
     {
-        private Stack<FlowTracker> _controlFlowStack = new ();
-        private CanvasData ControlFlow => _controlFlowStack.Peek().currentFlow;
-        public IControl CurrentControl
-        {
-            get => _controlFlowStack.Peek().currentControl;
-            set => _controlFlowStack.Peek().currentControl = value;
-        }
-
+        private FlowManager _flowManager = new FlowManager();
+        
+        IControl CurrentControl => _flowManager.CurrentFlowTracker.control;
+        CanvasData CurrentFlow => _flowManager.CurrentFlowTracker.flow;
         public Subject<IControl> StepDone { get; } = new Subject<IControl>();
-        public Subject<FlowTracker> ControlFlowChanged { get; } = new Subject<FlowTracker>();
         public Subject<List<IBehaviour>> ClearingBt { get; set; } = new();
         [SerializeField]
         private ControlAgent agentContext;
@@ -39,9 +29,6 @@ namespace ControlCanvas.Runtime
         
         private Dictionary<Type, Action<float>> updateByType = new ();
         
-        //private StateRunner stateRunner = new StateRunner();
-        //private DecisionRunner decisionRunner = new DecisionRunner();
-        //private BehaviourRunner behaviourRunner = new BehaviourRunner();
 
         private ReactiveProperty<Mode> mode = new ReactiveProperty<Mode>();
         private IControl nextSuggestedControl;
@@ -49,12 +36,11 @@ namespace ControlCanvas.Runtime
         private bool stopped = true;
         private bool startedComplete;
         private bool _autoRestart = true;
-        //private List<IBehaviour> _btTracker = new();
 
         public State LatestBehaviourState => ((BehaviourRunner)runnerDict[typeof(IBehaviour)]).LastCombinedResult;
+        public IObservable<FlowTracker> ControlFlowChanged => _flowManager.ControlFlowChanged.SkipWhile(_=>_running);
 
         private float _currentDeltaTimeForSubUpdate;
-        //public IControl LatestPop => behaviourRunner.LatestPop;
 
         private void Start()
         {
@@ -63,42 +49,18 @@ namespace ControlCanvas.Runtime
             runnerDict.Add(typeof(IState), new StateRunner());
             runnerDict.Add(typeof(IDecision), new DecisionRunner());
             runnerDict.Add(typeof(IBehaviour), new BehaviourRunner());
-            //InitializeRunners();
             
             updateByType.Add(typeof(IState), RunRunner<IState>);
             updateByType.Add(typeof(IDecision), RunRunner<IDecision>);
             updateByType.Add(typeof(IBehaviour), RunRunner<IBehaviour>);
-            updateByType.Add(typeof(ISubFlow), EnterSubFlow);
         }
-
-        private void EnterSubFlow(float deltaTime)
-        {
-            ISubFlow subFlow = CurrentControl as ISubFlow;
-            string subFlowPath = subFlow.GetSubFlowPath(agentContext);
-            InitializeControlFlow(subFlowPath);
-        }
+        
         private void InitializeControlFlow(string currentPath)
         {
             CanvasData initControlFlow = null;
-            XMLHelper.DeserializeFromXML(currentPath, out initControlFlow);
-            if (initControlFlow == null)
-            {
-                Debug.LogError($"No canvasData for path {currentPath}");
-                return;
-            }
-            InitializeControlFlow(initControlFlow, currentPath);
-        }
-
-        private void InitializeControlFlow(CanvasData canvasData, string path = null)
-        {
-            _controlFlowStack.Push(new FlowTracker
-            {
-                currentFlow = canvasData,
-                currentControl = null,
-                currentPath = path
-            });
-            ControlFlowChanged.OnNext(_controlFlowStack.Peek());
-            initialControl = NodeManager.Instance.GetControlForNode(ControlFlow.InitialNode, ControlFlow);
+            
+            _flowManager.SetCurrentFlow(currentPath);
+            initialControl = NodeManager.Instance.GetInitControl(CurrentFlow);
             nextSuggestedControl = initialControl;
             if (agentContext == null)
             {
@@ -152,14 +114,6 @@ namespace ControlCanvas.Runtime
         {
             if (nextSuggestedControl == null)
             {
-                if(_controlFlowStack.Count > 1)
-                {
-                    _controlFlowStack.Pop();
-                    ControlFlowChanged.OnNext(_controlFlowStack.Peek());
-                    nextSuggestedControl = NodeManager.Instance.GetNextForNode(CurrentControl, ControlFlow);
-                    return;
-                }
-                
                 if (_autoRestart)
                 {
                     Debug.Log("Restarting control flow because no next suggested control");
@@ -172,10 +126,11 @@ namespace ControlCanvas.Runtime
                     return;   
                 }
             }
-            CurrentControl = nextSuggestedControl;
+            
+            _flowManager.SetCurrentControlAndFlow(nextSuggestedControl);
             nextSuggestedControl = null;
             
-            Type executionType = NodeManager.Instance.GetExecutionTypeOfNode(CurrentControl, ControlFlow);
+            Type executionType = NodeManager.Instance.GetExecutionTypeOfNode(CurrentControl, CurrentFlow);
             updateByType[executionType](_currentDeltaTimeForSubUpdate);
             
             StepDone.OnNext(CurrentControl);
@@ -185,13 +140,21 @@ namespace ControlCanvas.Runtime
         private void RunRunner<T>(float deltaTime) where T : class, IControl
         {
             IRunner<T> runner = runnerDict[typeof(T)] as IRunner<T>;
+            if (CurrentControl is ISubFlow subFlow)
+            {
+                _flowManager.CacheFlow(subFlow.GetSubFlowPath(agentContext));
+            }
+            
             runner.DoUpdate(CurrentControl as T, agentContext, deltaTime);
-            nextSuggestedControl = runner.GetNext(CurrentControl as T, ControlFlow);
+            
+            IControl next = runner.GetNext(CurrentControl as T, CurrentFlow, agentContext, _flowManager.GetFlow);
+            
+            nextSuggestedControl = next;
         }
 
         private void ClearStateRunnerIfNecessary()
         {
-            if (NodeManager.Instance.GetExecutionTypeOfNode(nextSuggestedControl, ControlFlow) != typeof(IState))
+            if (NodeManager.Instance.GetExecutionTypeOfNode(nextSuggestedControl, CurrentFlow) != typeof(IState))
             {
                 runnerDict[typeof(IState)].ResetRunner(agentContext);
             }
@@ -200,20 +163,17 @@ namespace ControlCanvas.Runtime
         private void ResetRunner()
         {
             runnerDict[typeof(IBehaviour)].ResetRunner(agentContext);
-            //behaviourRunner.ResetRunner();
-            //ClearingBt.OnNext(_btTracker);
-            //_btTracker.Clear();
         }
         
         
 
-        [ContextMenu("AutoNext")]
-        public void AutoNext()
-        {
-            
-            nextSuggestedControl = NodeManager.Instance.GetNextForNode(CurrentControl, ControlFlow);
-            ClearStateRunnerIfNecessary();
-        }
+        // [ContextMenu("AutoNext")]
+        // public void AutoNext()
+        // {
+        //     
+        //     nextSuggestedControl = NodeManager.Instance.GetNextForNode(CurrentControl, ControlFlow);
+        //     ClearStateRunnerIfNecessary();
+        // }
 
         public void Play()
         {
