@@ -79,5 +79,10 @@ namespace ControlCanvas.Editor.Views
         {
             return nodeViewModel;
         }
+
+        public override void CollectElements(HashSet<GraphElement> collectedElementSet, Func<GraphElement, bool> conditionFunc)
+        {
+            collectedElementSet.UnionWith(inOutPort.connections);
+        }
     }
 }
