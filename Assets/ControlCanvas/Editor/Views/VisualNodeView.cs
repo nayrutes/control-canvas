@@ -47,6 +47,7 @@ namespace ControlCanvas.Editor.Views
             m_DynamicContent.Clear();
             m_DynamicContent.Add(new Label($"This is a {type} node"));
             this.Q<EnumField>("type-enum").SetValueWithoutNotify(type);
+            HidePort1(false);
             switch (type)
             {
                 case NodeType.State:
@@ -129,6 +130,8 @@ namespace ControlCanvas.Editor.Views
                     var rp = vmBase.GetReactiveProperty<ReactiveProperty<string>>(nameof(SubFlow.path));
                     rp.Subscribe(x=> textField.SetValueWithoutNotify(x));
                     textField.RegisterValueChangedCallback(evt => rp.Value = evt.newValue);
+                    HidePort1(true);
+                    HidePort2(true);
                 }
             }
         }
@@ -280,6 +283,18 @@ namespace ControlCanvas.Editor.Views
             //nodeViewModel.HidePort2.Subscribe(x => { HidePort2(x); }).AddTo(disposables);
         }
 
+        private void HidePort1(bool x)
+        {
+            if (x)
+            {
+                this.Q<VisualElement>("output").AddToClassList("hide-port-2");
+            }
+            else
+            {
+                this.Q<VisualElement>("output").RemoveFromClassList("hide-port-2");
+            }
+        }
+        
         private void HidePort2(bool x)
         {
             if (x)

@@ -10,5 +10,6 @@ namespace ControlCanvas
         public GameObject moveToObject;
         
         public List<Transform> patrolPoints;
+        public string SubFlowPath { get; set; }
     }
 }

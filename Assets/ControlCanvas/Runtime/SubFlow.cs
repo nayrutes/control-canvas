@@ -1,4 +1,6 @@
-﻿namespace ControlCanvas.Runtime
+﻿using Unity.VisualScripting.FullSerializer;
+
+namespace ControlCanvas.Runtime
 {
     public class SubFlow : ISubFlow, IBehaviour, IState, IDecision
     {
@@ -41,6 +43,12 @@
         public bool Decide(ControlAgent agentContext)
         {
             return true;
+        }
+
+        override void Forward()
+        {
+            CanvasData subFlow = getFlow(subFlowControl.GetSubFlowPath(agentContext));
+            nextControl = NodeManager.Instance.GetInitControl(subFlow);
         }
     }
 }
