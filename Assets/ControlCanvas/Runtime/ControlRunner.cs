@@ -46,9 +46,9 @@ namespace ControlCanvas.Runtime
         {
             mode.Value = Mode.CompleteUpdate;
             InitializeControlFlow(startPath);
-            runnerDict.Add(typeof(IState), new StateRunner());
-            runnerDict.Add(typeof(IDecision), new DecisionRunner());
-            runnerDict.Add(typeof(IBehaviour), new BehaviourRunner());
+            runnerDict.Add(typeof(IState), new StateRunner(_flowManager, NodeManager.Instance));
+            runnerDict.Add(typeof(IDecision), new DecisionRunner(_flowManager, NodeManager.Instance));
+            runnerDict.Add(typeof(IBehaviour), new BehaviourRunner(_flowManager, NodeManager.Instance));
             
             updateByType.Add(typeof(IState), RunRunner<IState>);
             updateByType.Add(typeof(IDecision), RunRunner<IDecision>);
@@ -147,7 +147,7 @@ namespace ControlCanvas.Runtime
             
             runner.DoUpdate(CurrentControl as T, agentContext, deltaTime);
             
-            IControl next = runner.GetNext(CurrentControl as T, CurrentFlow, agentContext, _flowManager.GetFlow);
+            IControl next = runner.GetNext(CurrentControl as T, CurrentFlow, agentContext);
             
             nextSuggestedControl = next;
         }

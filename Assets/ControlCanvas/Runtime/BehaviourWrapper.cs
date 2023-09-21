@@ -12,7 +12,17 @@ namespace ControlCanvas.Runtime
         public bool Started { get; private set; }
         public IBehaviour Behaviour { get; private set; }
 
-        //public IControl SuccessChild { get; private set; }
+        public FlowManager FlowManager { get; private set; }
+        public NodeManager NodeManager { get; private set; }
+        
+        public BehaviourWrapper(IBehaviour behaviour, FlowManager flowManager, NodeManager nodeManager)
+        {
+            Behaviour = behaviour;
+            FlowManager = flowManager;
+            NodeManager = nodeManager;
+            Reset();
+        }
+        
         public IControl SuccessChild(CanvasData controlFlow)
         {
             return GetChild(controlFlow, "portOut");
@@ -24,17 +34,9 @@ namespace ControlCanvas.Runtime
             return GetChild(controlFlow, "portOut-2");
         }
 
-        public BehaviourWrapper(IBehaviour behaviour)//, CanvasData controlFlow)
-        {
-            Behaviour = behaviour;
-            //SuccessChild = GetChild(controlFlow, "portOut");
-            //FailureChild = GetChild(controlFlow, "portOut-2");
-            Reset();
-        }
-
         private IControl GetChild(CanvasData controlFlow, string portName)
         {
-            return NodeManager.Instance.GetNextForNode(Behaviour, controlFlow, portName);
+            return NodeManager.GetNextForNode(Behaviour, controlFlow, portName);
         }
 
         public void Update(ControlAgent agentContext, float deltaTime)

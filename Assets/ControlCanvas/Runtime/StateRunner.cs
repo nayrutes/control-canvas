@@ -7,6 +7,14 @@ namespace ControlCanvas.Runtime
     public class StateRunner : IRunner<IState>
     {
         public ReactiveProperty<IState> currentState = new();
+        private readonly FlowManager _flowManager;
+        private readonly NodeManager _nodeManager;
+
+        public StateRunner(FlowManager flowManager, NodeManager instance)
+        {
+            _flowManager = flowManager;
+            _nodeManager = instance;
+        }
 
         //private ControlRunner controlRunner;
 
@@ -35,8 +43,7 @@ namespace ControlCanvas.Runtime
             currentState.Value?.Execute(agentContext, deltaTime);
         }
 
-        public IControl GetNext(IState state, CanvasData controlFlow, ControlAgent agentContext,
-            Func<string, CanvasData> getFlow)
+        public IControl GetNext(IState state, CanvasData controlFlow, ControlAgent agentContext)
         {
             return currentState.Value;
         }

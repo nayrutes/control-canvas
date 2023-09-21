@@ -15,7 +15,6 @@ namespace ControlCanvas.Runtime
         
         void DoUpdate(T control, ControlAgent agentContext, float deltaTime);
 
-        IControl GetNext(T control, CanvasData currentFlow, ControlAgent agentContext,
-            Func<string, CanvasData> getFlow);
+        IControl GetNext(T control, CanvasData currentFlow, ControlAgent agentContext);
     }
 }

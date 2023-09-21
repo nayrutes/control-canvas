@@ -6,6 +6,7 @@ namespace ControlCanvas.Runtime
     public class ControlAgent : MonoBehaviour
     {
         public Blackboard blackboardAgent;
+        public BlackboardFlowControl blackboardFlowControl = new();
         public string Name { get; set; }
 
         public bool testBool;

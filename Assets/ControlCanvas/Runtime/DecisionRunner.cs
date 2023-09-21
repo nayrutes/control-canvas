@@ -12,11 +12,15 @@ namespace ControlCanvas.Runtime
         private List<IDecision> _decisionsTracker = new List<IDecision>();
 
         private bool _decision;
+        private readonly FlowManager _flowManager;
+        private readonly NodeManager _nodeManager;
 
-        // public void InitRunner(ControlAgent agentContext, CanvasData controlFlow)
-        // {
-        // }
-
+        public DecisionRunner(FlowManager flowManager, NodeManager instance)
+        {
+            _flowManager = flowManager;
+            _nodeManager = instance;
+        }
+        
         public void DoUpdate(IDecision decision, ControlAgent agentContext, float deltaTime)
         {
             CurrentDecision.Value = decision;
@@ -29,11 +33,10 @@ namespace ControlCanvas.Runtime
             _decision = CurrentDecision.Value.Decide(agentContext);
         }
 
-        public IControl GetNext(IDecision decision, CanvasData controlFlow, ControlAgent agentContext,
-            Func<string, CanvasData> getFlow)
+        public IControl GetNext(IDecision decision, CanvasData controlFlow, ControlAgent agentContext)
         {
-            IControl next = NodeManager.Instance.GetNextForNode(decision, _decision, controlFlow);
-            if (NodeManager.Instance.GetExecutionTypeOfNode(next, controlFlow) != typeof(IDecision))
+            IControl next = _nodeManager.GetNextForNode(decision, _decision, controlFlow);
+            if (_nodeManager.GetExecutionTypeOfNode(next, controlFlow) != typeof(IDecision))
             {
                 ResetRunner(null);
             }

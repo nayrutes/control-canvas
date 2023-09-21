@@ -5,13 +5,29 @@ using UnityEngine;
 
 namespace ControlCanvas.Runtime
 {
-    public class DefaultRunnerOverrides : IBehaviourRunnerOverrides
+    public class DefaultRunnerExecuter : IBehaviourRunnerExecuter
     {
     }
     
-    public interface IBehaviourRunnerOverrides
+    public interface IBehaviourRunnerExecuter
     {
-        IControl Forward(BehaviourWrapper behaviourWrapper, CanvasData controlFlow)
+        
+        ExDirection ReEvaluateDirection(ControlAgent agentContext, ExDirection last, BehaviourWrapper wrapper,
+            State lastCombinedResult)
+        {
+            if (last == ExDirection.Backward)
+            {
+                if (!wrapper.ChoseFailRoute && lastCombinedResult == State.Failure)
+                {
+                    wrapper.CombinedResultState = State.Failure;
+                    return ExDirection.Forward;
+                }
+            }
+            return last;
+        }
+        
+        IControl DoForward(ControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard,
+            BehaviourWrapper behaviourWrapper, CanvasData controlFlow)
         {
             IControl nextControl = null;
             switch (behaviourWrapper.CombinedResultState)
@@ -33,21 +49,16 @@ namespace ControlCanvas.Runtime
             return nextControl;
         }
 
-        IControl Backward(Stack<IBehaviour> behaviourStack)
+        IControl DoBackward(ControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard)
         {
-            behaviourStack.Pop();
-            if (behaviourStack.TryPeek(out IBehaviour topBehaviour))
+            runnerBlackboard.behaviourStack.Pop();
+            if (runnerBlackboard.behaviourStack.TryPeek(out IBehaviour topBehaviour))
             {
                 return topBehaviour;
             }
             return null;
         }
 
-        bool CheckNextSuggestionValidity(ExDirection direction, BehaviourRunner behaviourRunner,
-            out bool changeRequested)
-        {
-            changeRequested = false;
-            return true;
-        }
     }
+
 }
