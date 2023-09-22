@@ -2,24 +2,24 @@
 {
     public class SubFlowBehaviour : IBehaviour, ISubFlow, IBehaviourRunnerExecuter
     {
-        public void OnStart(ControlAgent agentContext)
+        public void OnStart(IControlAgent agentContext)
         {
             
         }
 
-        public State OnUpdate(ControlAgent agentContext, float deltaTime)
+        public State OnUpdate(IControlAgent agentContext, float deltaTime)
         {
             return State.Running;
         }
 
-        public void OnStop(ControlAgent agentContext)
+        public void OnStop(IControlAgent agentContext)
         {
             
         }
 
-        public string GetSubFlowPath(ControlAgent agentContext)
+        public string GetSubFlowPath(IControlAgent agentContext)
         {
-            return agentContext.blackboardAgent.SubFlowPath;
+            return agentContext.BlackboardAgent.SubFlowPath;
         }
     }
 }

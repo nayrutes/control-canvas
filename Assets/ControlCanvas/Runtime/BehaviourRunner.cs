@@ -33,7 +33,7 @@ namespace ControlCanvas.Runtime
             _nodeManager = instance;
         }
         
-        public void DoUpdate(IBehaviour behaviour, ControlAgent agentContext,  float deltaTime)
+        public void DoUpdate(IBehaviour behaviour, IControlAgent agentContext, float deltaTime)
         {
             CurrentBehaviourWrapper.Value = GetOrSetWrapper(behaviour);
 
@@ -55,7 +55,7 @@ namespace ControlCanvas.Runtime
         }
 
 
-        public IControl GetNext(IBehaviour behaviour, CanvasData controlFlow, ControlAgent agentContext)
+        public IControl GetNext(IBehaviour behaviour, CanvasData controlFlow, IControlAgent agentContext)
         {
             IBehaviourRunnerExecuter runnerExecuter = behaviour as IBehaviourRunnerExecuter ?? _behaviourRunnerExecuter;
 
@@ -131,7 +131,7 @@ namespace ControlCanvas.Runtime
             // }
         }
 
-        public void ResetRunner(ControlAgent agentContext)
+        public void ResetRunner(IControlAgent agentContext)
         {
             foreach (var wrapper in _behaviourWrappers.Values)
             {

@@ -2,8 +2,8 @@
 {
     public interface IState : IControl
     {
-        void Execute(ControlAgent agentContext, float deltaTime);
-        void OnEnter(ControlAgent agentContext);
-        void OnExit(ControlAgent agentContext);
+        void Execute(IControlAgent agentContext, float deltaTime);
+        void OnEnter(IControlAgent agentContext);
+        void OnExit(IControlAgent agentContext);
     }
 }

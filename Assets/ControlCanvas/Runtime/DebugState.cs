@@ -10,17 +10,17 @@ namespace ControlCanvas.Runtime
         //runtime context. This can change at runtime. <- should this be in the agentContext?
         //public int counter;
         
-        public void Execute(ControlAgent agentContext, float deltaTime)
+        public void Execute(IControlAgent agentContext, float deltaTime)
         {
             Debug.Log($"Executing {nameof(DebugState)} for {agentContext.Name} : {nodeMessage}");
         }
 
-        public void OnEnter(ControlAgent agentContext)
+        public void OnEnter(IControlAgent agentContext)
         {
             Debug.Log($"Entering {nameof(DebugState)} for {agentContext.Name} : {nodeMessage}");
         }
 
-        public void OnExit(ControlAgent agentContext)
+        public void OnExit(IControlAgent agentContext)
         {
             Debug.Log($"Exiting {nameof(DebugState)} for {agentContext.Name} : {nodeMessage}");
         }

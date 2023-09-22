@@ -93,8 +93,10 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         
         debugRunnerField.RegisterValueChangedCallback(evt =>
         {
-            var runner = evt.newValue as ControlRunner;
-            if (runner == null) return;
+            var runnerMono = evt.newValue as ControlRunnerMono;
+            if (runnerMono == null) return;
+            ControlRunner runner = runnerMono.GetControlRunner();
+            if(runner == null) return;
             debugLinker = new DebugLinker(runner, m_CanvasViewModel);
             debugLinker.SetButtons(playButton, stopButton, stepButton);
             debugLinker.Link();
@@ -120,9 +122,9 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         if (selectedObject == null) return;
         var controlRunnerGo = selectedObject as GameObject;
         if (controlRunnerGo == null) return;
-        var controlRunner = controlRunnerGo.GetComponent<ControlRunner>();
-        if (controlRunner == null) return;
-        debugRunnerField.value = controlRunner;
+        var controlRunnerMono = controlRunnerGo.GetComponent<ControlRunnerMono>();
+        if (controlRunnerMono == null) return;
+        debugRunnerField.value = controlRunnerMono;
     }
 
     private void AutoLoadLastFile()

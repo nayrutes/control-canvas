@@ -11,22 +11,22 @@ namespace ControlCanvas.Runtime
     {
         public RepeaterMode mode = RepeaterMode.Loop;
         
-        public void OnStart(ControlAgent agentContext)
+        public void OnStart(IControlAgent agentContext)
         {
             
         }
 
-        public State OnUpdate(ControlAgent agentContext, float deltaTime)
+        public State OnUpdate(IControlAgent agentContext, float deltaTime)
         {
             return State.Running;
         }
 
-        public void OnStop(ControlAgent agentContext)
+        public void OnStop(IControlAgent agentContext)
         {
             
         }
 
-        public ExDirection ReEvaluateDirection(ControlAgent agentContext, ExDirection last, BehaviourWrapper wrapper,
+        public ExDirection ReEvaluateDirection(IControlAgent agentContext, ExDirection last, BehaviourWrapper wrapper,
             State lastCombinedResult)
         {
             if(last == ExDirection.Forward && mode == RepeaterMode.Loop && wrapper.CombinedResultState == State.Running)
@@ -36,7 +36,7 @@ namespace ControlCanvas.Runtime
             return last;
         }
         
-        public IControl DoForward(ControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard,
+        public IControl DoForward(IControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard,
             BehaviourWrapper behaviourWrapper, CanvasData controlFlow)
         {
             IControl nextControl = null;
@@ -69,7 +69,7 @@ namespace ControlCanvas.Runtime
         }
 
 
-        public IControl DoBackward(ControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard)
+        public IControl DoBackward(IControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard)
         {
             
             

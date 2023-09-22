@@ -2,17 +2,17 @@
 {
     public class IdleState : IState
     {
-        public void Execute(ControlAgent agentContext, float deltaTime)
+        public void Execute(IControlAgent agentContext, float deltaTime)
         {
             
         }
 
-        public void OnEnter(ControlAgent agentContext)
+        public void OnEnter(IControlAgent agentContext)
         {
             
         }
 
-        public void OnExit(ControlAgent agentContext)
+        public void OnExit(IControlAgent agentContext)
         {
             
         }

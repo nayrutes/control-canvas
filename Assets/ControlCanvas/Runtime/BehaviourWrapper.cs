@@ -39,7 +39,7 @@ namespace ControlCanvas.Runtime
             return NodeManager.GetNextForNode(Behaviour, controlFlow, portName);
         }
 
-        public void Update(ControlAgent agentContext, float deltaTime)
+        public void Update(IControlAgent agentContext, float deltaTime)
         {
             if (!Started)
             {

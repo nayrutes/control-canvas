@@ -3,10 +3,10 @@ using UnityEngine;
 
 namespace ControlCanvas.Runtime
 {
-    public class ControlAgent : MonoBehaviour
+    public class ControlAgent : MonoBehaviour, IControlAgent
     {
-        public Blackboard blackboardAgent;
-        public BlackboardFlowControl blackboardFlowControl = new();
+        public Blackboard BlackboardAgent { get; set; }
+        public BlackboardFlowControl BlackboardFlowControl { get; set; } = new();
         public string Name { get; set; }
 
         public bool testBool;

@@ -5,12 +5,12 @@
         public float timeToWait = 5f;
         private float _timePassed;
         
-        public void OnStart(ControlAgent agentContext)
+        public void OnStart(IControlAgent agentContext)
         {
             _timePassed = 0f;
         }
 
-        public State OnUpdate(ControlAgent agentContext, float deltaTime)
+        public State OnUpdate(IControlAgent agentContext, float deltaTime)
         {
             _timePassed += deltaTime;
             if (_timePassed >= timeToWait)
@@ -20,7 +20,7 @@
             return State.Running;
         }
 
-        public void OnStop(ControlAgent agentContext)
+        public void OnStop(IControlAgent agentContext)
         {
             
         }

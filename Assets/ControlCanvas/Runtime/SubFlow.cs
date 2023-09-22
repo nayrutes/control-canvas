@@ -8,17 +8,17 @@ namespace ControlCanvas.Runtime
         
         //Warning: this is not saved in agentContext, so it will be changing every execution
         //private string agentSpecificPath;
-        public string GetSubFlowPath(ControlAgent agentContext)
+        public string GetSubFlowPath(IControlAgent agentContext)
         {
             return path;
         }
 
-        public void OnStart(ControlAgent agentContext)
+        public void OnStart(IControlAgent agentContext)
         {
             
         }
 
-        public State OnUpdate(ControlAgent agentContext, float deltaTime)
+        public State OnUpdate(IControlAgent agentContext, float deltaTime)
         {
             var agentSpecificPath = GetSubFlowPath(agentContext);//= agentContext.blackboardFlowControl.SetIfNeededWithFunctionAndGet(this, () => GetSubFlowPath(agentContext));
             if (string.IsNullOrEmpty(agentSpecificPath))
@@ -28,32 +28,32 @@ namespace ControlCanvas.Runtime
             return State.Success;
         }
 
-        public void OnStop(ControlAgent agentContext)
+        public void OnStop(IControlAgent agentContext)
         {
             
         }
 
-        public void Execute(ControlAgent agentContext, float deltaTime)
+        public void Execute(IControlAgent agentContext, float deltaTime)
         {
             
         }
 
-        public void OnEnter(ControlAgent agentContext)
+        public void OnEnter(IControlAgent agentContext)
         {
             
         }
 
-        public void OnExit(ControlAgent agentContext)
+        public void OnExit(IControlAgent agentContext)
         {
             
         }
 
-        public bool Decide(ControlAgent agentContext)
+        public bool Decide(IControlAgent agentContext)
         {
             return true;
         }
         
-        public ExDirection ReEvaluateDirection(ControlAgent agentContext, ExDirection last, BehaviourWrapper wrapper,
+        public ExDirection ReEvaluateDirection(IControlAgent agentContext, ExDirection last, BehaviourWrapper wrapper,
             State lastCombinedResult)
         {
             if (last == ExDirection.Forward && wrapper.CombinedResultState == State.Failure)
@@ -72,7 +72,7 @@ namespace ControlCanvas.Runtime
             return last;
         }
 
-        public IControl DoForward(ControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard,
+        public IControl DoForward(IControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard,
             BehaviourWrapper behaviourWrapper, CanvasData controlFlow)
         {
             IControl nextControl = null;

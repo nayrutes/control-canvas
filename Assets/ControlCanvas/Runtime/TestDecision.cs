@@ -2,9 +2,11 @@
 {
     public class TestDecision : IDecision
     {
-        public bool Decide(ControlAgent agentContext)
+        public bool Decide(IControlAgent agentContext)
         {
-            return agentContext.testBool;
+            if(agentContext is ControlAgent controlAgent)
+                return controlAgent.testBool;
+            return false;
         }
     }
 }

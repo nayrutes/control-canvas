@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using ControlCanvas.Serialization;
 using UniRx;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace ControlCanvas.Runtime
 {
 
     
-    public class ControlRunner : MonoBehaviour
+    public class ControlRunner
     {
         private FlowManager _flowManager = new FlowManager();
         
@@ -19,12 +17,8 @@ namespace ControlCanvas.Runtime
         public Subject<IControl> StepDoneCurrent { get; } = new Subject<IControl>();
         public Subject<IControl> StepDoneNext { get; } = new Subject<IControl>();
         public Subject<List<IBehaviour>> ClearingBt { get; set; } = new();
-        [SerializeField]
-        private ControlAgent agentContext;
-
-        [FormerlySerializedAs("path")] [SerializeField]
-        private string startPath = "";
-
+        
+        private IControlAgent agentContext;
 
         private Dictionary<Type, IRunnerBase> runnerDict = new ();
         
@@ -34,7 +28,7 @@ namespace ControlCanvas.Runtime
         private ReactiveProperty<Mode> mode = new ReactiveProperty<Mode>();
         private IControl nextSuggestedControl;
         private IControl initialControl;
-        private bool stopped = true;
+        private bool stopped = false;
         private bool startedComplete;
         private bool _autoRestart = true;
 
@@ -43,8 +37,9 @@ namespace ControlCanvas.Runtime
 
         private float _currentDeltaTimeForSubUpdate;
 
-        private void Start()
+        public void Initialize(string startPath, IControlAgent agentContext)
         {
+            this.agentContext = agentContext;
             mode.Value = Mode.CompleteUpdate;
             InitializeControlFlow(startPath);
             runnerDict.Add(typeof(IState), new StateRunner(_flowManager, NodeManager.Instance));
@@ -69,14 +64,16 @@ namespace ControlCanvas.Runtime
             }
         }
 
-        private void FixedUpdate()
+        public void RunningUpdate(float fixedDeltaTime)
         {
-            _currentDeltaTimeForSubUpdate += Time.fixedDeltaTime;
+            _currentDeltaTimeForSubUpdate += fixedDeltaTime;
             if (!stopped)
-                UpdateControlFlow();
+                SingleUpdate();
         }
-        private void UpdateControlFlow()
+        public void SingleUpdate()
         {
+            nextSuggestedControl ??= initialControl;
+
             if (mode.Value == Mode.CompleteUpdate)
                 CompleteUpdate();
             else
@@ -97,7 +94,7 @@ namespace ControlCanvas.Runtime
                 if (IsUpdateComplete())
                 {
                     _running = false;
-                    
+                    break;
                 }
                 SubUpdate();
 
@@ -108,7 +105,8 @@ namespace ControlCanvas.Runtime
 
         private bool IsUpdateComplete()
         {
-            return nextSuggestedControl == CurrentControl || (nextSuggestedControl == initialControl && startedComplete);
+            return nextSuggestedControl == null || nextSuggestedControl == CurrentControl;
+            //return nextSuggestedControl == CurrentControl || (nextSuggestedControl == initialControl && startedComplete);
         }
 
         private void SubUpdate()
@@ -193,6 +191,11 @@ namespace ControlCanvas.Runtime
             stopped = true;
             mode.Value = Mode.SubUpdate;
             SubUpdate();
+        }
+
+        public IControl GetNextSuggestion()
+        {
+            return nextSuggestedControl;
         }
     }
 

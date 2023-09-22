@@ -30,7 +30,7 @@ namespace ControlCanvas.Runtime
         //     // currentState.Value?.OnEnter(agentContext);
         // }
 
-        public void DoUpdate(IState behaviour, ControlAgent agentContext, float deltaTime)
+        public void DoUpdate(IState behaviour, IControlAgent agentContext, float deltaTime)
         {
             if(behaviour == null)
                 return;
@@ -43,7 +43,7 @@ namespace ControlCanvas.Runtime
             currentState.Value?.Execute(agentContext, deltaTime);
         }
 
-        public IControl GetNext(IState state, CanvasData controlFlow, ControlAgent agentContext)
+        public IControl GetNext(IState state, CanvasData controlFlow, IControlAgent agentContext)
         {
             return currentState.Value;
         }
@@ -56,7 +56,7 @@ namespace ControlCanvas.Runtime
         // }
         
         
-        public void ResetRunner(ControlAgent agentContext)
+        public void ResetRunner(IControlAgent agentContext)
         {
             currentState.Value?.OnExit(agentContext);
             currentState.Value = null;

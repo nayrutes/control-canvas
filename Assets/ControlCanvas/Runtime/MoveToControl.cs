@@ -3,44 +3,45 @@
     public class MoveToControl : IBehaviour, IState
     {
         public int index; 
-        public void OnStart(ControlAgent agentContext)
+        public void OnStart(IControlAgent agentContext)
         {
-            agentContext.SetDestination(agentContext.blackboardAgent.patrolPoints[index].position);
+            //agentContext.SetDestination(agentContext.BlackboardAgent.patrolPoints[index].position);
         }
 
-        public State OnUpdate(ControlAgent agentContext, float deltaTime)
+        public State OnUpdate(IControlAgent agentContext, float deltaTime)
         {
-            if(!agentContext.CheckDestinationReachable())
-            {
-                return State.Failure;
-            }
+            // if(!agentContext.CheckDestinationReachable())
+            // {
+            //     return State.Failure;
+            // }
+            //
+            // if (agentContext.CheckDestinationReached(agentContext.BlackboardAgent.patrolPoints[index].position))
+            // {
+            //     return State.Success;
+            // }
+            // else
+            // {
+            //     return State.Running;
+            // }
+            return State.Failure;
+        }
+
+        public void OnStop(IControlAgent agentContext)
+        {
             
-            if (agentContext.CheckDestinationReached(agentContext.blackboardAgent.patrolPoints[index].position))
-            {
-                return State.Success;
-            }
-            else
-            {
-                return State.Running;
-            }
         }
 
-        public void OnStop(ControlAgent agentContext)
-        {
-            
-        }
-
-        public void Execute(ControlAgent agentContext, float deltaTime)
+        public void Execute(IControlAgent agentContext, float deltaTime)
         {
             OnUpdate(agentContext, deltaTime);
         }
 
-        public void OnEnter(ControlAgent agentContext)
+        public void OnEnter(IControlAgent agentContext)
         {
             OnStart(agentContext);
         }
 
-        public void OnExit(ControlAgent agentContext)
+        public void OnExit(IControlAgent agentContext)
         {
             OnStop(agentContext);
         }

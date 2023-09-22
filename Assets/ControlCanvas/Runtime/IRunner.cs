@@ -7,14 +7,14 @@ namespace ControlCanvas.Runtime
 {
     public interface IRunnerBase : IControl
     {
-        void ResetRunner(ControlAgent agentContext);
+        void ResetRunner(IControlAgent agentContext);
     }
     
     public interface IRunner<T> : IRunnerBase where T : IControl
     {
         
-        void DoUpdate(T control, ControlAgent agentContext, float deltaTime);
+        void DoUpdate(T control, IControlAgent agentContext, float deltaTime);
 
-        IControl GetNext(T control, CanvasData currentFlow, ControlAgent agentContext);
+        IControl GetNext(T control, CanvasData currentFlow, IControlAgent agentContext);
     }
 }

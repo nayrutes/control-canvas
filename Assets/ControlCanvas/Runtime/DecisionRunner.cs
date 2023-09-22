@@ -21,7 +21,7 @@ namespace ControlCanvas.Runtime
             _nodeManager = instance;
         }
         
-        public void DoUpdate(IDecision decision, ControlAgent agentContext, float deltaTime)
+        public void DoUpdate(IDecision decision, IControlAgent agentContext, float deltaTime)
         {
             CurrentDecision.Value = decision;
             if (_decisionsTracker.Contains(CurrentDecision.Value))
@@ -33,7 +33,7 @@ namespace ControlCanvas.Runtime
             _decision = CurrentDecision.Value.Decide(agentContext);
         }
 
-        public IControl GetNext(IDecision decision, CanvasData controlFlow, ControlAgent agentContext)
+        public IControl GetNext(IDecision decision, CanvasData controlFlow, IControlAgent agentContext)
         {
             IControl next = _nodeManager.GetNextForNode(decision, _decision, controlFlow);
             if (_nodeManager.GetExecutionTypeOfNode(next, controlFlow) != typeof(IDecision))
@@ -43,7 +43,7 @@ namespace ControlCanvas.Runtime
             return next;
         }
         
-        public void ResetRunner(ControlAgent agentContext)
+        public void ResetRunner(IControlAgent agentContext)
         {
             _decisionsTracker.Clear();
         }

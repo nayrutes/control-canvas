@@ -8,8 +8,17 @@ namespace ControlCanvas.Runtime
 {
     public class NodeManager
     {
-        public static NodeManager Instance { get; } = new NodeManager();
-        
+        public static NodeManager Instance
+        {
+            get
+            {
+                if (instance == null)
+                    instance = new NodeManager();
+                return instance;
+            }
+            set => instance = value;
+        }
+
         public static readonly Dictionary<string, Type> stateDictionary = new()
         {
             {"DebugState", typeof(DebugState)},
@@ -38,7 +47,9 @@ namespace ControlCanvas.Runtime
         {
             
         };
-        
+
+        private static NodeManager instance = new NodeManager();
+
         private Dictionary<string, IControl> controlCache = new();
         
         public IControl GetControlForNode(string guid, CanvasData canvasData)

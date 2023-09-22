@@ -13,7 +13,7 @@ namespace ControlCanvas.Runtime
     public interface IBehaviourRunnerExecuter
     {
         
-        ExDirection ReEvaluateDirection(ControlAgent agentContext, ExDirection last, BehaviourWrapper wrapper,
+        ExDirection ReEvaluateDirection(IControlAgent agentContext, ExDirection last, BehaviourWrapper wrapper,
             State lastCombinedResult)
         {
             if (last == ExDirection.Backward)
@@ -27,7 +27,7 @@ namespace ControlCanvas.Runtime
             return last;
         }
         
-        IControl DoForward(ControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard,
+        IControl DoForward(IControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard,
             BehaviourWrapper behaviourWrapper, CanvasData controlFlow)
         {
             //TODO preferably do this check before entering the behaviour
@@ -57,7 +57,7 @@ namespace ControlCanvas.Runtime
             return nextControl;
         }
 
-        IControl DoBackward(ControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard)
+        IControl DoBackward(IControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard)
         {
             runnerBlackboard.behaviourStack.TryPop(out _);
             if (runnerBlackboard.behaviourStack.TryPeek(out IBehaviour topBehaviour))

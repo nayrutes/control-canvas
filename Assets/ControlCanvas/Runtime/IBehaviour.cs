@@ -3,11 +3,11 @@
     public interface IBehaviour : IControl
     {
         
-        void OnStart(ControlAgent agentContext);
+        void OnStart(IControlAgent agentContext);
 
-        State OnUpdate(ControlAgent agentContext, float deltaTime);
+        State OnUpdate(IControlAgent agentContext, float deltaTime);
         
-        void OnStop(ControlAgent agentContext);
+        void OnStop(IControlAgent agentContext);
     }
     
     public enum State { Success, Failure, Running }

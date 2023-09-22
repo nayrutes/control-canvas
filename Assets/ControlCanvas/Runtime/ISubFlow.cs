@@ -2,6 +2,6 @@
 {
     public interface ISubFlow : IControl
     {
-        string GetSubFlowPath(ControlAgent agentContext);
+        string GetSubFlowPath(IControlAgent agentContext);
     }
 }

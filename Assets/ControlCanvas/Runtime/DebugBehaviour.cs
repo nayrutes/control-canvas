@@ -6,19 +6,21 @@ namespace ControlCanvas.Runtime
     {
         public State nodeState = State.Running;
         
-        public void OnStart(ControlAgent agentContext)
+        public void OnStart(IControlAgent agentContext)
         {
             //Debug.Log($"DebugBehaviour.OnStart of {NodeManager.Instance.GetGuidForControl(this)}");
         }
 
-        public State OnUpdate(ControlAgent agentContext, float deltaTime)
+        public State OnUpdate(IControlAgent agentContext, float deltaTime)
         {
+            if(agentContext is ControlAgentDebug debugAgent)
+                debugAgent.Log.Add($"DebugBehaviour.OnUpdate of {NodeManager.Instance.GetGuidForControl(this)}");
             Debug.Log($"DebugBehaviour.OnUpdate of {NodeManager.Instance.GetGuidForControl(this)}");
             return nodeState;
             //return agentContext.testState;
         }
 
-        public void OnStop(ControlAgent agentContext)
+        public void OnStop(IControlAgent agentContext)
         {
             //Debug.Log($"DebugBehaviour.OnStop of {NodeManager.Instance.GetGuidForControl(this)}");
         }

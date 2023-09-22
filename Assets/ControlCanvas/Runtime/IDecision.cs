@@ -2,6 +2,6 @@
 {
     public interface IDecision : IControl
     {
-        bool Decide(ControlAgent agentContext);
+        bool Decide(IControlAgent agentContext);
     }
 }
