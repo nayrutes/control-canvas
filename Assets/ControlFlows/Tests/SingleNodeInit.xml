@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CanvasData xmlns:sys="https://extendedxmlserializer.github.io/system" xmlns:exs="https://extendedxmlserializer.github.io/v2" InitialNode="f10575fb-a58e-4eb5-b4e5-c50c48bdc1fa">
+  <Nodes Capacity="1">
+    <NodeData Name="New Node" Guid="f10575fb-a58e-4eb5-b4e5-c50c48bdc1fa" nodeType="State" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="1469.14282" y="156" />
+      <Size x="368" y="119.428558" />
+    </NodeData>
+  </Nodes>
+</CanvasData>

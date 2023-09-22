@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Reflection;
 using UniRx;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -399,7 +397,8 @@ namespace ControlCanvas.Editor.ReactiveInspector
             treeView.makeItem = () =>
             {
                 typeToBaseFieldType.TryGetValue(field.FieldType, out var type);
-                return (BaseField<object>)type.Instantiate();
+                return (BaseField<object>)Activator.CreateInstance(type);
+                //return (BaseField<object>)type.Instantiate();
             };
             treeView.bindItem = (VisualElement element, int index) =>
             {

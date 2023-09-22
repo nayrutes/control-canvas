@@ -1,0 +1,18 @@
+{
+    "name": "ControlCanvasScripts",
+    "rootNamespace": "",
+    "references": [
+        "GUID:1d0248535b4e13441ad203916578b789",
+        "GUID:926a0f4eb0680084cba09b8af6f503f1",
+        "GUID:193e78db2776d704eb94ade7280baf64"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

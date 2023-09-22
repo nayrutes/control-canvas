@@ -47,6 +47,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         SetUpView();
         SetUpSubscriptions();
         AutoLoadLastFile();
+        
     }
 
     private void SetUpViewModel()
