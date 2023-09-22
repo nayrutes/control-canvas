@@ -241,3 +241,14 @@
 .debug-node-running {
     background-color: rgb(190, 106, 0);
 }
+
+.debug-node-next {
+    border-left-color: rgb(150, 71, 195);
+    border-right-color: rgb(150, 71, 195);
+    border-top-color: rgb(150, 71, 195);
+    border-bottom-color: rgb(150, 71, 195);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+}

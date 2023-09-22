@@ -22,8 +22,8 @@ namespace ControlCanvas.Editor.ViewModels
         public ReactiveProperty<IControl> specificControl { get; } = new();
         public ReactiveProperty<bool> IsInitialNode { get; private set; } = new();
         
-        public ReactiveProperty<bool> IsDebugNode { get; private set; } = new();
-        //public ReactiveProperty<bool> HidePort2 { get; private set; } = new();
+        public ReactiveProperty<bool> IsCurrentDebugNode { get; private set; } = new();
+        public ReactiveProperty<bool> IsNextDebugNode { get; private set; } = new();
 
         public ReactiveProperty<State?> CurrentDebugBehaviourState { get; private set; } = new();
         
@@ -113,6 +113,11 @@ namespace ControlCanvas.Editor.ViewModels
         public void SetCurrentDebugBehaviourState(State? controlRunnerLatestBehaviourState)
         {
             CurrentDebugBehaviourState.Value = controlRunnerLatestBehaviourState;
+        }
+
+        public void SetNextDebugControl(bool active)
+        {
+            IsNextDebugNode.Value = active;
         }
     }
 }

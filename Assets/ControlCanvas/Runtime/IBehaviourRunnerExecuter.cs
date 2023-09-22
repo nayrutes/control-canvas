@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ControlCanvas.Serialization;
 using UnityEngine;
 
@@ -29,6 +30,13 @@ namespace ControlCanvas.Runtime
         IControl DoForward(ControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard,
             BehaviourWrapper behaviourWrapper, CanvasData controlFlow)
         {
+            //TODO preferably do this check before entering the behaviour
+            if (runnerBlackboard.behaviourStack.Count(x => x == this) > 1)
+            {
+                Debug.LogError("Loop detected without repeater");
+                return null;
+            }
+            
             IControl nextControl = null;
             switch (behaviourWrapper.CombinedResultState)
             {
@@ -51,7 +59,7 @@ namespace ControlCanvas.Runtime
 
         IControl DoBackward(ControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard)
         {
-            runnerBlackboard.behaviourStack.Pop();
+            runnerBlackboard.behaviourStack.TryPop(out _);
             if (runnerBlackboard.behaviourStack.TryPeek(out IBehaviour topBehaviour))
             {
                 return topBehaviour;

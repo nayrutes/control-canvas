@@ -95,13 +95,11 @@ namespace ControlCanvas.Editor.ViewModels
                     }).AddTo(disposables);
             }).AddTo(disposables);
             
-            
-            
             CurrentDebugNode.DoWithLast(x =>
                 {
                     if (x != null)
                     {
-                        var isDebugNode = GetViewModelByGuid(x)?.IsDebugNode;
+                        var isDebugNode = GetViewModelByGuid(x)?.IsCurrentDebugNode;
                         if (isDebugNode != null) isDebugNode.Value = false;
                     }
                 })
@@ -109,7 +107,7 @@ namespace ControlCanvas.Editor.ViewModels
             {
                 if (x != null)
                 {
-                    var isDebugNode = GetViewModelByGuid(x)?.IsDebugNode;
+                    var isDebugNode = GetViewModelByGuid(x)?.IsCurrentDebugNode;
                     if (isDebugNode != null) isDebugNode.Value = true;
                 }
             });
@@ -207,6 +205,11 @@ namespace ControlCanvas.Editor.ViewModels
             CurrentDebugNode.Value = NodeManager.Instance.GetGuidForControl(control);
         }
 
+        public void SetNextDebugControl(IControl nextControl, bool active)
+        {
+            GetViewModelByGuid(NodeManager.Instance.GetGuidForControl(nextControl))?.SetNextDebugControl(active);
+        }
+        
         public void SetDebugBehaviourState(IControl control, State? controlRunnerLatestBehaviourState)
         {
             GetViewModelByGuid(NodeManager.Instance.GetGuidForControl(control))?.SetCurrentDebugBehaviourState(controlRunnerLatestBehaviourState);

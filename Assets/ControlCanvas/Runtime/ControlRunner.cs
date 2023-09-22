@@ -16,7 +16,8 @@ namespace ControlCanvas.Runtime
         
         IControl CurrentControl => _flowManager.CurrentFlowTracker.control;
         CanvasData CurrentFlow => _flowManager.CurrentFlowTracker.flow;
-        public Subject<IControl> StepDone { get; } = new Subject<IControl>();
+        public Subject<IControl> StepDoneCurrent { get; } = new Subject<IControl>();
+        public Subject<IControl> StepDoneNext { get; } = new Subject<IControl>();
         public Subject<List<IBehaviour>> ClearingBt { get; set; } = new();
         [SerializeField]
         private ControlAgent agentContext;
@@ -133,7 +134,8 @@ namespace ControlCanvas.Runtime
             Type executionType = NodeManager.Instance.GetExecutionTypeOfNode(CurrentControl, CurrentFlow);
             updateByType[executionType](_currentDeltaTimeForSubUpdate);
             
-            StepDone.OnNext(CurrentControl);
+            StepDoneCurrent.OnNext(CurrentControl);
+            StepDoneNext.OnNext(nextSuggestedControl);
             _currentDeltaTimeForSubUpdate = 0;
         }
 

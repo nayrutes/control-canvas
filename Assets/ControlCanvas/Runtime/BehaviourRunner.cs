@@ -124,10 +124,11 @@ namespace ControlCanvas.Runtime
 
         private void TryAddToStack(IBehaviour behaviour)
         {
-            if (!_blackboard.behaviourStack.Contains(behaviour))
-            {
-                _blackboard.behaviourStack.Push(behaviour);
-            }
+            _blackboard.behaviourStack.Push(behaviour);
+            // if (!_blackboard.behaviourStack.Contains(behaviour))
+            // {
+            //     _blackboard.behaviourStack.Push(behaviour);
+            // }
         }
 
         public void ResetRunner(ControlAgent agentContext)
@@ -136,6 +137,9 @@ namespace ControlCanvas.Runtime
             {
                 wrapper.Reset();
             }
+            _blackboard.behaviourStack.Clear();
+            _blackboard.repeaterList.Clear();
+            _lastDirection = ExDirection.Forward;
         }
         
         // private void CombineResults()

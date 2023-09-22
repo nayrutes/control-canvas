@@ -153,7 +153,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   agentContext: {fileID: 376851991}
-  path: Assets/ControlFlows/BtStateEx1.xml
+  startPath: Assets/ControlFlows/BtStateEx1.xml
 --- !u!4 &129135747
 Transform:
   m_ObjectHideFlags: 0
@@ -202,7 +202,7 @@ MonoBehaviour:
     moveToPosition: {x: 0, y: 0, z: 0}
     moveToObject: {fileID: 0}
     patrolPoints: []
-  testBool: 0
+  testBool: 1
   testBoolSecond: 1
   testState: 0
 --- !u!4 &376851992
@@ -250,7 +250,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   agentContext: {fileID: 376851991}
-  path: Assets/ControlFlows/StateFlowEx5.xml
+  startPath: Assets/ControlFlows/StateFlowEx5.xml
 --- !u!4 &671098036
 Transform:
   m_ObjectHideFlags: 0
@@ -482,7 +482,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   agentContext: {fileID: 376851991}
-  path: Assets/ControlFlows/RepEx2.xml
+  startPath: Assets/ControlFlows/RepEx2.xml
 --- !u!4 &1830584338
 Transform:
   m_ObjectHideFlags: 0
@@ -543,7 +543,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   agentContext: {fileID: 376851991}
-  path: Assets/ControlFlows/BtEx1.xml
+  startPath: Assets/ControlFlows/BtEx1.xml
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

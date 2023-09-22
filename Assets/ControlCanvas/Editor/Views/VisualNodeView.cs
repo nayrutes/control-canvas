@@ -246,7 +246,7 @@ namespace ControlCanvas.Editor.Views
                 }
             }).AddTo(disposables);
             
-            nodeViewModel.IsDebugNode.Subscribe(x =>
+            nodeViewModel.IsCurrentDebugNode.Subscribe(x =>
             {
                 if (x)
                 {
@@ -280,7 +280,18 @@ namespace ControlCanvas.Editor.Views
                         throw new ArgumentOutOfRangeException(nameof(x), x, null);
                 }
             }).AddTo(disposables);
-            //nodeViewModel.HidePort2.Subscribe(x => { HidePort2(x); }).AddTo(disposables);
+            
+            nodeViewModel.IsNextDebugNode.Subscribe(x =>
+            {
+                if (x)
+                {
+                    this.AddToClassList("debug-node-next");
+                }
+                else
+                {
+                    this.RemoveFromClassList("debug-node-next");
+                }
+            }).AddTo(disposables);
         }
 
         private void HidePort1(bool x)

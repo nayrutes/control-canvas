@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ControlCanvas.Editor.Extensions;
 using ControlCanvas.Editor.ViewModels;
 using ControlCanvas.Runtime;
 using UniRx;
@@ -22,15 +23,19 @@ namespace ControlCanvas.Editor
         public void Link()
         {
             //controlRunner.CurrentControl.Subscribe(OnControlChanged).AddTo(disposables);
-            controlRunner.StepDone.Subscribe(OnStepDone).AddTo(disposables);
+            controlRunner.StepDoneCurrent.Subscribe(OnStepDoneCurrent).AddTo(disposables);
             controlRunner.ClearingBt.Subscribe(ClearDebugMarker).AddTo(disposables);
             controlRunner.ControlFlowChanged.Subscribe(x=>canvasViewModel.DeserializeData(x.filePath)).AddTo(disposables);
+            
+            controlRunner.StepDoneNext.DoWithLast(x=>OnStepDoneNext(x,false))
+                .Subscribe(y=>OnStepDoneNext(y,true)).AddTo(disposables);
         }
         
         public void Unlink()
         {
             //OnControlChanged(null);
-            OnStepDone(null);
+            OnStepDoneCurrent(null);
+            //OnStepDoneNext(null);
             disposables.Dispose();
             disposables = new CompositeDisposable();
         }
@@ -45,13 +50,17 @@ namespace ControlCanvas.Editor
         //     }
         // }
 
-        private void OnStepDone(IControl control)
+        private void OnStepDoneCurrent(IControl currentControl)
         {
-            canvasViewModel.SetCurrentDebugControl(control);
-            if (control is IBehaviour)
+            canvasViewModel.SetCurrentDebugControl(currentControl);
+            if (currentControl is IBehaviour)
             {
-                canvasViewModel.SetDebugBehaviourState(control, controlRunner.LatestBehaviourState);
+                canvasViewModel.SetDebugBehaviourState(currentControl, controlRunner.LatestBehaviourState);
             }
+        }
+        private void OnStepDoneNext(IControl nextControl, bool active)
+        {
+            canvasViewModel.SetNextDebugControl(nextControl, active);
         }
         
         private void ClearDebugMarker(List<IBehaviour> behaviours)

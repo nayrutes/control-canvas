@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ControlCanvas.Serialization;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -57,6 +58,13 @@ namespace ControlCanvas.Runtime
             }
 
             runnerBlackboard.repeaterList.Remove(this);
+            
+            if (runnerBlackboard.behaviourStack.Count(x => x == this) > 1)
+            {
+                Debug.LogError("Repeater not configured correctly");
+                return null;
+            }
+            
             return nextControl;
         }
 
