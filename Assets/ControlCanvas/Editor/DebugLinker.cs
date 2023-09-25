@@ -52,22 +52,25 @@ namespace ControlCanvas.Editor
 
         private void OnStepDoneCurrent(IControl currentControl)
         {
-            canvasViewModel.SetCurrentDebugControl(currentControl);
+            string currentControlGuid = controlRunner.NodeManager.GetGuidForControl(currentControl);
+            canvasViewModel.SetCurrentDebugControl(currentControlGuid);
             if (currentControl is IBehaviour)
             {
-                canvasViewModel.SetDebugBehaviourState(currentControl, controlRunner.LatestBehaviourState);
+                canvasViewModel.SetDebugBehaviourState(currentControlGuid, controlRunner.LatestBehaviourState);
             }
         }
         private void OnStepDoneNext(IControl nextControl, bool active)
         {
-            canvasViewModel.SetNextDebugControl(nextControl, active);
+            string nextControlGuid = controlRunner.NodeManager.GetGuidForControl(nextControl);
+            canvasViewModel.SetNextDebugControl(nextControlGuid, active);
         }
         
         private void ClearDebugMarker(List<IBehaviour> behaviours)
         {
             foreach (IBehaviour behaviour in behaviours)
             {
-                canvasViewModel.SetDebugBehaviourState(behaviour, null);
+                string behaviourGuid = controlRunner.NodeManager.GetGuidForControl(behaviour);
+                canvasViewModel.SetDebugBehaviourState(behaviourGuid, null);
             }
         }
         

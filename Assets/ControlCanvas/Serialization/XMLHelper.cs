@@ -3,6 +3,7 @@ using System.IO;
 using System.Xml;
 using ExtendedXmlSerializer;
 using ExtendedXmlSerializer.Configuration;
+using UnityEditor;
 using UnityEngine;
 
 namespace ControlCanvas.Serialization
@@ -28,6 +29,7 @@ namespace ControlCanvas.Serialization
                 {
                     writer.Write(xml);
                 }
+                AssetDatabase.Refresh();
             }
             catch (Exception e)
             {

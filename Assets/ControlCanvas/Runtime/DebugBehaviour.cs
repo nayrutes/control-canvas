@@ -13,9 +13,15 @@ namespace ControlCanvas.Runtime
 
         public State OnUpdate(IControlAgent agentContext, float deltaTime)
         {
-            if(agentContext is ControlAgentDebug debugAgent)
-                debugAgent.Log.Add($"DebugBehaviour.OnUpdate of {NodeManager.Instance.GetGuidForControl(this)}");
-            Debug.Log($"DebugBehaviour.OnUpdate of {NodeManager.Instance.GetGuidForControl(this)}");
+            if (agentContext is ControlAgentDebug debugAgent)
+            {
+                debugAgent.Log.Add($"DebugBehaviour.OnUpdate of {debugAgent.ControlRunner.NodeManager.GetGuidForControl(this)}");
+                Debug.Log($"DebugBehaviour.OnUpdate of {debugAgent.ControlRunner.NodeManager.GetGuidForControl(this)}");;
+            }
+            else
+            {
+                Debug.Log($"DebugBehaviour.OnUpdate of {this.ToString()}");
+            }
             return nodeState;
             //return agentContext.testState;
         }

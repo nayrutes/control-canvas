@@ -66,13 +66,13 @@ namespace ControlCanvas.Runtime
             SetCurrentFlow(CacheFlow(flowPath));
         }
         
-        public void SetCurrentControlAndFlow(IControl nextSuggestedControl)
+        public void SetCurrentControlAndFlow(IControl nextSuggestedControl, NodeManager nodeManager)
         {
             if (!CurrentFlowHasControl(nextSuggestedControl))
             {
                 if(!_controlToFlowMap.TryGetValue(nextSuggestedControl, out FlowTracker nextFlowTracker))
                 {
-                    string nodeGuid = NodeManager.Instance.GetGuidForControl(nextSuggestedControl);
+                    string nodeGuid = nodeManager.GetGuidForControl(nextSuggestedControl);
                     nextFlowTracker = GetFlowForNode(nodeGuid);
                     _controlToFlowMap.Add(nextSuggestedControl, nextFlowTracker);
                 }

@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEditor;
+using UnityEngine;
 
 namespace ControlCanvas.Runtime
 {
@@ -17,6 +19,11 @@ namespace ControlCanvas.Runtime
         private void Awake()
         {
             _controlRunner = new ControlRunner();
+            //For debugging last loaded flow
+            if (String.IsNullOrEmpty(startPath))
+            {
+                startPath = EditorPrefs.GetString("ControlFlowPath");
+            }
             _controlRunner.Initialize(startPath, controlAgent);
         }
 

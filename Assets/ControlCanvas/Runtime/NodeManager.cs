@@ -8,16 +8,16 @@ namespace ControlCanvas.Runtime
 {
     public class NodeManager
     {
-        public static NodeManager Instance
-        {
-            get
-            {
-                if (instance == null)
-                    instance = new NodeManager();
-                return instance;
-            }
-            set => instance = value;
-        }
+        // public static NodeManager Instance
+        // {
+        //     get
+        //     {
+        //         if (instance == null)
+        //             instance = new NodeManager();
+        //         return instance;
+        //     }
+        //     set => instance = value;
+        // }
 
         public static readonly Dictionary<string, Type> stateDictionary = new()
         {
@@ -48,7 +48,7 @@ namespace ControlCanvas.Runtime
             
         };
 
-        private static NodeManager instance = new NodeManager();
+        //private static NodeManager instance = new NodeManager();
 
         private Dictionary<string, IControl> controlCache = new();
         

@@ -11,9 +11,13 @@ namespace ControlCanvas.Runtime
     public class ControlRunner
     {
         private FlowManager _flowManager = new FlowManager();
+        private NodeManager _nodeManager = new NodeManager();
         
         IControl CurrentControl => _flowManager.CurrentFlowTracker.control;
         CanvasData CurrentFlow => _flowManager.CurrentFlowTracker.flow;
+        
+        public NodeManager NodeManager => _nodeManager;
+        
         public Subject<IControl> StepDoneCurrent { get; } = new Subject<IControl>();
         public Subject<IControl> StepDoneNext { get; } = new Subject<IControl>();
         public Subject<List<IBehaviour>> ClearingBt { get; set; } = new();
@@ -42,9 +46,9 @@ namespace ControlCanvas.Runtime
             this.agentContext = agentContext;
             mode.Value = Mode.CompleteUpdate;
             InitializeControlFlow(startPath);
-            runnerDict.Add(typeof(IState), new StateRunner(_flowManager, NodeManager.Instance));
-            runnerDict.Add(typeof(IDecision), new DecisionRunner(_flowManager, NodeManager.Instance));
-            runnerDict.Add(typeof(IBehaviour), new BehaviourRunner(_flowManager, NodeManager.Instance));
+            runnerDict.Add(typeof(IState), new StateRunner(_flowManager, _nodeManager));
+            runnerDict.Add(typeof(IDecision), new DecisionRunner(_flowManager, _nodeManager));
+            runnerDict.Add(typeof(IBehaviour), new BehaviourRunner(_flowManager, _nodeManager));
             
             updateByType.Add(typeof(IState), RunRunner<IState>);
             updateByType.Add(typeof(IDecision), RunRunner<IDecision>);
@@ -56,7 +60,7 @@ namespace ControlCanvas.Runtime
             CanvasData initControlFlow = null;
             
             _flowManager.SetCurrentFlow(currentPath);
-            initialControl = NodeManager.Instance.GetInitControl(CurrentFlow);
+            initialControl = _nodeManager.GetInitControl(CurrentFlow);
             nextSuggestedControl = initialControl;
             if (agentContext == null)
             {
@@ -126,10 +130,10 @@ namespace ControlCanvas.Runtime
                 }
             }
             
-            _flowManager.SetCurrentControlAndFlow(nextSuggestedControl);
+            _flowManager.SetCurrentControlAndFlow(nextSuggestedControl, _nodeManager);
             nextSuggestedControl = null;
             
-            Type executionType = NodeManager.Instance.GetExecutionTypeOfNode(CurrentControl, CurrentFlow);
+            Type executionType = _nodeManager.GetExecutionTypeOfNode(CurrentControl, CurrentFlow);
             updateByType[executionType](_currentDeltaTimeForSubUpdate);
             
             StepDoneCurrent.OnNext(CurrentControl);
@@ -154,7 +158,7 @@ namespace ControlCanvas.Runtime
 
         private void ClearStateRunnerIfNecessary()
         {
-            if (NodeManager.Instance.GetExecutionTypeOfNode(nextSuggestedControl, CurrentFlow) != typeof(IState))
+            if (_nodeManager.GetExecutionTypeOfNode(nextSuggestedControl, CurrentFlow) != typeof(IState))
             {
                 runnerDict[typeof(IState)].ResetRunner(agentContext);
             }

@@ -385,7 +385,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54fab044511b4a668587c02dbbc9abd3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startPath: Assets/ControlFlows/RepEx2.xml
+  startPath: 
   controlAgent: {fileID: 376851991}
 --- !u!4 &1458699831
 Transform:

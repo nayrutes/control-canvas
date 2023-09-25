@@ -199,19 +199,19 @@ namespace ControlCanvas.Editor.ViewModels
             Edges.Value.Remove(edgeData);
         }
 
-        public void SetCurrentDebugControl(IControl control)
+        public void SetCurrentDebugControl(string controlGuid)
         {
-            CurrentDebugNode.Value = NodeManager.Instance.GetGuidForControl(control);
+            CurrentDebugNode.Value = controlGuid;
         }
 
-        public void SetNextDebugControl(IControl nextControl, bool active)
+        public void SetNextDebugControl(string nextControlGuid, bool active)
         {
-            GetViewModelByGuid(NodeManager.Instance.GetGuidForControl(nextControl))?.SetNextDebugControl(active);
+            GetViewModelByGuid(nextControlGuid)?.SetNextDebugControl(active);
         }
         
-        public void SetDebugBehaviourState(IControl control, State? controlRunnerLatestBehaviourState)
+        public void SetDebugBehaviourState(string controlGuid, State? controlRunnerLatestBehaviourState)
         {
-            GetViewModelByGuid(NodeManager.Instance.GetGuidForControl(control))?.SetCurrentDebugBehaviourState(controlRunnerLatestBehaviourState);
+            GetViewModelByGuid(controlGuid)?.SetCurrentDebugBehaviourState(controlRunnerLatestBehaviourState);
         }
 
         public NodeViewModel CreateRoutingNode(NodeData node1, NodeData node2)

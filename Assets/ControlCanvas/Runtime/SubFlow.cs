@@ -77,7 +77,7 @@ namespace ControlCanvas.Runtime
         {
             IControl nextControl = null;
             CanvasData subFlow = behaviourWrapper.FlowManager.GetFlow(GetSubFlowPath(agentContext));
-            nextControl = NodeManager.Instance.GetInitControl(subFlow);
+            nextControl = behaviourWrapper.NodeManager.GetInitControl(subFlow);
             return nextControl;
         }
     }
