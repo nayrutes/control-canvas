@@ -125,6 +125,34 @@ namespace ControlCanvas.Tests.EditorTests
         }
         
         [Test]
+        public void TestBehaviourFlowRerun()
+        {
+            string guidNode1 = "f10575fb-a58e-4eb5-b4e5-c50c48bdc1fa";
+            string guidNode2 = "7d0cb3cc-a1e9-4bb1-8419-fc0f4d9ed361";
+            string guidNode3 = "5605018b-7d0f-4927-b711-e9a14dbe23fb";
+            SetUpTest("Assets/ControlFlows/Tests/SingleNodeRerun.xml");
+            controlRunner.RunningUpdate(0);
+            AssertUpdateExecutionOrder(new List<string>()
+            {
+                guidNode1,
+            });
+            controlRunner.RunningUpdate(0.5f);
+            AssertUpdateExecutionOrder(new List<string>()
+            {
+                guidNode1,
+                guidNode1,
+            });
+            controlRunner.RunningUpdate(2);
+            AssertUpdateExecutionOrder(new List<string>()
+            {
+                guidNode1,
+                guidNode1,
+                guidNode1,
+            });
+            CleanUpTest();
+        }
+        
+        [Test]
         public void TestBehaviourFlowWait()
         {
             string guidNode1 = "f10575fb-a58e-4eb5-b4e5-c50c48bdc1fa";
@@ -140,13 +168,60 @@ namespace ControlCanvas.Tests.EditorTests
             AssertUpdateExecutionOrder(new List<string>()
             {
                 guidNode1,
+                
                 guidNode1,
             });
             controlRunner.RunningUpdate(2);
             AssertUpdateExecutionOrder(new List<string>()
             {
                 guidNode1,
+                
                 guidNode1,
+                
+                guidNode1,
+                guidNode2,
+            });
+            controlRunner.RunningUpdate(3);
+            AssertUpdateExecutionOrder(new List<string>()
+            {
+                guidNode1,
+                
+                guidNode1,
+                
+                guidNode1,
+                guidNode2,
+                
+                guidNode1,
+            });
+            controlRunner.RunningUpdate(1.1f);
+            AssertUpdateExecutionOrder(new List<string>()
+            {
+                guidNode1,
+                
+                guidNode1,
+                
+                guidNode1,
+                guidNode2,
+                
+                guidNode1,
+                
+                guidNode1,
+                //Node 2 will not be called because overlapping time was dismissed before
+            });
+            controlRunner.RunningUpdate(1f);
+            AssertUpdateExecutionOrder(new List<string>()
+            {
+                guidNode1,
+                
+                guidNode1,
+                
+                guidNode1,
+                guidNode2,
+                
+                guidNode1,
+                
+                guidNode1,
+                
                 guidNode1,
                 guidNode2,
             });

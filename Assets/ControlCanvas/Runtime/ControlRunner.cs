@@ -72,11 +72,14 @@ namespace ControlCanvas.Runtime
         {
             _currentDeltaTimeForSubUpdate += fixedDeltaTime;
             if (!stopped)
+            {
                 SingleUpdate();
+            }
+            _currentDeltaTimeForSubUpdate = 0;
         }
         public void SingleUpdate()
         {
-            nextSuggestedControl ??= initialControl;
+            //nextSuggestedControl ??= initialControl;
 
             if (mode.Value == Mode.CompleteUpdate)
                 CompleteUpdate();
@@ -95,12 +98,12 @@ namespace ControlCanvas.Runtime
                 if (_safetyBreak)
                     return;
                 
+                SubUpdate();
                 if (IsUpdateComplete())
                 {
                     _running = false;
                     break;
                 }
-                SubUpdate();
 
                 startedComplete = true;
             }
@@ -138,7 +141,6 @@ namespace ControlCanvas.Runtime
             
             StepDoneCurrent.OnNext(CurrentControl);
             StepDoneNext.OnNext(nextSuggestedControl);
-            _currentDeltaTimeForSubUpdate = 0;
         }
 
         private void RunRunner<T>(float deltaTime) where T : class, IControl
@@ -156,13 +158,13 @@ namespace ControlCanvas.Runtime
             nextSuggestedControl = next;
         }
 
-        private void ClearStateRunnerIfNecessary()
-        {
-            if (_nodeManager.GetExecutionTypeOfNode(nextSuggestedControl, CurrentFlow) != typeof(IState))
-            {
-                runnerDict[typeof(IState)].ResetRunner(agentContext);
-            }
-        }
+        // private void ClearStateRunnerIfNecessary()
+        // {
+        //     if (_nodeManager.GetExecutionTypeOfNode(nextSuggestedControl, CurrentFlow) != typeof(IState))
+        //     {
+        //         runnerDict[typeof(IState)].ResetRunner(agentContext);
+        //     }
+        // }
         
         private void ResetRunner()
         {

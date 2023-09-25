@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CanvasData xmlns:sys="https://extendedxmlserializer.github.io/system" xmlns:exs="https://extendedxmlserializer.github.io/v2" xmlns:ns1="clr-namespace:ControlCanvas.Runtime;assembly=RuntimeScripts" InitialNode="f10575fb-a58e-4eb5-b4e5-c50c48bdc1fa">
+  <Nodes Capacity="1">
+    <NodeData Name="New Node" Guid="f10575fb-a58e-4eb5-b4e5-c50c48bdc1fa" nodeType="Behaviour" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="1469" y="156" />
+      <Size x="444" y="162" />
+      <specificControl exs:type="ns1:DebugBehaviour" nodeState="Success" />
+    </NodeData>
+  </Nodes>
+</CanvasData>

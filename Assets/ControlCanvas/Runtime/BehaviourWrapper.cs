@@ -61,7 +61,7 @@ namespace ControlCanvas.Runtime
         {
             //CombinedResultState = State.Running;
             ChoseFailRoute = false;
-            Started = false;
+            //Started = false;
         }
     }
 }
