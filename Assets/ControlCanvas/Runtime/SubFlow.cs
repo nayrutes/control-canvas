@@ -53,10 +53,10 @@ namespace ControlCanvas.Runtime
             return true;
         }
         
-        public ExDirection ReEvaluateDirection(IControlAgent agentContext, ExDirection last, BehaviourWrapper wrapper,
-            State lastCombinedResult)
+        public ExDirection ReEvaluateDirection(IControlAgent agentContext,
+            BehaviourRunnerBlackboard blackboard, BehaviourWrapper wrapper)
         {
-            if (last == ExDirection.Forward && wrapper.CombinedResultState == State.Failure)
+            if (blackboard.LastDirection == ExDirection.Forward && wrapper.CombinedResultState == State.Failure)
             {
                 return ExDirection.Backward;
             }
@@ -69,7 +69,7 @@ namespace ControlCanvas.Runtime
             //         return ExDirection.Forward;
             //     }
             // }
-            return last;
+            return blackboard.LastDirection;
         }
 
         public IControl DoForward(IControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard,

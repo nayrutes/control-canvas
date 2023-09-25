@@ -387,6 +387,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startPath: 
   controlAgent: {fileID: 376851991}
+  startStopped: 1
 --- !u!4 &1458699831
 Transform:
   m_ObjectHideFlags: 0

@@ -15,7 +15,7 @@ namespace ControlCanvas.Runtime
         
         
         private float _currentDeltaTimeForSubUpdate;
-        private bool stopped = true;
+        public bool startStopped = false;
         private void Awake()
         {
             _controlRunner = new ControlRunner();
@@ -25,6 +25,10 @@ namespace ControlCanvas.Runtime
                 startPath = EditorPrefs.GetString("ControlFlowPath");
             }
             _controlRunner.Initialize(startPath, controlAgent);
+            if (startStopped)
+            {
+                _controlRunner.Stop();
+            }
         }
 
         public ControlRunner GetControlRunner()

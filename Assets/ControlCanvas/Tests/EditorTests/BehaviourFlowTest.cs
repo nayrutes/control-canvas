@@ -227,5 +227,110 @@ namespace ControlCanvas.Tests.EditorTests
             });
             CleanUpTest();
         }
+        
+        [Test]
+        public void TestBehaviourSubFlow()
+        {
+            string guidNode1 = "f10575fb-a58e-4eb5-b4e5-c50c48bdc1fa";
+            string guidNode2 = "0113112f-89bb-41c1-a167-c17bd8145552";
+            SetUpTest("Assets/ControlFlows/Tests/SubFlowParent.xml");
+            controlRunner.RunningUpdate(0);
+            AssertUpdateExecutionOrder(new List<string>()
+            {
+                guidNode1,
+                guidNode2,
+            });
+            CleanUpTest();
+        }
+        
+        [Test]
+        public void TestBehaviourRoutingNode()
+        {
+            string guidNode1 = "f10575fb-a58e-4eb5-b4e5-c50c48bdc1fa";
+            string guidNode3 = "5605018b-7d0f-4927-b711-e9a14dbe23fb";
+            SetUpTest("Assets/ControlFlows/Tests/RoutingNode.xml");
+            controlRunner.RunningUpdate(0);
+            AssertUpdateExecutionOrder(new List<string>()
+            {
+                guidNode1,
+                guidNode3,
+            });
+            CleanUpTest();
+        }
+        
+        [Test]
+        public void TestBehaviourRepeaterLoopSuccess()
+        {
+            string guidNode1 = "f10575fb-a58e-4eb5-b4e5-c50c48bdc1fa";
+            string guidNode2 = "7d0cb3cc-a1e9-4bb1-8419-fc0f4d9ed361";
+            string guidNode3 = "5605018b-7d0f-4927-b711-e9a14dbe23fb";
+            SetUpTest("Assets/ControlFlows/Tests/RepeaterLoopSuccess.xml");
+            controlRunner.RunningUpdate(0);
+            AssertUpdateExecutionOrder(new List<string>()
+            {
+                guidNode1,
+                guidNode3,
+            });
+            
+            controlRunner.RunningUpdate(0);
+            AssertUpdateExecutionOrder(new List<string>()
+            {
+                guidNode1,
+                guidNode3,
+                guidNode3,
+            });
+            
+            controlRunner.RunningUpdate(0);
+            AssertUpdateExecutionOrder(new List<string>()
+            {
+                guidNode1,
+                guidNode3,
+                guidNode3,
+                guidNode3,
+            });
+            CleanUpTest();
+        }
+        
+        [Test]
+        public void TestBehaviourRepeaterLoopFailure()
+        {
+            string guidNode1 = "f10575fb-a58e-4eb5-b4e5-c50c48bdc1fa";
+            string guidNode2 = "7d0cb3cc-a1e9-4bb1-8419-fc0f4d9ed361";
+            string guidNode3 = "5605018b-7d0f-4927-b711-e9a14dbe23fb";
+            SetUpTest("Assets/ControlFlows/Tests/RepeaterLoopFailure.xml");
+            controlRunner.RunningUpdate(0);
+            AssertUpdateExecutionOrder(new List<string>()
+            {
+                guidNode1,
+                guidNode3,
+                guidNode2,
+            });
+            
+            controlRunner.RunningUpdate(0);
+            AssertUpdateExecutionOrder(new List<string>()
+            {
+                guidNode1,
+                guidNode3,
+                guidNode2,
+                guidNode1,
+                guidNode3,
+                guidNode2,
+            });
+            
+            controlRunner.RunningUpdate(0);
+            AssertUpdateExecutionOrder(new List<string>()
+            {
+                guidNode1,
+                guidNode3,
+                guidNode2,
+                guidNode1,
+                guidNode3,
+                guidNode2,
+                guidNode1,
+                guidNode3,
+                guidNode2,
+            });
+            CleanUpTest();
+        }
     }
 }

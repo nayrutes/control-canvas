@@ -36,7 +36,7 @@ namespace ControlCanvas.Runtime
         private bool startedComplete;
         private bool _autoRestart = true;
 
-        public State LatestBehaviourState => ((BehaviourRunner)runnerDict[typeof(IBehaviour)]).LastCombinedResult;
+        public State LatestBehaviourState => ((BehaviourRunner)runnerDict[typeof(IBehaviour)]).GetLastCombinedResult();
         public IObservable<FlowTracker> ControlFlowChanged => _flowManager.ControlFlowChanged.SkipWhile(_=>_running);
 
         private float _currentDeltaTimeForSubUpdate;
@@ -44,6 +44,17 @@ namespace ControlCanvas.Runtime
         public void Initialize(string startPath, IControlAgent agentContext)
         {
             this.agentContext = agentContext;
+            if (this.agentContext.BlackboardAgent == null)
+            {
+                Debug.LogError("No blackboard agent set");
+                return;
+            }
+            if (this.agentContext.BlackboardFlowControl == null)
+            {
+                Debug.LogError("No blackboard-flowControl agent set");
+                return;
+            }
+            
             mode.Value = Mode.CompleteUpdate;
             InitializeControlFlow(startPath);
             runnerDict.Add(typeof(IState), new StateRunner(_flowManager, _nodeManager));

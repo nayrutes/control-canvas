@@ -8,6 +8,8 @@ namespace ControlCanvas.Runtime
 {
     public class BehaviourRunnerBlackboard
     {
+        public State LastCombinedResult { get; set; }
+        public ExDirection LastDirection { get; set; } = ExDirection.Forward;
         public readonly Stack<IBehaviour> behaviourStack = new();
         public List<Repeater> repeaterList = new();
     }
@@ -15,12 +17,10 @@ namespace ControlCanvas.Runtime
     public class BehaviourRunner : IRunner<IBehaviour>
     {
         public ReactiveProperty<BehaviourWrapper> CurrentBehaviourWrapper { get; } = new();
-        public State LastCombinedResult { get; private set; }
 
         private ControlRunner _controlRunner;
         //TODO: Warning: wrappers are not specific to agents (yet)
         private readonly Dictionary<IBehaviour, BehaviourWrapper> _behaviourWrappers = new();
-        private ExDirection _lastDirection = ExDirection.Forward;
         private readonly BehaviourRunnerBlackboard _blackboard = new ();
 
         private readonly DefaultRunnerExecuter _behaviourRunnerExecuter = new ();
@@ -37,7 +37,7 @@ namespace ControlCanvas.Runtime
         {
             CurrentBehaviourWrapper.Value = GetOrSetWrapper(behaviour);
 
-            if (_lastDirection == ExDirection.Forward)
+            if (_blackboard.LastDirection == ExDirection.Forward)
             {
                 TryAddToStack(CurrentBehaviourWrapper.Value.Behaviour);
                 
@@ -50,7 +50,7 @@ namespace ControlCanvas.Runtime
                     Debug.Log($"Skipping {_nodeManager.GetGuidForControl(CurrentBehaviourWrapper.Value.Behaviour)} ");
                 }
 
-                LastCombinedResult = CurrentBehaviourWrapper.Value.CombinedResultState;
+                _blackboard.LastCombinedResult = CurrentBehaviourWrapper.Value.CombinedResultState;
             }
         }
 
@@ -61,7 +61,7 @@ namespace ControlCanvas.Runtime
 
             IControl nextControl = null;
 
-            ExDirection newDirection = runnerExecuter.ReEvaluateDirection(agentContext, _lastDirection, CurrentBehaviourWrapper.Value, LastCombinedResult);
+            ExDirection newDirection = runnerExecuter.ReEvaluateDirection(agentContext, _blackboard, CurrentBehaviourWrapper.Value);
             
             if (newDirection == ExDirection.Forward)
             {
@@ -74,7 +74,7 @@ namespace ControlCanvas.Runtime
                 nextControl = runnerExecuter.DoBackward(agentContext, _blackboard);
             }
             
-            _lastDirection = newDirection;
+            _blackboard.LastDirection = newDirection;
             return nextControl;
         }
         
@@ -138,8 +138,8 @@ namespace ControlCanvas.Runtime
                 wrapper.Reset();
             }
             _blackboard.behaviourStack.Clear();
-            _blackboard.repeaterList.Clear();
-            _lastDirection = ExDirection.Forward;
+            //_blackboard.repeaterList.Clear();
+            _blackboard.LastDirection = ExDirection.Forward;
         }
         
         // private void CombineResults()
@@ -155,6 +155,10 @@ namespace ControlCanvas.Runtime
         //     CurrentBehaviourWrapper.Value.CombinedResultState = currentResult;
         // }
 
+        public State GetLastCombinedResult()
+        {
+            return _blackboard.LastCombinedResult;
+        }
     }
     
     public enum ExDirection

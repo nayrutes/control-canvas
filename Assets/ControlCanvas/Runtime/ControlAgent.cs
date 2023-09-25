@@ -5,7 +5,7 @@ namespace ControlCanvas.Runtime
 {
     public class ControlAgent : MonoBehaviour, IControlAgent
     {
-        public Blackboard BlackboardAgent { get; set; }
+        public Blackboard BlackboardAgent { get; set; } = new();
         public BlackboardFlowControl BlackboardFlowControl { get; set; } = new();
         public string Name { get; set; }
 

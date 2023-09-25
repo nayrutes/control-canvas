@@ -219,10 +219,10 @@
     border-right-color: rgb(180, 42, 142);
     border-top-color: rgb(180, 42, 142);
     border-bottom-color: rgb(180, 42, 142);
-    border-left-width: 2px;
-    border-right-width: 2px;
-    border-top-width: 2px;
-    border-bottom-width: 2px;
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-width: 3px;
+    border-bottom-width: 3px;
 }
 
 .hide-port-2 {
@@ -243,10 +243,10 @@
 }
 
 .debug-node-next {
-    border-left-color: rgb(150, 71, 195);
-    border-right-color: rgb(150, 71, 195);
-    border-top-color: rgb(150, 71, 195);
-    border-bottom-color: rgb(150, 71, 195);
+    border-left-color: rgb(80, 26, 204);
+    border-right-color: rgb(80, 26, 204);
+    border-top-color: rgb(80, 26, 204);
+    border-bottom-color: rgb(80, 26, 204);
     border-left-width: 2px;
     border-right-width: 2px;
     border-top-width: 2px;

@@ -3,18 +3,25 @@
     public class WaitBehaviour : IBehaviour, IBehaviourRunnerExecuter
     {
         public float timeToWait = 5f;
-        private float _timePassed;
         
         public void OnStart(IControlAgent agentContext)
         {
-            _timePassed = 0f;
-            //_timePassed %= timeToWait;
+            agentContext.BlackboardFlowControl.Set(this, 0f);
+            
+            // float timePassed = agentContext.BlackboardFlowControl.SetIfNeededWithFunctionAndGet(this, () => 0f);
+            // timePassed %= timeToWait;
+            // agentContext.BlackboardFlowControl.Set(this, timePassed);
         }
 
         public State OnUpdate(IControlAgent agentContext, float deltaTime)
         {
-            _timePassed += deltaTime;
-            if (_timePassed >= timeToWait)
+            if (!agentContext.BlackboardFlowControl.TryGet(this, out float timePassed))
+            {
+                return State.Failure;
+            }
+            timePassed += deltaTime;
+            agentContext.BlackboardFlowControl.Set(this, timePassed);
+            if (timePassed >= timeToWait)
             {
                 return State.Success;
             }
@@ -26,15 +33,15 @@
             
         }
 
-        public ExDirection ReEvaluateDirection(IControlAgent agentContext, ExDirection last, BehaviourWrapper wrapper,
-            State lastCombinedResult)
+        public ExDirection ReEvaluateDirection(IControlAgent agentContext,
+            BehaviourRunnerBlackboard blackboard, BehaviourWrapper wrapper)
         {
-            if (last == ExDirection.Forward && wrapper.CombinedResultState == State.Running)
+            if (blackboard.LastDirection == ExDirection.Forward && wrapper.CombinedResultState == State.Running)
             {
                 return ExDirection.Backward;
             }
 
-            return last;
+            return blackboard.LastDirection;
         }
     }
 }

@@ -13,18 +13,17 @@ namespace ControlCanvas.Runtime
     public interface IBehaviourRunnerExecuter
     {
         
-        ExDirection ReEvaluateDirection(IControlAgent agentContext, ExDirection last, BehaviourWrapper wrapper,
-            State lastCombinedResult)
+        ExDirection ReEvaluateDirection(IControlAgent agentContext, BehaviourRunnerBlackboard blackboard, BehaviourWrapper wrapper)
         {
-            if (last == ExDirection.Backward)
+            if (blackboard.LastDirection == ExDirection.Backward)
             {
-                if (!wrapper.ChoseFailRoute && lastCombinedResult == State.Failure)
+                if (!wrapper.ChoseFailRoute && blackboard.LastCombinedResult == State.Failure)
                 {
                     wrapper.CombinedResultState = State.Failure;
                     return ExDirection.Forward;
                 }
             }
-            return last;
+            return blackboard.LastDirection;
         }
         
         IControl DoForward(IControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard,

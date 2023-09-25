@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using ControlCanvas.Serialization;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace ControlCanvas.Runtime
@@ -10,6 +8,12 @@ namespace ControlCanvas.Runtime
     public class Repeater : IBehaviour, IBehaviourRunnerExecuter
     {
         public RepeaterMode mode = RepeaterMode.Loop;
+        
+        private struct RepeaterRuntimeData
+        {
+            public bool firstHit;
+            public bool secondHit;
+        }
         
         public void OnStart(IControlAgent agentContext)
         {
@@ -26,14 +30,40 @@ namespace ControlCanvas.Runtime
             
         }
 
-        public ExDirection ReEvaluateDirection(IControlAgent agentContext, ExDirection last, BehaviourWrapper wrapper,
-            State lastCombinedResult)
+        
+        private RepeaterRuntimeData GetRuntimeData(IControlAgent agentContext)
         {
-            if(last == ExDirection.Forward && mode == RepeaterMode.Loop && wrapper.CombinedResultState == State.Running)
+            RepeaterRuntimeData data = agentContext.BlackboardFlowControl.SetIfNeededWithFunctionAndGet(this, () => new RepeaterRuntimeData());
+            return data;
+        }
+        
+        private void SetRuntimeData(IControlAgent agentContext, RepeaterRuntimeData data)
+        {
+            agentContext.BlackboardFlowControl.Set(this, data);
+        }
+        
+        public ExDirection ReEvaluateDirection(IControlAgent agentContext,
+            BehaviourRunnerBlackboard blackboard, BehaviourWrapper wrapper)
+        {
+            RepeaterRuntimeData data = GetRuntimeData(agentContext);
+            if(blackboard.LastDirection == ExDirection.Forward)
+            {
+                if (!data.firstHit)
+                {
+                    data.firstHit = true;
+                }
+                else
+                {
+                    data.secondHit = true;
+                }
+                SetRuntimeData(agentContext, data);
+            }
+            
+            if(blackboard.LastDirection == ExDirection.Forward && mode == RepeaterMode.Loop && data.secondHit)
             {
                 return ExDirection.Backward;
             }
-            return last;
+            return blackboard.LastDirection;
         }
         
         public IControl DoForward(IControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard,
@@ -71,7 +101,7 @@ namespace ControlCanvas.Runtime
 
         public IControl DoBackward(IControlAgent agentContext, BehaviourRunnerBlackboard runnerBlackboard)
         {
-            
+            RepeaterRuntimeData data = GetRuntimeData(agentContext);
             
             IControl nextControl = null;
             runnerBlackboard.behaviourStack.Pop();
@@ -82,17 +112,17 @@ namespace ControlCanvas.Runtime
 
             if (!runnerBlackboard.behaviourStack.Contains(this))
             {
-                if (mode == RepeaterMode.Loop)
+                if (mode == RepeaterMode.Loop && data.secondHit)
                 {
                     runnerBlackboard.repeaterList.Add(this);
                 }else if(mode == RepeaterMode.Always)
                 {
                     runnerBlackboard.repeaterList.Add(this);
                 }
-                else
-                {
-                    Debug.LogError($"Unknown mode {mode}");
-                }
+                
+                data.firstHit = false;
+                data.secondHit = false;
+                SetRuntimeData(agentContext, data);
             }
             
             return nextControl;
