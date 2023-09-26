@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using UniRx;
 using UnityEngine;
 
 namespace ControlCanvas
@@ -11,5 +13,6 @@ namespace ControlCanvas
         
         public List<Transform> patrolPoints;
         public string SubFlowPath { get; set; }
+        public Subject<Unit> ExitEvent { get; set; } = new();
     }
 }

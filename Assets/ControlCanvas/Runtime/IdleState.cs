@@ -1,4 +1,7 @@
-﻿namespace ControlCanvas.Runtime
+﻿using System;
+using UniRx;
+
+namespace ControlCanvas.Runtime
 {
     public class IdleState : IState
     {
@@ -15,6 +18,11 @@
         public void OnExit(IControlAgent agentContext)
         {
             
+        }
+        
+        public IObservable<Unit> RegisterExitEvent(IControlAgent agentContext)
+        {
+            return agentContext.BlackboardAgent.ExitEvent;
         }
     }
 }

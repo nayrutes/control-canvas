@@ -1,4 +1,6 @@
-﻿using ControlCanvas.Serialization;
+﻿using System;
+using ControlCanvas.Serialization;
+using UniRx;
 
 namespace ControlCanvas.Runtime
 {
@@ -79,6 +81,11 @@ namespace ControlCanvas.Runtime
             CanvasData subFlow = behaviourWrapper.FlowManager.GetFlow(GetSubFlowPath(agentContext));
             nextControl = behaviourWrapper.NodeManager.GetInitControl(subFlow);
             return nextControl;
+        }
+        
+        public IObservable<Unit> RegisterExitEvent(IControlAgent agentContext)
+        {
+            return agentContext.BlackboardAgent.ExitEvent;
         }
     }
 }

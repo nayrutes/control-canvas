@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using UniRx;
+using UnityEngine;
 
 namespace ControlCanvas.Runtime
 {
@@ -8,14 +10,13 @@ namespace ControlCanvas.Runtime
         public BlackboardFlowControl BlackboardFlowControl { get; set; } = new();
         public string Name { get; set; }
         public ControlRunner ControlRunner { get; set; }
-        public List<string> Log { get; set; } = new();
+        public List<string> Log1 { get; set; } = new();
+        public List<string> Log2 { get; set; } = new();
         
         public ControlAgentDebug(ControlRunner controlRunner)
         {
             this.ControlRunner = controlRunner;
         }
-
-        
         
     }
 }

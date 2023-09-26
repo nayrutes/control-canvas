@@ -1,4 +1,6 @@
 ﻿//using Demo;
+
+using UniRx;
 using UnityEngine;
 
 namespace ControlCanvas.Runtime
@@ -33,6 +35,13 @@ namespace ControlCanvas.Runtime
         {
             return true;
             //return GetComponent<NpcController>().CheckDestinationReachable();
+        }
+        
+
+        [ContextMenu("Trigger Exit event")]
+        public void TriggerExitEvent()
+        {
+            BlackboardAgent.ExitEvent.OnNext(Unit.Default);
         }
     }
 }

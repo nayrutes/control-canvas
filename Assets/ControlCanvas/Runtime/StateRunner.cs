@@ -9,7 +9,12 @@ namespace ControlCanvas.Runtime
         public ReactiveProperty<IState> currentState = new();
         private readonly FlowManager _flowManager;
         private readonly NodeManager _nodeManager;
+        private bool _exitCalled;
 
+        IDisposable disposable = null;
+        private IObservable<Unit> ExitEvent { get; set; }
+        
+        
         public StateRunner(FlowManager flowManager, NodeManager instance)
         {
             _flowManager = flowManager;
@@ -37,7 +42,13 @@ namespace ControlCanvas.Runtime
             if(behaviour != currentState.Value)
             {
                 currentState.Value?.OnExit(agentContext);
+                disposable?.Dispose();
+                ExitEvent = null;
+                _exitCalled = false;
+                
                 currentState.Value = behaviour;
+                ExitEvent = currentState.Value.RegisterExitEvent(agentContext);
+                disposable = ExitEvent.Subscribe(x => _exitCalled = true);
                 currentState.Value?.OnEnter(agentContext);
             }
             currentState.Value?.Execute(agentContext, deltaTime);
@@ -45,6 +56,10 @@ namespace ControlCanvas.Runtime
 
         public IControl GetNext(IState state, CanvasData controlFlow, IControlAgent agentContext)
         {
+            if (_exitCalled)
+            {
+                return _nodeManager.GetNextForNode(state, controlFlow);
+            }
             return currentState.Value;
         }
         

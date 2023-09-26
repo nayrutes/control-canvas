@@ -1,4 +1,7 @@
-﻿namespace ControlCanvas.Runtime
+﻿using System;
+using UniRx;
+
+namespace ControlCanvas.Runtime
 {
     public class MoveToControl : IBehaviour, IState
     {
@@ -44,6 +47,11 @@
         public void OnExit(IControlAgent agentContext)
         {
             OnStop(agentContext);
+        }
+        
+        public IObservable<Unit> RegisterExitEvent(IControlAgent agentContext)
+        {
+            return agentContext.BlackboardAgent.ExitEvent;
         }
     }
 }
