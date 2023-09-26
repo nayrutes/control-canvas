@@ -229,5 +229,11 @@ namespace ControlCanvas.Editor.ViewModels
             }
             return null;
         }
+
+        public void NewData()
+        {
+            LoadData(new CanvasData());
+            canvasPath.Value = "";
+        }
     }
 }

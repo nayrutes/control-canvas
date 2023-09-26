@@ -65,6 +65,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         inspectorView = rootVisualElement.Q<InspectorView>();
         rootVisualElement.Q<ToolbarButton>("save-button").clicked += () => SerializeDataAsXML(true);
         rootVisualElement.Q<ToolbarButton>("load-button").clicked += () => DeserializeDataFromXML();
+        rootVisualElement.Q<ToolbarButton>("new-button").clicked += () => NewXML();
         canvasNameLabel = rootVisualElement.Q<Label>("canvas-name");
         canvasPathLabel = rootVisualElement.Q<Label>("canvas-path");
         debugRunnerField = rootVisualElement.Q<ObjectField>("debug-runner");
@@ -198,11 +199,21 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         string directory = "";
         string fileName = "ControlCanvasSO";
         string path = "";
-        if (m_CanvasViewModel.canvasPath.Value != null)
+        if (!String.IsNullOrEmpty(m_CanvasViewModel.canvasPath.Value))
         {
-            path = m_CanvasViewModel.canvasPath.Value;
-            directory = System.IO.Path.GetDirectoryName(m_CanvasViewModel.canvasPath.Value);
-            fileName = System.IO.Path.GetFileNameWithoutExtension(m_CanvasViewModel.canvasPath.Value);
+            try
+            {
+                path = m_CanvasViewModel.canvasPath.Value;
+                directory = System.IO.Path.GetDirectoryName(m_CanvasViewModel.canvasPath.Value);
+                fileName = System.IO.Path.GetFileNameWithoutExtension(m_CanvasViewModel.canvasPath.Value);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning(e);
+                forcePopup = true;
+                //Console.WriteLine(e);
+                //throw;
+            }
         }
 
         if(forcePopup || string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(fileName))
@@ -227,7 +238,11 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         }
     }
 
-
+    public void NewXML()
+    {
+        m_CanvasViewModel.NewData();
+    }
+    
     private void ReleaseUnmanagedResources()
     {
     }

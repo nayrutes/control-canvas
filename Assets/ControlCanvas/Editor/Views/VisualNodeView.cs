@@ -344,6 +344,7 @@ namespace ControlCanvas.Editor.Views
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
             evt.menu.AppendAction("Make Start Node", (a) => nodeViewModel.MakeStartNodeCommand.Execute(nodeViewModel), DropdownMenuAction.AlwaysEnabled);
+            evt.menu.AppendAction("Copy Guid", (a) => GUIUtility.systemCopyBuffer = nodeViewModel.Guid.Value, DropdownMenuAction.AlwaysEnabled);
         }
 
         public string GetVmGuid()
