@@ -36,7 +36,7 @@ namespace ControlCanvas.Tests.EditorTests
         [Test]
         public void TestStateTwo()
         {
-            SetUpTest("Assets/ControlFlows/Tests/StateTests/SingleState.xml");
+            SetUpTest("Assets/ControlFlows/Tests/StateTests/TwoStates.xml");
             string guidNode1 = "2e501c23-c2eb-4005-bcec-49f42c626653";
             string guidNode2 = "dfa1a108-9723-40da-9c66-95ccaebbba7f";
 

@@ -12,6 +12,18 @@ namespace ControlCanvas.Runtime
         public ExDirection LastDirection { get; set; } = ExDirection.Forward;
         public readonly Stack<IBehaviour> behaviourStack = new();
         public List<Repeater> repeaterList = new();
+
+        public BehaviourRunnerBlackboard()
+        {
+        }
+        
+        public BehaviourRunnerBlackboard(BehaviourRunnerBlackboard blackboard)
+        {
+            LastCombinedResult = blackboard.LastCombinedResult;
+            LastDirection = blackboard.LastDirection;
+            behaviourStack = new Stack<IBehaviour>(blackboard.behaviourStack);
+            repeaterList = new List<Repeater>(blackboard.repeaterList);
+        }
     }
     
     public class BehaviourRunner : IRunner<IBehaviour>
@@ -21,12 +33,13 @@ namespace ControlCanvas.Runtime
         private ControlRunner _controlRunner;
         //TODO: Warning: wrappers are not specific to agents (yet)
         private readonly Dictionary<IBehaviour, BehaviourWrapper> _behaviourWrappers = new();
-        private readonly BehaviourRunnerBlackboard _blackboard = new ();
+        private BehaviourRunnerBlackboard _blackboard = new ();
 
         private readonly DefaultRunnerExecuter _behaviourRunnerExecuter = new ();
         private readonly FlowManager _flowManager;
         private readonly NodeManager _nodeManager;
-        
+        private BehaviourRunnerBlackboard _tmpBlackboard = new();
+
         public BehaviourRunner(FlowManager flowManager, NodeManager instance)
         {
             _flowManager = flowManager;
@@ -36,6 +49,7 @@ namespace ControlCanvas.Runtime
         public void DoUpdate(IBehaviour behaviour, IControlAgent agentContext, float deltaTime)
         {
             CurrentBehaviourWrapper.Value = GetOrSetWrapper(behaviour);
+            _blackboard = _tmpBlackboard;
 
             if (_blackboard.LastDirection == ExDirection.Forward)
             {
@@ -52,16 +66,19 @@ namespace ControlCanvas.Runtime
 
                 _blackboard.LastCombinedResult = CurrentBehaviourWrapper.Value.CombinedResultState;
             }
+            
+            IBehaviourRunnerExecuter runnerExecuter = behaviour as IBehaviourRunnerExecuter ?? _behaviourRunnerExecuter;
+            _blackboard.LastDirection = runnerExecuter.ReEvaluateDirection(agentContext, _blackboard, CurrentBehaviourWrapper.Value);
         }
 
-
+        //TODO: split this up to have a GetNext which changes nothing of the flow and a one that does if needed
         public IControl GetNext(IBehaviour behaviour, CanvasData controlFlow, IControlAgent agentContext)
         {
             IBehaviourRunnerExecuter runnerExecuter = behaviour as IBehaviourRunnerExecuter ?? _behaviourRunnerExecuter;
 
             IControl nextControl = null;
 
-            ExDirection newDirection = runnerExecuter.ReEvaluateDirection(agentContext, _blackboard, CurrentBehaviourWrapper.Value);
+            ExDirection newDirection = _blackboard.LastDirection;
             
             if (newDirection == ExDirection.Forward)
             {

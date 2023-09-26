@@ -26,13 +26,15 @@ namespace ControlCanvas.Editor
             controlRunner.StepDoneCurrent.Subscribe(OnStepDoneCurrent).AddTo(disposables);
             controlRunner.ClearingBt.Subscribe(ClearDebugMarker).AddTo(disposables);
             controlRunner.ControlFlowChanged.Subscribe(x=>canvasViewModel.DeserializeData(x.filePath)).AddTo(disposables);
-            
-            controlRunner.StepDoneNext.DoWithLast(x=>OnStepDoneNext(x,false))
+
+            controlRunner.EnablePreview(true);
+            controlRunner.NextPreview.DoWithLast(x=>OnStepDoneNext(x,false))
                 .Subscribe(y=>OnStepDoneNext(y,true)).AddTo(disposables);
         }
         
         public void Unlink()
         {
+            controlRunner.EnablePreview(false);
             //OnControlChanged(null);
             OnStepDoneCurrent(null);
             //OnStepDoneNext(null);

@@ -79,6 +79,10 @@ namespace ControlCanvas.Runtime
 
         public Type GetExecutionTypeOfNode(IControl control, CanvasData canvasData)
         {
+            if (control == null)
+            {
+                return null;
+            }
             NodeType? nodeType = canvasData.Nodes.FirstOrDefault(x => x.specificControl == control)?.nodeType;
             if (nodeType == null)
             {
