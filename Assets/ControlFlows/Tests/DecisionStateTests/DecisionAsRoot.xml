@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CanvasData xmlns:sys="https://extendedxmlserializer.github.io/system" xmlns:exs="https://extendedxmlserializer.github.io/v2" xmlns:ns1="clr-namespace:ControlCanvas.Runtime;assembly=RuntimeScripts" InitialNode="3be38891-4300-4459-b36e-a73da96a9611">
+  <Nodes Capacity="9">
+    <NodeData Name="New Node" Guid="3be38891-4300-4459-b36e-a73da96a9611" nodeType="Decision" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="2061" y="112" />
+      <Size x="428" y="160" />
+      <specificControl exs:type="ns1:DebugDecision" decision="true" />
+    </NodeData>
+    <NodeData Name="New Node" Guid="dc1b1791-998a-4209-bc4c-e6f496d84f45" nodeType="Decision" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="2649" y="112" />
+      <Size x="428" y="160" />
+      <specificControl exs:type="ns1:DebugDecision" decision="false" />
+    </NodeData>
+    <NodeData Name="New Node" Guid="48fd2b53-d86c-45d1-9462-7ba67ea4e3d9" nodeType="Decision" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="2061" y="350" />
+      <Size x="428" y="160" />
+      <specificControl exs:type="ns1:DebugDecision" decision="false" />
+    </NodeData>
+    <NodeData Name="New Node" Guid="d167882d-2f7c-47af-b3e0-f12153b07459" nodeType="State" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="3257" y="135" />
+      <Size x="394" y="137" />
+      <specificControl exs:type="ns1:DebugState" nodeMessage="State1" />
+    </NodeData>
+    <NodeData Name="New Node" Guid="8339553a-2726-4553-9b24-3fe719813c4e" nodeType="State" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="3257" y="385" />
+      <Size x="394" y="137" />
+      <specificControl exs:type="ns1:DebugState" nodeMessage="State2" />
+    </NodeData>
+    <NodeData Name="New Node" Guid="347d0f95-77eb-4c21-bb40-f3d60a2d208a" nodeType="State" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="3257" y="649" />
+      <Size x="394" y="137" />
+      <specificControl exs:type="ns1:DebugState" nodeMessage="State3" />
+    </NodeData>
+    <NodeData Name="New Node" Guid="fd73013c-d576-40f8-9962-6103e2320dbe" nodeType="State" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="3257" y="878" />
+      <Size x="394" y="137" />
+      <specificControl exs:type="ns1:DebugState" nodeMessage="State4" />
+    </NodeData>
+    <NodeData Name="New Node" Guid="c2f5e378-5b1c-4258-a535-e2fcaae20803" nodeType="Routing" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="3744" y="878" />
+      <Size x="73" y="32" />
+    </NodeData>
+    <NodeData Name="New Node" Guid="876162cd-476c-41ff-a5dc-d64ab089099a" nodeType="Routing" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="3737" y="52" />
+      <Size x="73" y="32" />
+    </NodeData>
+  </Nodes>
+  <Edges Capacity="12">
+    <EdgeData Guid="109f0f36-ea86-48e1-89ca-0bc78d521e8f" StartNodeGuid="3be38891-4300-4459-b36e-a73da96a9611" EndNodeGuid="dc1b1791-998a-4209-bc4c-e6f496d84f45" StartPortName="portOut" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="b9754e0d-8626-4950-85cd-710fb212777a" StartNodeGuid="3be38891-4300-4459-b36e-a73da96a9611" EndNodeGuid="48fd2b53-d86c-45d1-9462-7ba67ea4e3d9" StartPortName="portOut-2" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="e42487d7-7bba-4426-a2ac-1f26d8c566db" StartNodeGuid="dc1b1791-998a-4209-bc4c-e6f496d84f45" EndNodeGuid="d167882d-2f7c-47af-b3e0-f12153b07459" StartPortName="portOut" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="462b6deb-09d1-4ddf-8db1-c6aa0f9329b3" StartNodeGuid="dc1b1791-998a-4209-bc4c-e6f496d84f45" EndNodeGuid="8339553a-2726-4553-9b24-3fe719813c4e" StartPortName="portOut-2" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="7f7c9c84-e0ea-4022-a9ca-ee50e9ca2bc3" StartNodeGuid="48fd2b53-d86c-45d1-9462-7ba67ea4e3d9" EndNodeGuid="347d0f95-77eb-4c21-bb40-f3d60a2d208a" StartPortName="portOut" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="30fd4509-d6d0-40f7-8953-7bb7c66a7c47" StartNodeGuid="48fd2b53-d86c-45d1-9462-7ba67ea4e3d9" EndNodeGuid="fd73013c-d576-40f8-9962-6103e2320dbe" StartPortName="portOut-2" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="05eee77c-e3d0-42a4-8818-57fa830ca615" StartNodeGuid="d167882d-2f7c-47af-b3e0-f12153b07459" EndNodeGuid="8339553a-2726-4553-9b24-3fe719813c4e" StartPortName="portOut" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="a96b0dbd-3f63-4373-8fef-e196a346cce8" StartNodeGuid="8339553a-2726-4553-9b24-3fe719813c4e" EndNodeGuid="347d0f95-77eb-4c21-bb40-f3d60a2d208a" StartPortName="portOut" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="000b275f-9291-4e5a-9c93-0ea2c01c32bd" StartNodeGuid="347d0f95-77eb-4c21-bb40-f3d60a2d208a" EndNodeGuid="fd73013c-d576-40f8-9962-6103e2320dbe" StartPortName="portOut" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="6681a995-95f8-4a7f-a6fb-af915298dcf1" StartNodeGuid="fd73013c-d576-40f8-9962-6103e2320dbe" EndNodeGuid="c2f5e378-5b1c-4258-a535-e2fcaae20803" StartPortName="portOut" EndPortName="In/Out" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="07cae75b-1be0-447c-9102-7f0e6d43d28a" StartNodeGuid="c2f5e378-5b1c-4258-a535-e2fcaae20803" EndNodeGuid="876162cd-476c-41ff-a5dc-d64ab089099a" StartPortName="In/Out" EndPortName="In/Out" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="fca83066-e172-410d-893f-fe077185f45c" StartNodeGuid="876162cd-476c-41ff-a5dc-d64ab089099a" EndNodeGuid="d167882d-2f7c-47af-b3e0-f12153b07459" StartPortName="In/Out" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+  </Edges>
+</CanvasData>

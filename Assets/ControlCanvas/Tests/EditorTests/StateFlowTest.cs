@@ -19,12 +19,12 @@ namespace ControlCanvas.Tests.EditorTests
 
             controlRunner.RunningUpdate(0);
             
-            AssertStateExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
             });
             controlRunner.RunningUpdate(0);
-            AssertStateExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 guidNode1,
@@ -42,39 +42,39 @@ namespace ControlCanvas.Tests.EditorTests
 
             controlRunner.RunningUpdate(0);
             
-            AssertStateExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
             });
             controlRunner.RunningUpdate(1);
-            AssertStateExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 guidNode1,
-            });
-            
-            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
-            
-            controlRunner.RunningUpdate(1);
-            AssertStateExecutionOrder(new List<string>()
-            {
-                guidNode1,
-                guidNode1,
-                guidNode2,
-            });
-            controlRunner.RunningUpdate(1);
-            AssertStateExecutionOrder(new List<string>()
-            {
-                guidNode1,
-                guidNode1,
-                guidNode2,
-                guidNode2,
             });
             
             controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
             
             controlRunner.RunningUpdate(1);
-            AssertStateExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
+            {
+                guidNode1,
+                guidNode1,
+                guidNode2,
+            });
+            controlRunner.RunningUpdate(1);
+            AssertExecutionOrderAndType(new List<string>()
+            {
+                guidNode1,
+                guidNode1,
+                guidNode2,
+                guidNode2,
+            });
+            
+            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            
+            controlRunner.RunningUpdate(1);
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 guidNode1,

@@ -77,6 +77,10 @@ namespace ControlCanvas.Runtime
             
             _flowManager.SetCurrentFlow(currentPath);
             initialControl = _nodeManager.GetInitControl(CurrentFlow);
+            if (initialControl == null)
+            {
+                Debug.LogWarning("No initial control found");
+            }
             //nextSuggestedControl = initialControl;
             if (agentContext == null)
             {

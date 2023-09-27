@@ -41,6 +41,7 @@ namespace ControlCanvas.Runtime
             {"TestDecision", typeof(TestDecision)},
             {"TestDecision2", typeof(TestDecisionSecond)},
             {"SubFlow", typeof(SubFlow)},
+            {"DebugDecision", typeof(DebugDecision)},
         };
         
         public static readonly Dictionary<string, Type> otherDictionary = new()
@@ -70,8 +71,18 @@ namespace ControlCanvas.Runtime
                 // }
                 // IState state = (IState)Activator.CreateInstance(type);
                 
-                IControl control = canvasData.Nodes.FirstOrDefault(x => x.guid == guid)?.specificControl;
-                
+                NodeData nodeData = canvasData.Nodes.FirstOrDefault(x => x.guid == guid);
+                if(nodeData == null)
+                {
+                    Debug.LogError($"No node found for {guid}");
+                    return null;
+                }
+                IControl control = nodeData.specificControl;
+                if(control == null)
+                {
+                    Debug.LogError($"No specific control found for {guid}");
+                    return null;
+                }
                 controlCache.Add(guid, control);
                 return control;
             }
@@ -204,7 +215,12 @@ namespace ControlCanvas.Runtime
 
         public IControl GetInitControl(CanvasData flow)
         {
-            return GetControlForNode(flow.InitialNode, flow);
+            string initialGuid = flow.InitialNode;
+            if (String.IsNullOrEmpty(initialGuid))
+            {
+                return null;
+            }
+            return GetControlForNode(initialGuid, flow);
         }
     }
 }

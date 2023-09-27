@@ -132,6 +132,15 @@ namespace ControlCanvas.Editor.Views
                     textField.RegisterValueChangedCallback(evt => rp.Value = evt.newValue);
                     HidePort1(true);
                     HidePort2(true);
+                }else if (control.GetType() == typeof(DebugDecision))
+                {
+                    Toggle toggle = new Toggle("Decision");
+                    m_DynamicContent.Add(toggle);
+                    var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
+                    var vmBase = vm as BaseViewModel<DebugDecision>;
+                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<bool>>(nameof(DebugDecision.decision));
+                    rp.Subscribe(x=> toggle.SetValueWithoutNotify(x));
+                    toggle.RegisterValueChangedCallback(evt => rp.Value = evt.newValue);
                 }
             }
         }

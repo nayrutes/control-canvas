@@ -42,16 +42,15 @@ public class EditorTestBase
             Assert.AreEqual($"{testMessage}{expected[i]}", actual[i]);
         }
     }
-        
-    public void AssertBehaviourExecutionOrder(List<string> expected)
-    {
-        AssertLogExecutionOrder(expected, controlAgent.Log1);
-        //Assert.IsNull(controlRunner.GetNextSuggestion());
-    }
 
-    public void AssertStateExecutionOrder(List<string> expected)
+    public void AssertExecutionOrderAndType(List<string> expected)
     {
         AssertLogExecutionOrder(expected, controlAgent.Log1);
         //Assert.IsNotNull(controlRunner.GetNextSuggestion());
+    }
+    
+    public void AssertExecutionOrderByGUIDOnly(List<string> expected)
+    {
+        AssertLogExecutionOrder(expected, controlAgent.Log2);
     }
 }

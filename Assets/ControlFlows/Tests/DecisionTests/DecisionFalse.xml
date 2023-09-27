@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CanvasData xmlns:sys="https://extendedxmlserializer.github.io/system" xmlns:exs="https://extendedxmlserializer.github.io/v2" xmlns:ns1="clr-namespace:ControlCanvas.Runtime;assembly=RuntimeScripts" InitialNode="069c76ce-f878-4155-a234-a26600242e31">
+  <Nodes Capacity="3">
+    <NodeData Name="New Node" Guid="069c76ce-f878-4155-a234-a26600242e31" nodeType="Decision" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="1941" y="231" />
+      <Size x="428" y="160" />
+      <specificControl exs:type="ns1:DebugDecision" decision="false" />
+    </NodeData>
+    <NodeData Name="New Node" Guid="b8047ef3-3dec-4e18-b07f-208076fc233e" nodeType="Decision" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="2478" y="231" />
+      <Size x="428" y="160" />
+      <specificControl exs:type="ns1:DebugDecision" decision="false" />
+    </NodeData>
+    <NodeData Name="New Node" Guid="c7e7fda8-4b4c-49e4-9d60-7c8c5b8cc04a" nodeType="Decision" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="1941" y="484" />
+      <Size x="428" y="160" />
+      <specificControl exs:type="ns1:DebugDecision" decision="false" />
+    </NodeData>
+  </Nodes>
+  <Edges Capacity="2">
+    <EdgeData Guid="a5d5deef-f2c4-4409-8691-a4aaeb8d6d29" StartNodeGuid="069c76ce-f878-4155-a234-a26600242e31" EndNodeGuid="b8047ef3-3dec-4e18-b07f-208076fc233e" StartPortName="portOut" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="4750173b-d416-49b1-a98f-bb84d4a57932" StartNodeGuid="069c76ce-f878-4155-a234-a26600242e31" EndNodeGuid="c7e7fda8-4b4c-49e4-9d60-7c8c5b8cc04a" StartPortName="portOut-2" EndPortName="portIn" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+  </Edges>
+</CanvasData>

@@ -26,7 +26,7 @@ namespace ControlCanvas.Tests.EditorTests
             
             //ASSERT
             //check if node has executed
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guid
             });
@@ -47,7 +47,7 @@ namespace ControlCanvas.Tests.EditorTests
             controlRunner.RunningUpdate(0);
             
             //ASSERT
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 guidNode2
@@ -69,7 +69,7 @@ namespace ControlCanvas.Tests.EditorTests
             controlRunner.RunningUpdate(0);
             
             //ASSERT
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 guidNode2
@@ -87,7 +87,7 @@ namespace ControlCanvas.Tests.EditorTests
             string guidNode3 = "5605018b-7d0f-4927-b711-e9a14dbe23fb";
             SetUpTest("Assets/ControlFlows/Tests/ThreeNodesSuccessAndFailure.xml");
             controlRunner.RunningUpdate(0);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 guidNode3,
@@ -104,18 +104,18 @@ namespace ControlCanvas.Tests.EditorTests
             string guidNode3 = "5605018b-7d0f-4927-b711-e9a14dbe23fb";
             SetUpTest("Assets/ControlFlows/Tests/SingleNodeRerun.xml");
             controlRunner.RunningUpdate(0);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
             });
             controlRunner.RunningUpdate(0.5f);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 guidNode1,
             });
             controlRunner.RunningUpdate(2);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 guidNode1,
@@ -132,19 +132,19 @@ namespace ControlCanvas.Tests.EditorTests
             string guidNode3 = "5605018b-7d0f-4927-b711-e9a14dbe23fb";
             SetUpTest("Assets/ControlFlows/Tests/ThreeNodesWait.xml");
             controlRunner.RunningUpdate(0);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
             });
             controlRunner.RunningUpdate(4);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 
                 guidNode1,
             });
             controlRunner.RunningUpdate(2);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 
@@ -154,7 +154,7 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode2,
             });
             controlRunner.RunningUpdate(3);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 
@@ -166,7 +166,7 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode1,
             });
             controlRunner.RunningUpdate(1.1f);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 
@@ -181,7 +181,7 @@ namespace ControlCanvas.Tests.EditorTests
                 //Node 2 will not be called because overlapping time was dismissed before
             });
             controlRunner.RunningUpdate(1f);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 
@@ -207,7 +207,7 @@ namespace ControlCanvas.Tests.EditorTests
             string guidNode2 = "0113112f-89bb-41c1-a167-c17bd8145552";
             SetUpTest("Assets/ControlFlows/Tests/SubFlowParent.xml");
             controlRunner.RunningUpdate(0);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 guidNode2,
@@ -222,7 +222,7 @@ namespace ControlCanvas.Tests.EditorTests
             string guidNode3 = "5605018b-7d0f-4927-b711-e9a14dbe23fb";
             SetUpTest("Assets/ControlFlows/Tests/RoutingNode.xml");
             controlRunner.RunningUpdate(0);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 guidNode3,
@@ -238,14 +238,14 @@ namespace ControlCanvas.Tests.EditorTests
             string guidNode3 = "5605018b-7d0f-4927-b711-e9a14dbe23fb";
             SetUpTest("Assets/ControlFlows/Tests/RepeaterLoopSuccess.xml");
             controlRunner.RunningUpdate(0);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 guidNode3,
             });
             
             controlRunner.RunningUpdate(0);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 guidNode3,
@@ -253,7 +253,7 @@ namespace ControlCanvas.Tests.EditorTests
             });
             
             controlRunner.RunningUpdate(0);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 guidNode3,
@@ -271,7 +271,7 @@ namespace ControlCanvas.Tests.EditorTests
             string guidNode3 = "5605018b-7d0f-4927-b711-e9a14dbe23fb";
             SetUpTest("Assets/ControlFlows/Tests/RepeaterLoopFailure.xml");
             controlRunner.RunningUpdate(0);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 guidNode3,
@@ -279,7 +279,7 @@ namespace ControlCanvas.Tests.EditorTests
             });
             
             controlRunner.RunningUpdate(0);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 guidNode3,
@@ -290,7 +290,7 @@ namespace ControlCanvas.Tests.EditorTests
             });
             
             controlRunner.RunningUpdate(0);
-            AssertBehaviourExecutionOrder(new List<string>()
+            AssertExecutionOrderAndType(new List<string>()
             {
                 guidNode1,
                 guidNode3,

@@ -15,6 +15,7 @@ namespace ControlCanvas.Runtime
             if (agentContext is ControlAgentDebug debugAgent)
             {
                 debugAgent.Log1.Add($"Execute of {debugAgent.ControlRunner.NodeManager.GetGuidForControl(this)}");
+                debugAgent.Log2.Add(debugAgent.ControlRunner.NodeManager.GetGuidForControl(this));
                 Debug.Log($"Execute of {debugAgent.ControlRunner.NodeManager.GetGuidForControl(this)}");;
             }
             else
