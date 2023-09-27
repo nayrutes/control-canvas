@@ -38,5 +38,30 @@ namespace ControlCanvas.Tests.EditorTests
             
             CleanUpTest();
         }
+        
+        [Test]
+        public void TestDecisionBeforeBehaviour()
+        {
+            SetUpTest("Assets/ControlFlows/Tests/DecisionBehaviourTests/DecisionsBeforeBehaviour.xml");
+            string guidNode1 = "925c6166-b75b-4a6e-b53b-3e7d0a09411c";
+            string guidNode2 = "a9734632-2840-4a25-8342-296a4bf02f0d";
+
+            controlRunner.RunningUpdate(0);
+            AssertExecutionOrderByGUIDOnly(new List<string>()
+            {
+                guidNode1,
+                guidNode2,
+            });
+            controlRunner.RunningUpdate(0);
+            AssertExecutionOrderByGUIDOnly(new List<string>()
+            {
+                guidNode1,
+                guidNode2,
+                guidNode1,
+                guidNode2,
+            });
+            
+            CleanUpTest();
+        }
     }
 }

@@ -58,6 +58,7 @@ namespace ControlCanvas.Runtime
         {
             if (_exitCalled)
             {
+                _exitCalled = false;
                 return _nodeManager.GetNextForNode(state, controlFlow);
             }
             return currentState.Value;

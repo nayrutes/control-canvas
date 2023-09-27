@@ -8,8 +8,6 @@ namespace ControlCanvas.Runtime
     {
         public string path;
         
-        //Warning: this is not saved in agentContext, so it will be changing every execution
-        //private string agentSpecificPath;
         public string GetSubFlowPath(IControlAgent agentContext)
         {
             return path;
