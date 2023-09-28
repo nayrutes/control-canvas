@@ -15,6 +15,11 @@ namespace ControlCanvas.Runtime
         
         ExDirection ReEvaluateDirection(IControlAgent agentContext, BehaviourRunnerBlackboard blackboard, BehaviourWrapper wrapper)
         {
+            if (blackboard.LastCombinedResult == State.Running)
+            {
+                return ExDirection.Backward;
+            }
+            
             if (blackboard.LastDirection == ExDirection.Backward)
             {
                 if (!wrapper.ChoseFailRoute && blackboard.LastCombinedResult == State.Failure)

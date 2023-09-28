@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ControlCanvas.Serialization;
 using UniRx;
 
@@ -63,7 +64,12 @@ namespace ControlCanvas.Runtime
             }
             return currentState.Value;
         }
-        
+
+        public List<IControl> GetParallel(IControl current, CanvasData currentFlow)
+        {
+            return null;
+        }
+
         // public IControl AfterExitingSubFlow(IState control, CanvasData currentFlow)
         // {
         //     //IControl autonext = NodeManager.Instance.GetNextForNode(control, currentFlow);

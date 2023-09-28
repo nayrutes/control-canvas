@@ -171,23 +171,24 @@ namespace ControlCanvas.Runtime
 
         public IControl GetNextForNode(IControl currentControlValue, CanvasData controlFlow)
         {
-            return GetNextForNode(currentControlValue, controlFlow, "portOut");
+            return GetNextForNode(currentControlValue, controlFlow, PortType.Out);
         }
         
         public IControl GetNextForNode(IControl currentControlValue, bool decision, CanvasData controlFlow)
         {
-            return GetNextForNode(currentControlValue, controlFlow, decision ? "portOut" : "portOut-2");
+            return GetNextForNode(currentControlValue, controlFlow, decision ? PortType.Out : PortType.Out2);
         }
 
-        public IControl GetNextForNode(IControl currentControlValue, CanvasData controlFlow, string portName)
+        public IControl GetNextForNode(IControl currentControlValue, CanvasData controlFlow, PortType portType)
         {
             var currentGuid = GetGuidForControl(currentControlValue);
-            var nodeData = GetNextForNode(currentGuid, controlFlow, portName);
+            var nodeData = GetNextForNode(currentGuid, controlFlow, portType);
             return nodeData != null ? GetControlForNode(nodeData.guid, controlFlow) : null;
         }
         
-        public NodeData GetNextForNode(string currentNodeDataGuid, CanvasData controlFlow, string portName, string previousNodeGuid = null)
+        public NodeData GetNextForNode(string currentNodeDataGuid, CanvasData controlFlow, PortType portType, string previousNodeGuid = null)
         {
+            string portName = NodeData.PortTypeToName(portType);
             var edgeDatas = controlFlow.Edges
                 .Where(x => x.StartNodeGuid == currentNodeDataGuid)
                 .ToList();
@@ -207,11 +208,12 @@ namespace ControlCanvas.Runtime
             if (nodeData is { nodeType: NodeType.Routing })
             {
                 Debug.Log($"Routing node {nodeData.guid} found. Getting next...");
-                nodeData = GetNextForNode(nodeData.guid, controlFlow, portName, currentNodeDataGuid);
+                nodeData = GetNextForNode(nodeData.guid, controlFlow, portType, currentNodeDataGuid);
             }
 
             return nodeData;
         }
+        
 
         public IControl GetInitControl(CanvasData flow)
         {
@@ -221,6 +223,44 @@ namespace ControlCanvas.Runtime
                 return null;
             }
             return GetControlForNode(initialGuid, flow);
+        }
+
+        public List<IControl> GetParallelForNode(IControl current, CanvasData controlFlow)
+        {
+            var currentGuid = GetGuidForControl(current);
+            return GetAllNextForNode(currentGuid, controlFlow, PortType.Parallel)
+                .Select(x => GetControlForNode(x.guid, controlFlow)).ToList();
+        }
+        
+        public List<NodeData> GetAllNextForNode(string currentNodeDataGuid, CanvasData controlFlow, PortType portType, string previousNodeGuid = null)
+        {
+            string portName = NodeData.PortTypeToName(portType);
+            var edgeDatas = controlFlow.Edges
+                .Where(x => x.StartNodeGuid == currentNodeDataGuid)
+                .ToList();
+
+            List<EdgeData> edgeDataSelected;
+            
+            if(previousNodeGuid != null)
+            {
+                edgeDataSelected = edgeDatas.Where(x => x.EndNodeGuid != previousNodeGuid).ToList();
+            }else{
+                edgeDataSelected = edgeDatas.Where(x =>
+                    (portName != null && x.StartPortName == portName)).ToList();
+            } 
+            List<NodeData> nodeDatas = new List<NodeData>();
+            foreach (var edgeData in edgeDataSelected)
+            {
+                NodeData nodeData = controlFlow.Nodes.FirstOrDefault(x => x.guid == edgeData.EndNodeGuid);
+                if (nodeData is { nodeType: NodeType.Routing })
+                {
+                    Debug.Log($"Routing node {nodeData.guid} found. Getting next...");
+                    nodeData = GetNextForNode(nodeData.guid, controlFlow, portType, currentNodeDataGuid);
+                }
+                nodeDatas.Add(nodeData);
+            }
+
+            return nodeDatas;
         }
     }
 }

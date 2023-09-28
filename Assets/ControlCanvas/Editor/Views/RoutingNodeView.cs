@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ControlCanvas.Editor.ViewModels;
+using ControlCanvas.Serialization;
 using UniRx;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -70,7 +71,7 @@ namespace ControlCanvas.Editor.Views
             return nodeViewModel.Guid.Value;
         }
 
-        public Port GetPort(string portName)
+        public Port GetPort(PortType portType)
         {
             return inOutPort;
         }

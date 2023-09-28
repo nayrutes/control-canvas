@@ -8,10 +8,30 @@ namespace ControlCanvas.Runtime
 {
     public class BehaviourRunnerBlackboard
     {
-        public State LastCombinedResult { get; set; }
-        public ExDirection LastDirection { get; set; } = ExDirection.Forward;
+        public State LastCombinedResult
+        {
+            get { return _lastCombinedResult; }
+            set
+            {
+                Debug.Log($"Setting last combined result to {value}");
+                _lastCombinedResult = value;
+            }
+        }
+
+        public ExDirection LastDirection
+        {
+            get => _lastDirection;
+            set
+            {
+                Debug.Log($"Setting last direction to {value}");
+                _lastDirection = value;
+            }
+        }
+
         public readonly Stack<IBehaviour> behaviourStack = new();
         public List<Repeater> repeaterList = new();
+        private State _lastCombinedResult;
+        private ExDirection _lastDirection = ExDirection.Forward;
 
         public BehaviourRunnerBlackboard()
         {
@@ -94,7 +114,17 @@ namespace ControlCanvas.Runtime
             _blackboard.LastDirection = newDirection;
             return nextControl;
         }
-        
+
+        public List<IControl> GetParallel(IControl current, CanvasData currentFlow)
+        {
+            if (_blackboard.LastDirection == ExDirection.Forward)
+            {
+                List<IControl> parallelForNode = _nodeManager.GetParallelForNode(current, currentFlow);
+                return parallelForNode;
+            }
+            return null;
+        }
+
 
         // private bool CheckNextSuggestionValidity(IControl nextControl, ExDirection direction, out bool changeRequested)
         // {
@@ -150,6 +180,7 @@ namespace ControlCanvas.Runtime
 
         public void ResetRunner(IControlAgent agentContext)
         {
+            CurrentBehaviourWrapper.Value = null;
             foreach (var wrapper in _behaviourWrappers.Values)
             {
                 wrapper.Reset();

@@ -42,7 +42,12 @@ namespace ControlCanvas.Runtime
             }
             return next;
         }
-        
+
+        public List<IControl> GetParallel(IControl current, CanvasData currentFlow)
+        {
+            return null;
+        }
+
         public void ResetRunner(IControlAgent agentContext)
         {
             _decisionsTracker.Clear();

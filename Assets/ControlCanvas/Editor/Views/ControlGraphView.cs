@@ -206,8 +206,15 @@ namespace ControlCanvas.Editor.Views
             if (startNode != null && endNode != null)
             {
                 var edgeGV = new Edge();
-                edgeGV.input = endNode.GetPort(string.IsNullOrEmpty(edgeData.EndPortName)? "portIn" : edgeData.EndPortName);
-                edgeGV.output = startNode.GetPort(string.IsNullOrEmpty(edgeData.StartPortName)? "portOut" : edgeData.StartPortName);
+                PortType portTypeEnd = string.IsNullOrEmpty(edgeData.EndPortName)
+                    ? PortType.In
+                    : NodeData.PortNameToType(edgeData.EndPortName);
+                edgeGV.input = endNode.GetPort(portTypeEnd);
+                
+                PortType portTypeStart = string.IsNullOrEmpty(edgeData.StartPortName)
+                    ? PortType.Out
+                    : NodeData.PortNameToType(edgeData.StartPortName);
+                edgeGV.output = startNode.GetPort(portTypeStart);
                 
                 //edgeGV.capabilities &= ~Capabilities.Deletable;
 

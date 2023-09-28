@@ -21,6 +21,7 @@ namespace ControlCanvas.Editor.Views
         public Port portIn;
         public Port portOut;
         public Port portOut2;
+        public Port portOutParallel;
 
         private VisualElement m_DynamicContent;
         private CompositeDisposable disposables = new();
@@ -48,6 +49,7 @@ namespace ControlCanvas.Editor.Views
             m_DynamicContent.Add(new Label($"This is a {type} node"));
             this.Q<EnumField>("type-enum").SetValueWithoutNotify(type);
             HidePort1(false);
+            HidePortParallel(false);
             switch (type)
             {
                 case NodeType.State:
@@ -58,6 +60,7 @@ namespace ControlCanvas.Editor.Views
                     break;
                 case NodeType.Decision:
                     HidePort2(false);
+                    HidePortParallel(true);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
@@ -150,7 +153,7 @@ namespace ControlCanvas.Editor.Views
             portIn = InstantiatePort(Orientation.Horizontal, Direction.Input, Port.Capacity.Multi, typeof(bool));
             if (portIn != null)
             {
-                portIn.portName = "portIn";
+                portIn.portName = "In";
                 portIn.name = "portIn";
                 inputContainer.Add(portIn);
             }
@@ -158,7 +161,7 @@ namespace ControlCanvas.Editor.Views
             portOut = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, typeof(bool));
             if (portOut != null)
             {
-                portOut.portName = "portOut";
+                portOut.portName = "Out";
                 portOut.name = "portOut";
                 outputContainer.Add(portOut);
             }
@@ -166,10 +169,18 @@ namespace ControlCanvas.Editor.Views
             portOut2 = InstantiatePort(Orientation.Vertical, Direction.Output, Port.Capacity.Multi, typeof(bool));
             if (portOut2 != null)
             {
-                portOut2.portName = "portOut-2";
+                portOut2.portName = "Failure";
                 portOut2.name = "portOut-2";
                 mainContainer.Q<VisualElement>("output-2").Add(portOut2);
                 //outputContainer.Add(portOut2);
+            }
+            
+            portOutParallel = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, typeof(bool));
+            if (portOutParallel != null)
+            {
+                portOutParallel.portName = "Parallel";
+                portOutParallel.name = "portOutParallel";
+                mainContainer.Q<VisualElement>("output-p").Add(portOutParallel);
             }
         }
         
@@ -326,6 +337,18 @@ namespace ControlCanvas.Editor.Views
                 this.Q<VisualElement>("output-2").RemoveFromClassList("hide-port-2");
             }
         }
+        
+        private void HidePortParallel(bool x)
+        {
+            if (x)
+            {
+                this.Q<VisualElement>("output-p").AddToClassList("hide-port-2");
+            }
+            else
+            {
+                this.Q<VisualElement>("output-p").RemoveFromClassList("hide-port-2");
+            }
+        }
 
         private void UnbindViewFromViewModel()
         {
@@ -361,21 +384,24 @@ namespace ControlCanvas.Editor.Views
             return nodeViewModel.Guid.Value;
         }
 
-        public Port GetPort(string portName)
+        public Port GetPort(PortType portType)
         {
             Port portIn = inputContainer.Q<Port>();
             Port portOut = outputContainer.Q<Port>();
             Port portOut2 = mainContainer.Q<VisualElement>("output-2").Q<Port>();
-            switch (portName)
+            Port portOutParallel = mainContainer.Q<VisualElement>("output-p").Q<Port>();
+            switch (portType)
             {
-                case "portIn":
+                case PortType.In:
                     return portIn;
-                case "portOut":
+                case PortType.Out:
                     return portOut;
-                case "portOut-2":
+                case PortType.Out2:
                     return portOut2;
+                case PortType.Parallel:
+                    return portOutParallel;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(portName), portName, null);
+                    throw new ArgumentOutOfRangeException(nameof(portType), portType, null);
             }
         }
         

@@ -7,6 +7,13 @@ using UnityEngine;
 namespace ControlCanvas.Runtime
 {
 
+    public class RunInstance
+    {
+        public Dictionary<Type, IRunnerBase> runnerDict = new ();
+        
+        public Dictionary<Type, Action<IControl, float>> updateByType = new ();
+        public Dictionary<Type, Func<IControl, IControl>> nextByType = new ();
+    }
     
     public class ControlRunner
     {
@@ -24,20 +31,19 @@ namespace ControlCanvas.Runtime
         
         private IControlAgent agentContext;
 
-        private Dictionary<Type, IRunnerBase> runnerDict = new ();
-        
-        private Dictionary<Type, Action<IControl, float>> updateByType = new ();
-        private Dictionary<Type, Func<IControl, IControl>> nextByType = new ();
-        
+
+        private Queue<IControl> _initQueue = new();
+        private Dictionary<IControl, RunInstance> _runInstanceDict = new();
 
         private ReactiveProperty<Mode> mode = new ReactiveProperty<Mode>();
         //private IControl nextSuggestedControl;
-        private IControl initialControl;
+        private IControl initInMainFlow;
         private bool stopped = false;
         private bool startedComplete;
         private bool _autoRestart = true;
 
-        public State LatestBehaviourState => ((BehaviourRunner)runnerDict[typeof(IBehaviour)]).GetLastCombinedResult();
+        private RunInstance currentRunInstance;
+        public State LatestBehaviourState => ((BehaviourRunner)currentRunInstance.runnerDict[typeof(IBehaviour)]).GetLastCombinedResult();
         public IObservable<FlowTracker> ControlFlowChanged => _flowManager.ControlFlowChanged.SkipWhile(_=>_running);
 
         private float _currentDeltaTimeForSubUpdate;
@@ -58,17 +64,34 @@ namespace ControlCanvas.Runtime
             
             mode.Value = Mode.CompleteUpdate;
             InitializeControlFlow(startPath);
-            runnerDict.Add(typeof(IState), new StateRunner(_flowManager, _nodeManager));
-            runnerDict.Add(typeof(IDecision), new DecisionRunner(_flowManager, _nodeManager));
-            runnerDict.Add(typeof(IBehaviour), new BehaviourRunner(_flowManager, _nodeManager));
+            AddRunInstance(initInMainFlow);
+        }
+
+        private void CreateRunInstance(IControl initControl)
+        {
+            RunInstance runInstance = new RunInstance();
+            _runInstanceDict.Add(initControl, runInstance);
+            runInstance.runnerDict.Add(typeof(IState), new StateRunner(_flowManager, _nodeManager));
+            runInstance.runnerDict.Add(typeof(IDecision), new DecisionRunner(_flowManager, _nodeManager));
+            runInstance.runnerDict.Add(typeof(IBehaviour), new BehaviourRunner(_flowManager, _nodeManager));
             
-            updateByType.Add(typeof(IState), RunnerRun<IState>);
-            updateByType.Add(typeof(IDecision), RunnerRun<IDecision>);
-            updateByType.Add(typeof(IBehaviour), RunnerRun<IBehaviour>);
+            runInstance.updateByType.Add(typeof(IState), RunnerRun<IState>);
+            runInstance.updateByType.Add(typeof(IDecision), RunnerRun<IDecision>);
+            runInstance.updateByType.Add(typeof(IBehaviour), RunnerRun<IBehaviour>);
             
-            nextByType.Add(typeof(IState), RunnerGetNext<IState>);
-            nextByType.Add(typeof(IDecision), RunnerGetNext<IDecision>);
-            nextByType.Add(typeof(IBehaviour), RunnerGetNext<IBehaviour>);
+            runInstance.nextByType.Add(typeof(IState), RunnerGetNext<IState>);
+            runInstance.nextByType.Add(typeof(IDecision), RunnerGetNext<IDecision>);
+            runInstance.nextByType.Add(typeof(IBehaviour), RunnerGetNext<IBehaviour>);
+            
+        }
+
+        private void AddRunInstance(IControl initControl)
+        {
+            if (!_runInstanceDict.ContainsKey(initControl))
+            {
+                CreateRunInstance(initControl);
+            }
+            _initQueue.Enqueue(initControl);
         }
         
         private void InitializeControlFlow(string currentPath)
@@ -76,8 +99,8 @@ namespace ControlCanvas.Runtime
             CanvasData initControlFlow = null;
             
             _flowManager.SetCurrentFlow(currentPath);
-            initialControl = _nodeManager.GetInitControl(CurrentFlow);
-            if (initialControl == null)
+            initInMainFlow = _nodeManager.GetInitControl(CurrentFlow);
+            if (initInMainFlow == null)
             {
                 Debug.LogWarning("No initial control found");
             }
@@ -151,7 +174,13 @@ namespace ControlCanvas.Runtime
             Type executionType = _nodeManager.GetExecutionTypeOfNode(last, CurrentFlow);
             if (executionType != null)
             {
-                next = nextByType[executionType](last);
+                next = currentRunInstance.nextByType[executionType](last);
+            }
+            
+            if(next == null && _initQueue.Count > 0)
+            {
+                next = _initQueue.Dequeue();
+                currentRunInstance = _runInstanceDict[next];
             }
             
             if (next == null && allowRestart)
@@ -159,7 +188,7 @@ namespace ControlCanvas.Runtime
                 if (_autoRestart)
                 {
                     Debug.Log("Restarting control flow because no next suggested control");
-                    next = initialControl;
+                    next = initInMainFlow;
                     ResetRunner();
                 }
                 else
@@ -176,20 +205,23 @@ namespace ControlCanvas.Runtime
             _flowManager.SetCurrentControlAndFlow(current, _nodeManager);
             
             Type executionType = _nodeManager.GetExecutionTypeOfNode(current, CurrentFlow);
-            updateByType[executionType](current, _currentDeltaTimeForSubUpdate);
+            currentRunInstance.updateByType[executionType](current, _currentDeltaTimeForSubUpdate);
             
             StepDoneCurrent.OnNext(current);
         }
-
+        
         private void RunnerRun<T>(IControl current, float deltaTime) where T : class, IControl
         {
-            IRunner<T> runner = runnerDict[typeof(T)] as IRunner<T>;
+            IRunner<T> runner = currentRunInstance.runnerDict[typeof(T)] as IRunner<T>;
             runner.DoUpdate(current as T, agentContext, deltaTime);
+
+            runner.GetParallel(current, CurrentFlow)?
+                .ForEach(AddRunInstance);
         }
 
         private IControl RunnerGetNext<T>(IControl current) where T : class, IControl
         {
-            IRunner<T> runner = runnerDict[typeof(T)] as IRunner<T>;
+            IRunner<T> runner = currentRunInstance.runnerDict[typeof(T)] as IRunner<T>;
             if (current is ISubFlow subFlow)
             {
                 _flowManager.CacheFlow(subFlow.GetSubFlowPath(agentContext));
@@ -199,7 +231,10 @@ namespace ControlCanvas.Runtime
         }
         private void ResetRunner()
         {
-            runnerDict[typeof(IBehaviour)].ResetRunner(agentContext);
+            foreach (KeyValuePair<IControl,RunInstance> keyValuePair in _runInstanceDict)
+            {
+                keyValuePair.Value.runnerDict[typeof(IBehaviour)].ResetRunner(agentContext);
+            }
         }
         
         public void Play()

@@ -22,8 +22,9 @@
             </ui:VisualElement>
             <ui:VisualElement name="dynamic-content" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);" />
             <ui:VisualElement name="divider" class="horizontal" />
-            <ui:VisualElement name="bottom">
+            <ui:VisualElement name="bottom" style="flex-direction: row; justify-content: flex-end;">
                 <ui:VisualElement name="output-2" class="output-port" style="flex-direction: row; align-items: auto; justify-content: flex-start;" />
+                <ui:VisualElement name="output-p" style="flex-direction: row; align-items: auto; justify-content: flex-start;" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
