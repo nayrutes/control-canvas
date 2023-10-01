@@ -154,7 +154,7 @@ namespace ControlCanvas.Editor.Views
             if (portIn != null)
             {
                 portIn.portName = "In";
-                portIn.name = "portIn";
+                portIn.name = PortTypeToName(PortType.In);
                 inputContainer.Add(portIn);
             }
 
@@ -162,7 +162,7 @@ namespace ControlCanvas.Editor.Views
             if (portOut != null)
             {
                 portOut.portName = "Out";
-                portOut.name = "portOut";
+                portOut.name = PortTypeToName(PortType.Out);
                 outputContainer.Add(portOut);
             }
             
@@ -170,7 +170,7 @@ namespace ControlCanvas.Editor.Views
             if (portOut2 != null)
             {
                 portOut2.portName = "Failure";
-                portOut2.name = "portOut-2";
+                portOut2.name = PortTypeToName(PortType.Out2);
                 mainContainer.Q<VisualElement>("output-2").Add(portOut2);
                 //outputContainer.Add(portOut2);
             }
@@ -179,8 +179,46 @@ namespace ControlCanvas.Editor.Views
             if (portOutParallel != null)
             {
                 portOutParallel.portName = "Parallel";
-                portOutParallel.name = "portOutParallel";
+                portOutParallel.name = PortTypeToName(PortType.Parallel);
                 mainContainer.Q<VisualElement>("output-p").Add(portOutParallel);
+            }
+        }
+        
+        public static string PortTypeToName(PortType portType)
+        {
+            switch (portType)
+            {
+                case PortType.In:
+                    return "portIn";
+                case PortType.Out:
+                    return "portOut";
+                case PortType.Out2:
+                    return "portOut-2";
+                case PortType.Parallel:
+                    return "portOutParallel";
+                case PortType.InOut:
+                    return "In/Out";
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(portType), portType, null);
+            }
+        }
+        
+        public static PortType PortNameToType(string portName)
+        {
+            switch (portName)
+            {
+                case "portIn":
+                    return PortType.In;
+                case "portOut":
+                    return PortType.Out;
+                case "portOut-2":
+                    return PortType.Out2;
+                case "portParallel":
+                    return PortType.Parallel;
+                case "In/Out":
+                    return PortType.InOut;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(portName), portName, null);
             }
         }
         

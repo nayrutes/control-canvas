@@ -42,9 +42,10 @@ namespace ControlCanvas.Serialization
         {
             data = new CanvasData();
             IExtendedXmlSerializer serializerEx = new ConfigurationContainer()
+                .Type<EdgeData>().AddMigration(new EdgeDataMigration())
                 .UseAutoFormatting()
-                .WithUnknownContent()
-                .Continue()
+                //.WithUnknownContent()
+                //.Continue()
                 .EnableImplicitTyping(typeof(CanvasData))
                 .UseOptimizedNamespaces()
                 .Create();

@@ -6,6 +6,7 @@ using ControlCanvas.Editor.Views;
 using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
 using UniRx;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels
@@ -80,7 +81,7 @@ namespace ControlCanvas.Editor.ViewModels
                     {
                         if (x != null)
                         {
-                            var isInitialNode = GetViewModelByGuid(x)?.IsInitialNode;
+                            var isInitialNode = GetNodeViewModelByGuid(x)?.IsInitialNode;
                             if (isInitialNode != null) isInitialNode.Value = false;
                         }
                     })
@@ -88,7 +89,7 @@ namespace ControlCanvas.Editor.ViewModels
                     {
                         if (x != null)
                         {
-                            var isInitialNode = GetViewModelByGuid(x)?.IsInitialNode;
+                            var isInitialNode = GetNodeViewModelByGuid(x)?.IsInitialNode;
                             if (isInitialNode != null) isInitialNode.Value = true;
                         }
                     }).AddTo(disposables);
@@ -98,7 +99,7 @@ namespace ControlCanvas.Editor.ViewModels
                 {
                     if (x != null)
                     {
-                        var isDebugNode = GetViewModelByGuid(x)?.IsCurrentDebugNode;
+                        var isDebugNode = GetNodeViewModelByGuid(x)?.IsCurrentDebugNode;
                         if (isDebugNode != null) isDebugNode.Value = false;
                     }
                 })
@@ -106,18 +107,37 @@ namespace ControlCanvas.Editor.ViewModels
             {
                 if (x != null)
                 {
-                    var isDebugNode = GetViewModelByGuid(x)?.IsCurrentDebugNode;
+                    var isDebugNode = GetNodeViewModelByGuid(x)?.IsCurrentDebugNode;
                     if (isDebugNode != null) isDebugNode.Value = true;
                 }
             });
         }
 
-        private NodeViewModel GetViewModelByGuid(string guid)
+        private NodeViewModel GetNodeViewModelByGuid(string guid)
         {
             var node = Nodes.Value.ToList().Find(x => x.guid == guid);
             if (node != null)
             {
                 return GetChildViewModel<NodeViewModel>(node);
+            }
+            return null;
+        }
+        
+        private EdgeViewModel GetEdgeViewModelByGuid(string guid)
+        {
+            var node = Edges.Value.ToList().Find(x => x.Guid == guid);
+            if (node != null)
+            {
+                return GetChildViewModel<EdgeViewModel>(node);
+            }
+            return null;
+        }
+        
+        public EdgeViewModel GetEdgeViewModel(NodeViewModel startNode, NodeViewModel endNode){
+            var edge = Edges.Value.ToList().Find(x => x.StartNodeGuid == startNode.Guid.Value && x.EndNodeGuid == endNode.Guid.Value);
+            if (edge != null)
+            {
+                return GetChildViewModel<EdgeViewModel>(edge);
             }
             return null;
         }
@@ -171,11 +191,13 @@ namespace ControlCanvas.Editor.ViewModels
         {
             Nodes.Value.Remove(nodeData);
         }
-
-        public void CreateEdge(NodeData from, NodeData to, string startPortName = null, string endPortName = null)
+        
+        public EdgeViewModel CreateEdge(NodeViewModel from, NodeViewModel to, PortType startPortType, PortType endPortType)
         {
-            EdgeData edgeData = EdgeViewModel.CreateEdgeData(from.guid, to.guid, startPortName, endPortName);
-            Edges.Value.Add(edgeData);
+            EdgeViewModel edgeVm = AddChildViewModel<EdgeViewModel, EdgeData>(new EdgeViewModel(from, to, startPortType, endPortType), Edges);
+            return edgeVm;
+            //EdgeData edgeData = EdgeViewModel.CreateEdgeData(from.guid, to.guid, startPortType, endPortType);
+            //Edges.Value.Add(edgeData);
         }
 
         private void RemoveEdgesOfNode(CollectionRemoveEvent<NodeData> nodeData)
@@ -198,6 +220,11 @@ namespace ControlCanvas.Editor.ViewModels
             }
             Edges.Value.Remove(edgeData);
         }
+        public void DeleteEdge(EdgeViewModel edgeVm)
+        {
+            EdgeData edgeData = edgeVm.DataProperty.Value;
+            DeleteEdge(edgeData);
+        }
 
         public void SetCurrentDebugControl(string controlGuid)
         {
@@ -206,25 +233,26 @@ namespace ControlCanvas.Editor.ViewModels
 
         public void SetNextDebugControl(string nextControlGuid, bool active)
         {
-            GetViewModelByGuid(nextControlGuid)?.SetNextDebugControl(active);
+            GetNodeViewModelByGuid(nextControlGuid)?.SetNextDebugControl(active);
         }
         
         public void SetDebugBehaviourState(string controlGuid, State? controlRunnerLatestBehaviourState)
         {
-            GetViewModelByGuid(controlGuid)?.SetCurrentDebugBehaviourState(controlRunnerLatestBehaviourState);
+            GetNodeViewModelByGuid(controlGuid)?.SetCurrentDebugBehaviourState(controlRunnerLatestBehaviourState);
         }
 
-        public NodeViewModel CreateRoutingNode(NodeData node1, NodeData node2)
+        public NodeViewModel CreateRoutingNode(NodeViewModel node1, NodeViewModel node2)
         {
-            EdgeData oldEdge = Edges.Value.ToList().Find(x => x.StartNodeGuid == node1.guid && x.EndNodeGuid == node2.guid);
+            EdgeViewModel oldEdge = GetEdgeViewModel(node1, node2);
+            //EdgeData oldEdge = Edges.Value.ToList().Find(x => x.StartNodeGuid == node1.guid && x.EndNodeGuid == node2.guid);
             if (oldEdge != null)
             {
                 DeleteEdge(oldEdge);
                 NodeViewModel routingNode = CreateNode(NodeType.Routing);
                 routingNode.NodeType.Value = NodeType.Routing;
                 
-                CreateEdge(node1, routingNode.DataProperty.Value, oldEdge.StartPortName, "In/Out");
-                CreateEdge(routingNode.DataProperty.Value, node2, "In/Out", oldEdge.EndPortName);
+                CreateEdge(node1, routingNode, oldEdge.StartPortType.Value, PortType.InOut);
+                CreateEdge(routingNode, node2, PortType.InOut, oldEdge.EndPortType.Value);
                 return routingNode;
             }
             return null;

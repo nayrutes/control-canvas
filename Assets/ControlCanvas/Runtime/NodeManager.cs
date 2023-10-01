@@ -188,7 +188,7 @@ namespace ControlCanvas.Runtime
         
         public NodeData GetNextForNode(string currentNodeDataGuid, CanvasData controlFlow, PortType portType, string previousNodeGuid = null)
         {
-            string portName = NodeData.PortTypeToName(portType);
+            //string portName = NodeData.PortTypeToName(portType);
             var edgeDatas = controlFlow.Edges
                 .Where(x => x.StartNodeGuid == currentNodeDataGuid)
                 .ToList();
@@ -199,7 +199,7 @@ namespace ControlCanvas.Runtime
                 edgeData = edgeDatas.First(x => x.EndNodeGuid != previousNodeGuid);
             }else{
                 edgeData = edgeDatas.FirstOrDefault(x =>
-                (portName != null && x.StartPortName == portName));
+                (x.StartPortType == portType));
             }
 
             if (edgeData == null) return null;
@@ -234,7 +234,7 @@ namespace ControlCanvas.Runtime
         
         public List<NodeData> GetAllNextForNode(string currentNodeDataGuid, CanvasData controlFlow, PortType portType, string previousNodeGuid = null)
         {
-            string portName = NodeData.PortTypeToName(portType);
+            //string portName = NodeData.PortTypeToName(portType);
             var edgeDatas = controlFlow.Edges
                 .Where(x => x.StartNodeGuid == currentNodeDataGuid)
                 .ToList();
@@ -246,7 +246,7 @@ namespace ControlCanvas.Runtime
                 edgeDataSelected = edgeDatas.Where(x => x.EndNodeGuid != previousNodeGuid).ToList();
             }else{
                 edgeDataSelected = edgeDatas.Where(x =>
-                    (portName != null && x.StartPortName == portName)).ToList();
+                    (x.StartPortType == portType)).ToList();
             } 
             List<NodeData> nodeDatas = new List<NodeData>();
             foreach (var edgeData in edgeDataSelected)

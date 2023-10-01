@@ -24,39 +24,7 @@ namespace ControlCanvas.Serialization
         
         public IControl specificControl;
         
-        public static string PortTypeToName(PortType portType)
-        {
-            switch (portType)
-            {
-                case PortType.In:
-                    return "portIn";
-                case PortType.Out:
-                    return "portOut";
-                case PortType.Out2:
-                    return "portOut-2";
-                case PortType.Parallel:
-                    return "portOutParallel";
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(portType), portType, null);
-            }
-        }
         
-        public static PortType PortNameToType(string portName)
-        {
-            switch (portName)
-            {
-                case "portIn" or "In":
-                    return PortType.In;
-                case "portOut" or "Out":
-                    return PortType.Out;
-                case "portOut-2" or "Failure" or "Out2":
-                    return PortType.Out2;
-                case "portParallel" or "Parallel" or "portOutParallel":
-                    return PortType.Parallel;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(portName), portName, null);
-            }
-        }
     }
     
     
@@ -73,6 +41,7 @@ namespace ControlCanvas.Serialization
         In,
         Out,
         Out2,
-        Parallel
+        Parallel,
+        InOut
     }
 }

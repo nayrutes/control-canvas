@@ -135,7 +135,7 @@ namespace ControlCanvas.Editor.Views
                     if (edge.input.node is IVisualNode inputNode && edge.output.node is IVisualNode outputNode)
                     {
                         _ignoreAddEdge = true;
-                        viewModel.CreateEdge(outputNode.GetViewModel(), inputNode.GetViewModel(), edge.output.portName, edge.input.portName);
+                        CreateEdge(outputNode.GetViewModel(), inputNode.GetViewModel(), edge.output, edge.input);
                         _ignoreAddEdge = false;
                     }
                 }
@@ -153,24 +153,35 @@ namespace ControlCanvas.Editor.Views
                     {
                         viewModel.DeleteNode(node.GetViewModel());
                     }
-                    else if (element is UnityEditor.Experimental.GraphView.Edge edge)
+                    else if (element is Edge edge)
                     {
                         //RemoveVisualEdge(edge);
                         if (edge.input.node is IVisualNode inputNode &&
                             edge.output.node is IVisualNode outputNode)
                         {
-                            viewModel.DeleteEdge(viewModel.Edges.ToList().Find(x =>
-                                x.StartNodeGuid == outputNode.GetVmGuid() &&
-                                (x.StartPortName == null || x.StartPortName == edge.output.portName) &&
-                                x.EndNodeGuid == inputNode.GetVmGuid() &&
-                                (x.EndPortName == null || x.EndPortName == edge.input.portName)));
 
+                            viewModel.DeleteEdge(viewModel.CanvasViewModel.GetEdgeViewModel(inputNode.GetViewModel(),
+                                outputNode.GetViewModel()));
+                                
+                            // viewModel.DeleteEdge(viewModel.Edges.ToList().Find(x =>
+                            //     x.StartNodeGuid == outputNode.GetVmGuid() &&
+                            //     (x.StartPortName == null || x.StartPortName == edge.output.portName) &&
+                            //     x.EndNodeGuid == inputNode.GetVmGuid() &&
+                            //     (x.EndPortName == null || x.EndPortName == edge.input.portName)));
+                        
                         }
                     }
                 }
             }
 
             return graphviewchange;
+        }
+
+        private void CreateEdge(NodeViewModel getViewModel, NodeViewModel nodeViewModel, Port outputPort, Port inputPort)
+        {
+            PortType outputPortType = VisualNodeView.PortNameToType(outputPort.name);
+            PortType inputPortType = VisualNodeView.PortNameToType(inputPort.name);
+            viewModel.CreateEdge(getViewModel, nodeViewModel, outputPortType, inputPortType);
         }
 
         private void CreateVisualNode(NodeData nodeData)
@@ -199,47 +210,54 @@ namespace ControlCanvas.Editor.Views
             if (_ignoreAddEdge)
                 return;
 
+            EdgeViewModel edgeViewModel = (EdgeViewModel)viewModel.GetChildViewModel(edgeData);
+            Edge edgeView = new Edge();
+            SetEdgeViewModel(edgeView, edgeViewModel);
+            AddElement(edgeView);
+        }
+
+        private void SetEdgeViewModel(Edge edgeView, EdgeViewModel edgeViewModel)
+        {
+            //edgeView.output = 
+            
             IVisualNode startNode = nodes.ToList().Find(x =>
-                x is IVisualNode node && node.GetVmGuid() == edgeData.StartNodeGuid) as IVisualNode;
+                x is IVisualNode node && node.GetVmGuid() == edgeViewModel.StartNodeGuid.Value) as IVisualNode;
             IVisualNode endNode = nodes.ToList().Find(x =>
-                x is IVisualNode node && node.GetVmGuid() == edgeData.EndNodeGuid) as IVisualNode;
+                x is IVisualNode node && node.GetVmGuid() == edgeViewModel.EndNodeGuid.Value) as IVisualNode;
             if (startNode != null && endNode != null)
             {
-                var edgeGV = new Edge();
-                PortType portTypeEnd = string.IsNullOrEmpty(edgeData.EndPortName)
-                    ? PortType.In
-                    : NodeData.PortNameToType(edgeData.EndPortName);
-                edgeGV.input = endNode.GetPort(portTypeEnd);
+                //var edgeGV = new Edge();
+                PortType portTypeEnd = edgeViewModel.EndPortType.Value;
+                edgeView.input = endNode.GetPort(portTypeEnd);
                 
-                PortType portTypeStart = string.IsNullOrEmpty(edgeData.StartPortName)
-                    ? PortType.Out
-                    : NodeData.PortNameToType(edgeData.StartPortName);
-                edgeGV.output = startNode.GetPort(portTypeStart);
+                PortType portTypeStart = edgeViewModel.StartPortType.Value;
+                edgeView.output = startNode.GetPort(portTypeStart);
                 
                 //edgeGV.capabilities &= ~Capabilities.Deletable;
 
-                AddElement(edgeGV);
-                _visualEdgeMap.Add(edgeData, edgeGV);
+                //AddElement(edgeGV);
+                //_visualEdgeMap.Add(edgeData, edgeGV);
             }
             else
             {
                 if (startNode == null)
                 {
-                    Debug.LogWarning($"Could not find start node {edgeData.StartNodeGuid} for edge {edgeData.Guid} and end node {edgeData.EndNodeGuid}");
+                    Debug.LogWarning($"Could not find start node {edgeViewModel.StartNodeGuid.Value} for edge {edgeViewModel.Guid.Value} and end node {edgeViewModel.EndNodeGuid.Value}");
                 }else if(endNode == null)
                 {
-                    Debug.LogWarning($"Could not find end node {edgeData.EndNodeGuid} for edge {edgeData.Guid} and start node {edgeData.StartNodeGuid}");
+                    Debug.LogWarning($"Could not find end node {edgeViewModel.EndNodeGuid.Value} for edge {edgeViewModel.Guid.Value} and start node {edgeViewModel.StartNodeGuid.Value}");
                 }
             }
         }
 
+
         private void RemoveVisualEdge(EdgeData edgeData)
         {
-            if (_visualEdgeMap.ContainsKey(edgeData))
-            {
-                RemoveElement(_visualEdgeMap[edgeData]);
-                _visualEdgeMap.Remove(edgeData);
-            }
+            // if (_visualEdgeMap.ContainsKey(edgeData))
+            // {
+            //     RemoveElement(_visualEdgeMap[edgeData]);
+            //     _visualEdgeMap.Remove(edgeData);
+            // }
         }
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)

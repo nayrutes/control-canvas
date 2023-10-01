@@ -3,6 +3,7 @@ using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
 using UniRx;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels
@@ -35,22 +36,23 @@ namespace ControlCanvas.Editor.ViewModels
         public void DeleteNode(NodeViewModel nodeViewModel) =>
             canvasViewModel.DeleteNode(nodeViewModel.DataProperty.Value);
 
-        public void CreateEdge(NodeViewModel startNode, NodeViewModel endNode) =>
-            canvasViewModel.CreateEdge(startNode.DataProperty.Value, endNode.DataProperty.Value);
+        // public void CreateEdge(NodeViewModel startNode, NodeViewModel endNode) =>
+        //     canvasViewModel.CreateEdge(startNode.DataProperty.Value, endNode.DataProperty.Value);
 
         
-        public void CreateEdge(NodeViewModel outputNodeNodeViewModel, NodeViewModel inputNodeNodeViewModel, string outputPortName, string inputPortName)
+        public EdgeViewModel CreateEdge(NodeViewModel outputNodeNodeViewModel, NodeViewModel inputNodeNodeViewModel, PortType outputPortType, PortType inputPortType)
         {
-            canvasViewModel.CreateEdge(outputNodeNodeViewModel.DataProperty.Value, inputNodeNodeViewModel.DataProperty.Value, outputPortName, inputPortName);
+            return canvasViewModel.CreateEdge(outputNodeNodeViewModel, inputNodeNodeViewModel, outputPortType, inputPortType);
         }
         
         public void CreateRoutingNode(NodeViewModel startNodeNodeViewModel, NodeViewModel endNodeNodeViewModel,
             Vector2 vector2)
         {
-            NodeViewModel nvm = canvasViewModel.CreateRoutingNode(startNodeNodeViewModel.DataProperty.Value, endNodeNodeViewModel.DataProperty.Value);
+            NodeViewModel nvm = canvasViewModel.CreateRoutingNode(startNodeNodeViewModel, endNodeNodeViewModel);
             nvm.Position.Value = vector2;
         }
         public void DeleteEdge(EdgeData edgeData) => canvasViewModel.DeleteEdge(edgeData);
+        public void DeleteEdge(EdgeViewModel edgeViewModel) => canvasViewModel.DeleteEdge(edgeViewModel);
 
         private void ReleaseUnmanagedResources()
         {

@@ -74,7 +74,7 @@ namespace ControlCanvas.Runtime
 
         public List<IControl> GetParallel(IControl current, CanvasData currentFlow)
         {
-            return null;
+            return _nodeManager.GetParallelForNode(current, currentFlow);
         }
 
         // public IControl AfterExitingSubFlow(IState control, CanvasData currentFlow)
