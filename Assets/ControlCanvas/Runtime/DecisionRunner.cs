@@ -38,7 +38,7 @@ namespace ControlCanvas.Runtime
             IControl next = _nodeManager.GetNextForNode(decision, _decision, controlFlow);
             if (_nodeManager.GetExecutionTypeOfNode(next, controlFlow) != typeof(IDecision))
             {
-                ResetRunner(null);
+                CompleteUpdateDone(null);
             }
             return next;
         }
@@ -48,7 +48,7 @@ namespace ControlCanvas.Runtime
             return null;
         }
 
-        public void ResetRunner(IControlAgent agentContext)
+        public void CompleteUpdateDone(IControlAgent agentContext)
         {
             _decisionsTracker.Clear();
         }

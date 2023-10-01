@@ -15,7 +15,7 @@ namespace ControlCanvas.Runtime
             get => _combinedResultState;
             set
             {
-                Debug.Log($"Setting combined result to {value}");
+                //Debug.Log($"Setting combined result to {value}");
                 _combinedResultState = value;
             }
         }

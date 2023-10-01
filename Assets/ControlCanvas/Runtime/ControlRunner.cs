@@ -13,29 +13,37 @@ namespace ControlCanvas.Runtime
         
         public Dictionary<Type, Action<IControl, float>> updateByType = new ();
         public Dictionary<Type, Func<IControl, IControl>> nextByType = new ();
+
+        public RunInstance(int i)
+        {
+            Id = i.ToString();
+        }
+
+        public string Id { get; set; }
     }
     
     public class ControlRunner
     {
-        private FlowManager _flowManager = new FlowManager();
-        private NodeManager _nodeManager = new NodeManager();
+        private FlowManager _flowManager = new ();
+        private NodeManager _nodeManager = new ();
         
         //IControl CurrentControl => _flowManager.CurrentFlowTracker.control;
         CanvasData CurrentFlow => _flowManager.CurrentFlowTracker.flow;
         
         public NodeManager NodeManager => _nodeManager;
         
-        public Subject<IControl> StepDoneCurrent { get; } = new Subject<IControl>();
-        public Subject<IControl> NextPreview { get; } = new Subject<IControl>();
-        public Subject<List<IBehaviour>> ClearingBt { get; set; } = new();
-        
+        public Subject<IControl> StepDoneCurrent { get; } = new();
+        public Subject<IControl> NextPreview { get; } = new();
+        //public Subject<List<IBehaviour>> ClearingBt { get; set; } = new();
+        public Subject<Unit> OnCompleteUpdateDone { get; } = new();
+
         private IControlAgent agentContext;
 
 
         private Queue<IControl> _initQueue = new();
         private Dictionary<IControl, RunInstance> _runInstanceDict = new();
 
-        private ReactiveProperty<Mode> mode = new ReactiveProperty<Mode>();
+        private ReactiveProperty<Mode> mode = new();
         //private IControl nextSuggestedControl;
         private IControl initInMainFlow;
         private bool stopped = false;
@@ -47,6 +55,13 @@ namespace ControlCanvas.Runtime
         public IObservable<FlowTracker> ControlFlowChanged => _flowManager.ControlFlowChanged.SkipWhile(_=>_running);
 
         private float _currentDeltaTimeForSubUpdate;
+        int idCounter = 0;
+
+        bool _safetyBreak = false;
+        int _safetyCounter = 0;
+        bool _running = false;
+        private IControl _lastControl;
+        private bool _previewNext;
 
         public void Initialize(string startPath, IControlAgent agentContext)
         {
@@ -69,7 +84,7 @@ namespace ControlCanvas.Runtime
 
         private void CreateRunInstance(IControl initControl)
         {
-            RunInstance runInstance = new RunInstance();
+            RunInstance runInstance = new RunInstance(idCounter++);
             _runInstanceDict.Add(initControl, runInstance);
             runInstance.runnerDict.Add(typeof(IState), new StateRunner(_flowManager, _nodeManager));
             runInstance.runnerDict.Add(typeof(IDecision), new DecisionRunner(_flowManager, _nodeManager));
@@ -124,12 +139,6 @@ namespace ControlCanvas.Runtime
             _currentDeltaTimeForSubUpdate = 0;
         }
 
-        bool _safetyBreak = false;
-        int _safetyCounter = 0;
-        bool _running = false;
-        private IControl _lastControl;
-        private bool _previewNext;
-
         private void CompleteUpdate()
         {
             _running = true;
@@ -177,10 +186,20 @@ namespace ControlCanvas.Runtime
                 next = currentRunInstance.nextByType[executionType](last);
             }
             
+            if (next == null)
+            {
+                CompleteUpdateDoneInstance(currentRunInstance);
+            }
+            
             if(next == null && _initQueue.Count > 0)
             {
                 next = _initQueue.Dequeue();
                 currentRunInstance = _runInstanceDict[next];
+            }
+
+            if (next == null)
+            {
+                CompleteUpdateDone();
             }
             
             if (next == null && allowRestart)
@@ -189,7 +208,6 @@ namespace ControlCanvas.Runtime
                 {
                     Debug.Log("Restarting control flow because no next suggested control");
                     next = initInMainFlow;
-                    ResetRunner();
                 }
                 else
                 {
@@ -199,14 +217,16 @@ namespace ControlCanvas.Runtime
             }
             return next;
         }
-        
+
+
         private void SubUpdate(IControl current)
         {
             _flowManager.SetCurrentControlAndFlow(current, _nodeManager);
             
             Type executionType = _nodeManager.GetExecutionTypeOfNode(current, CurrentFlow);
             currentRunInstance.updateByType[executionType](current, _currentDeltaTimeForSubUpdate);
-            
+
+            //currentRunInstance.runnerDict[executionType].StepDone();
             StepDoneCurrent.OnNext(current);
         }
         
@@ -229,12 +249,25 @@ namespace ControlCanvas.Runtime
             IControl next = runner.GetNext(current as T, CurrentFlow, agentContext);
             return next;
         }
-        private void ResetRunner()
+        
+        private void CompleteUpdateDoneInstance(RunInstance runInstance)
         {
-            foreach (KeyValuePair<IControl,RunInstance> keyValuePair in _runInstanceDict)
+            if(runInstance == null)
+                return;
+            Debug.Log($"Complete update done instance {runInstance.Id}");
+            foreach (KeyValuePair<Type, IRunnerBase> keyValuePair in runInstance.runnerDict)
             {
-                keyValuePair.Value.runnerDict[typeof(IBehaviour)].ResetRunner(agentContext);
+                keyValuePair.Value.CompleteUpdateDone(agentContext);
             }
+        }
+        private void CompleteUpdateDone()
+        {
+            Debug.Log("Complete update done");
+            OnCompleteUpdateDone.OnNext(Unit.Default);
+            // foreach (KeyValuePair<IControl,RunInstance> keyValuePair in _runInstanceDict)
+            // {
+            //     CompleteUpdateDoneInstance(keyValuePair.Value);
+            // }
         }
         
         public void Play()

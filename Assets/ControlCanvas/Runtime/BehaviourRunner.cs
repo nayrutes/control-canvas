@@ -13,7 +13,7 @@ namespace ControlCanvas.Runtime
             get { return _lastCombinedResult; }
             set
             {
-                Debug.Log($"Setting last combined result to {value}");
+                //Debug.Log($"Setting last combined result to {value}");
                 _lastCombinedResult = value;
             }
         }
@@ -23,15 +23,16 @@ namespace ControlCanvas.Runtime
             get => _lastDirection;
             set
             {
-                Debug.Log($"Setting last direction to {value}");
+                //Debug.Log($"Setting last direction to {value}");
                 _lastDirection = value;
             }
         }
 
         public readonly Stack<IBehaviour> behaviourStack = new();
-        public List<Repeater> repeaterList = new();
+        public readonly List<Repeater> repeaterList = new();
         private State _lastCombinedResult;
         private ExDirection _lastDirection = ExDirection.Forward;
+        public readonly Dictionary<IControl, bool> parallelStarted = new();
 
         public BehaviourRunnerBlackboard()
         {
@@ -58,7 +59,7 @@ namespace ControlCanvas.Runtime
         private readonly DefaultRunnerExecuter _behaviourRunnerExecuter = new ();
         private readonly FlowManager _flowManager;
         private readonly NodeManager _nodeManager;
-        private BehaviourRunnerBlackboard _tmpBlackboard = new();
+        //private BehaviourRunnerBlackboard _tmpBlackboard = new();
 
         public BehaviourRunner(FlowManager flowManager, NodeManager instance)
         {
@@ -69,7 +70,7 @@ namespace ControlCanvas.Runtime
         public void DoUpdate(IBehaviour behaviour, IControlAgent agentContext, float deltaTime)
         {
             CurrentBehaviourWrapper.Value = GetOrSetWrapper(behaviour);
-            _blackboard = _tmpBlackboard;
+            //_blackboard = _tmpBlackboard;
 
             if (_blackboard.LastDirection == ExDirection.Forward)
             {
@@ -117,9 +118,10 @@ namespace ControlCanvas.Runtime
 
         public List<IControl> GetParallel(IControl current, CanvasData currentFlow)
         {
-            if (_blackboard.LastDirection == ExDirection.Forward)
+            if (_blackboard.LastDirection == ExDirection.Forward && !_blackboard.parallelStarted.ContainsKey(current))
             {
                 List<IControl> parallelForNode = _nodeManager.GetParallelForNode(current, currentFlow);
+                _blackboard.parallelStarted[current] = true;
                 return parallelForNode;
             }
             return null;
@@ -178,7 +180,7 @@ namespace ControlCanvas.Runtime
             // }
         }
 
-        public void ResetRunner(IControlAgent agentContext)
+        public void CompleteUpdateDone(IControlAgent agentContext)
         {
             CurrentBehaviourWrapper.Value = null;
             foreach (var wrapper in _behaviourWrappers.Values)
@@ -188,6 +190,8 @@ namespace ControlCanvas.Runtime
             _blackboard.behaviourStack.Clear();
             //_blackboard.repeaterList.Clear();
             _blackboard.LastDirection = ExDirection.Forward;
+            _blackboard.LastCombinedResult = State.Success;
+            _blackboard.parallelStarted.Clear();
         }
         
         // private void CombineResults()

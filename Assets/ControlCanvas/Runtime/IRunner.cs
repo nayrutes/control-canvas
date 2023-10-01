@@ -7,7 +7,7 @@ namespace ControlCanvas.Runtime
 {
     public interface IRunnerBase : IControl
     {
-        void ResetRunner(IControlAgent agentContext);
+        void CompleteUpdateDone(IControlAgent agentContext);
     }
     
     public interface IRunner<T> : IRunnerBase where T : IControl

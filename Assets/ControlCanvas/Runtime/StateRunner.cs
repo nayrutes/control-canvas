@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ControlCanvas.Serialization;
 using UniRx;
+using UnityEngine;
 
 namespace ControlCanvas.Runtime
 {
@@ -49,7 +50,11 @@ namespace ControlCanvas.Runtime
                 
                 currentState.Value = behaviour;
                 ExitEvent = currentState.Value.RegisterExitEvent(agentContext);
-                disposable = ExitEvent.Subscribe(x => _exitCalled = true);
+                disposable = ExitEvent.Subscribe(x =>
+                {
+                    Debug.Log($"Exit event called for {currentState.Value}");
+                    _exitCalled = true;
+                });
                 currentState.Value?.OnEnter(agentContext);
             }
             currentState.Value?.Execute(agentContext, deltaTime);
@@ -60,6 +65,8 @@ namespace ControlCanvas.Runtime
             if (_exitCalled)
             {
                 _exitCalled = false;
+                currentState.Value?.OnExit(agentContext);
+                currentState.Value = null;
                 return _nodeManager.GetNextForNode(state, controlFlow);
             }
             return currentState.Value;
@@ -78,10 +85,9 @@ namespace ControlCanvas.Runtime
         // }
         
         
-        public void ResetRunner(IControlAgent agentContext)
+        public void CompleteUpdateDone(IControlAgent agentContext)
         {
-            currentState.Value?.OnExit(agentContext);
-            currentState.Value = null;
+            
         }
     }
 }

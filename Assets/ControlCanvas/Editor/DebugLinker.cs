@@ -13,6 +13,7 @@ namespace ControlCanvas.Editor
         CanvasViewModel canvasViewModel;
         
         CompositeDisposable disposables = new ();
+        private Dictionary<IControl, string> _visitedControls = new();
 
         public DebugLinker(ControlRunner runner, CanvasViewModel canvasViewModel)
         {
@@ -24,7 +25,8 @@ namespace ControlCanvas.Editor
         {
             //controlRunner.CurrentControl.Subscribe(OnControlChanged).AddTo(disposables);
             controlRunner.StepDoneCurrent.Subscribe(OnStepDoneCurrent).AddTo(disposables);
-            controlRunner.ClearingBt.Subscribe(ClearDebugMarker).AddTo(disposables);
+            //controlRunner.ClearingBt.Subscribe(ClearDebugMarker).AddTo(disposables);
+            controlRunner.OnCompleteUpdateDone.Subscribe(_=>ClearDebugMarker()).AddTo(disposables);
             controlRunner.ControlFlowChanged.Subscribe(x=>canvasViewModel.DeserializeData(x.filePath)).AddTo(disposables);
 
             controlRunner.EnablePreview(true);
@@ -64,15 +66,19 @@ namespace ControlCanvas.Editor
         private void OnStepDoneNext(IControl nextControl, bool active)
         {
             string nextControlGuid = controlRunner.NodeManager.GetGuidForControl(nextControl);
+            _visitedControls[nextControl] = nextControlGuid;
             canvasViewModel.SetNextDebugControl(nextControlGuid, active);
         }
         
-        private void ClearDebugMarker(List<IBehaviour> behaviours)
+        private void ClearDebugMarker()
         {
-            foreach (IBehaviour behaviour in behaviours)
+            foreach (KeyValuePair<IControl,string> keyValuePair in _visitedControls)
             {
-                string behaviourGuid = controlRunner.NodeManager.GetGuidForControl(behaviour);
-                canvasViewModel.SetDebugBehaviourState(behaviourGuid, null);
+                //canvasViewModel.SetNextDebugControl(keyValuePair.Value, false);
+                if (keyValuePair.Key is IBehaviour)
+                {
+                    canvasViewModel.SetDebugBehaviourState(keyValuePair.Value, null);
+                }
             }
         }
         
