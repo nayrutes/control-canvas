@@ -135,7 +135,8 @@ namespace ControlCanvas.Editor.Views
                     if (edge.input.node is IVisualNode inputNode && edge.output.node is IVisualNode outputNode)
                     {
                         _ignoreAddEdge = true;
-                        CreateEdge(outputNode.GetViewModel(), inputNode.GetViewModel(), edge.output, edge.input);
+                        var edgeVm = CreateEdge(outputNode.GetViewModel(), inputNode.GetViewModel(), edge.output, edge.input);
+                        _visualEdgeMap.Add(edgeVm.DataProperty.Value, edge);
                         _ignoreAddEdge = false;
                     }
                 }
@@ -177,11 +178,11 @@ namespace ControlCanvas.Editor.Views
             return graphviewchange;
         }
 
-        private void CreateEdge(NodeViewModel getViewModel, NodeViewModel nodeViewModel, Port outputPort, Port inputPort)
+        private EdgeViewModel CreateEdge(NodeViewModel getViewModel, NodeViewModel nodeViewModel, Port outputPort, Port inputPort)
         {
             PortType outputPortType = VisualNodeView.PortNameToType(outputPort.name);
             PortType inputPortType = VisualNodeView.PortNameToType(inputPort.name);
-            viewModel.CreateEdge(getViewModel, nodeViewModel, outputPortType, inputPortType);
+            return viewModel.CreateEdge(getViewModel, nodeViewModel, outputPortType, inputPortType);
         }
 
         private void CreateVisualNode(NodeData nodeData)
@@ -213,13 +214,12 @@ namespace ControlCanvas.Editor.Views
             EdgeViewModel edgeViewModel = (EdgeViewModel)viewModel.GetChildViewModel(edgeData);
             Edge edgeView = new Edge();
             SetEdgeViewModel(edgeView, edgeViewModel);
+            _visualEdgeMap.Add(edgeData, edgeView);
             AddElement(edgeView);
         }
 
         private void SetEdgeViewModel(Edge edgeView, EdgeViewModel edgeViewModel)
         {
-            //edgeView.output = 
-            
             IVisualNode startNode = nodes.ToList().Find(x =>
                 x is IVisualNode node && node.GetVmGuid() == edgeViewModel.StartNodeGuid.Value) as IVisualNode;
             IVisualNode endNode = nodes.ToList().Find(x =>
@@ -234,9 +234,6 @@ namespace ControlCanvas.Editor.Views
                 edgeView.output = startNode.GetPort(portTypeStart);
                 
                 //edgeGV.capabilities &= ~Capabilities.Deletable;
-
-                //AddElement(edgeGV);
-                //_visualEdgeMap.Add(edgeData, edgeGV);
             }
             else
             {
@@ -253,11 +250,11 @@ namespace ControlCanvas.Editor.Views
 
         private void RemoveVisualEdge(EdgeData edgeData)
         {
-            // if (_visualEdgeMap.ContainsKey(edgeData))
-            // {
-            //     RemoveElement(_visualEdgeMap[edgeData]);
-            //     _visualEdgeMap.Remove(edgeData);
-            // }
+            if (_visualEdgeMap.ContainsKey(edgeData))
+            {
+                RemoveElement(_visualEdgeMap[edgeData]);
+                _visualEdgeMap.Remove(edgeData);
+            }
         }
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)

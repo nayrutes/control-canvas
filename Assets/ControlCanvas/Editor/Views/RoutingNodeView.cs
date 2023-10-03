@@ -35,6 +35,7 @@ namespace ControlCanvas.Editor.Views
         {
             inOutPort = InstantiatePort(Orientation.Vertical, Direction.Input, Port.Capacity.Multi, typeof(bool));
             inOutPort.portName = "In/Out";
+            inOutPort.name = "In/Out";
             mainContainer.Q<VisualElement>("in-out-port").Add(inOutPort);
         }
 

@@ -222,6 +222,11 @@ namespace ControlCanvas.Editor.ViewModels
         }
         public void DeleteEdge(EdgeViewModel edgeVm)
         {
+            if (edgeVm == null)
+            {
+                Debug.LogError("Deleting null edge");
+                return;
+            }
             EdgeData edgeData = edgeVm.DataProperty.Value;
             DeleteEdge(edgeData);
         }

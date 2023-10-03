@@ -26,11 +26,10 @@ namespace ControlCanvas.Editor.ViewModels
 
         public EdgeViewModel(NodeViewModel from, NodeViewModel to, PortType startPortType, PortType endPortType) : base()
         {
-            //edgeData.Value.Guid = System.Guid.NewGuid().ToString();
-            DataProperty.Value.StartNodeGuid = from.DataProperty.Value.guid;
-            DataProperty.Value.EndNodeGuid = to.DataProperty.Value.guid;
-            DataProperty.Value.StartPortType = startPortType;
-            DataProperty.Value.EndPortType = endPortType;
+            StartNodeGuid.Value = from.DataProperty.Value.guid;
+            EndNodeGuid.Value = to.DataProperty.Value.guid;
+            StartPortType.Value = startPortType;
+            EndPortType.Value = endPortType;
         }
 
         public EdgeViewModel(EdgeData data, bool autobind) : base(data, autobind)

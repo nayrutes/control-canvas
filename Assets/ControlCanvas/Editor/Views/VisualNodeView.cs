@@ -213,7 +213,7 @@ namespace ControlCanvas.Editor.Views
                     return PortType.Out;
                 case "portOut-2":
                     return PortType.Out2;
-                case "portParallel":
+                case "portOutParallel":
                     return PortType.Parallel;
                 case "In/Out":
                     return PortType.InOut;

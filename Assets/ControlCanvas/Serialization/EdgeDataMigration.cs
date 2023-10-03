@@ -11,16 +11,20 @@ namespace ControlCanvas.Serialization
         public static void MigrationV0(XElement edge)
         {
             XAttribute startPortName = edge.Attribute("StartPortName");
-            PortType startPortType = PortNameToType(startPortName.Value);
-            edge.Add(new XAttribute("StartPortType", startPortType));
+            if (startPortName != null)
+            {
+                PortType startPortType = PortNameToType(startPortName.Value);
+                edge.Add(new XAttribute("StartPortType", startPortType));   
+                startPortName.Remove();
+            }
             
             XAttribute endPortName = edge.Attribute("EndPortName");
-            PortType endPortType = PortNameToType(endPortName.Value);
-            edge.Add(new XAttribute("EndPortType", endPortType));
-            
-            startPortName.Remove();
-            endPortName.Remove();
-            
+            if (endPortName != null)
+            {
+                PortType endPortType = PortNameToType(endPortName.Value);
+                edge.Add(new XAttribute("EndPortType", endPortType));   
+                endPortName.Remove();
+            }
         }
         
         public IEnumerator<Action<XElement>> GetEnumerator()
