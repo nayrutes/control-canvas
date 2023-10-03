@@ -85,11 +85,17 @@ namespace ControlCanvas.Editor.Views
                     var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
                     var vmBase = vm as BaseViewModel<DebugState>;
                     //var vm = nodeViewModel.GetChildViewModel(nodeViewModel.specificState.Value) as BaseViewModel<DebugState>;
-                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<string>>(nameof(DebugState.nodeMessage));
-                    rp.Subscribe(x=> visualElement.value = x);
-                    visualElement.RegisterValueChangedCallback(evt => rp.Value = evt.newValue);
+                    var rpNodeMessage = vmBase.GetReactiveProperty<ReactiveProperty<string>>(nameof(DebugState.nodeMessage));
+                    rpNodeMessage.Subscribe(x=> visualElement.value = x);
+                    visualElement.RegisterValueChangedCallback(evt => rpNodeMessage.Value = evt.newValue);
                     
-                    //visualElement.RegisterValueChangedCallback(evt => nodeViewModel.Message.Value = evt.newValue);
+                    DropdownField exitEvents = new DropdownField("Exit Events");
+                    exitEvents.choices = Blackboard.GetExitEventNames();
+                    m_DynamicContent.Add(exitEvents);
+                    var rpExitEventIndex = vmBase.GetReactiveProperty<ReactiveProperty<int>>(nameof(DebugState.exitEventIndex));
+                    rpExitEventIndex.Subscribe(x=> exitEvents.value = exitEvents.choices[x]);
+                    exitEvents.RegisterValueChangedCallback(evt => rpExitEventIndex.Value = exitEvents.choices.IndexOf(evt.newValue));
+
                 }else if (control.GetType() == typeof(DebugBehaviour))
                 {
                     EnumField enumField = new EnumField("State");

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UniRx;
 using UnityEngine;
 
@@ -8,7 +9,7 @@ namespace ControlCanvas.Runtime
     {
         //specific node context. This should not change at runtime
         public string nodeMessage;
-        
+        public int exitEventIndex;
         
         public void Execute(IControlAgent agentContext, float deltaTime)
         {
@@ -50,7 +51,7 @@ namespace ControlCanvas.Runtime
 
         public IObservable<Unit> RegisterExitEvent(IControlAgent agentContext)
         {
-            return agentContext.BlackboardAgent.ExitEvent;
+            return agentContext.BlackboardAgent.GetExitEvents()[exitEventIndex];
         }
     }
 }

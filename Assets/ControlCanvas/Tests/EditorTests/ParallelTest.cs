@@ -159,5 +159,129 @@ namespace ControlCanvas.Tests.EditorTests
             
             CleanUpTest();
         }
+        
+        [Test]
+        public void TestStateInState()
+        {
+            SetUpTest("Assets/ControlFlows/Tests/ParallelTests/StateInState.xml");
+            string guidNode1 = "5b7b45b8-c721-44cd-a3e5-12643357bb10";
+            string guidNode2 = "a1698699-bda9-49a2-97f3-80698790eff6";
+            string guidNode3 = "19465efa-417b-4c5a-9a12-277499491a6a";
+            string guidNode4 = "2bdf6cc8-52a3-4c43-9e29-bb8336c5715e";
+            string guidNode5 = "6db6562a-65be-4701-bf08-d3b50276601e";
+
+            controlRunner.RunningUpdate(0);
+            AssertExecutionOrderByGUIDOnly(new List<string>()
+            {
+                guidNode1,
+                guidNode3,
+            });
+            
+            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlRunner.RunningUpdate(0);
+            AssertExecutionOrderByGUIDOnly(new List<string>()
+            {
+                guidNode1,
+                guidNode3,
+                guidNode2,
+            });
+            
+            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlRunner.RunningUpdate(0);
+            AssertExecutionOrderByGUIDOnly(new List<string>()
+            {
+                guidNode1,
+                guidNode3,
+                guidNode2,
+                guidNode1,
+                guidNode3,
+            });
+            
+            controlAgent.BlackboardAgent.OtherExitEvent.OnNext(Unit.Default);
+            controlRunner.RunningUpdate(0);
+            AssertExecutionOrderByGUIDOnly(new List<string>()
+            {
+                guidNode1,
+                guidNode3,
+                guidNode2,
+                guidNode1,
+                guidNode3,
+                guidNode1,
+                guidNode4,
+            });
+            
+            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlRunner.RunningUpdate(0);
+            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlRunner.RunningUpdate(0);
+            
+            AssertExecutionOrderByGUIDOnly(new List<string>()
+            {
+                guidNode1,
+                guidNode3,
+                guidNode2,
+                guidNode1,
+                guidNode3,
+                guidNode1,
+                guidNode4,
+                guidNode2,
+                guidNode1,
+                guidNode4,
+            });
+            
+            controlAgent.BlackboardAgent.OtherExitEvent.OnNext(Unit.Default);
+            controlRunner.RunningUpdate(0);
+            AssertExecutionOrderByGUIDOnly(new List<string>()
+            {
+                guidNode1,
+                guidNode3,
+                guidNode2,
+                guidNode1,
+                guidNode3,
+                guidNode1,
+                guidNode4,
+                guidNode2,
+                guidNode1,
+                guidNode4,
+                guidNode1,
+                guidNode5,
+            });
+            
+            CleanUpTest();
+        }
+        
+        [Test]
+        public void TestStateInStateEarlyExitEvent()
+        {
+            SetUpTest("Assets/ControlFlows/Tests/ParallelTests/StateInState.xml");
+            string guidNode1 = "5b7b45b8-c721-44cd-a3e5-12643357bb10";
+            string guidNode2 = "a1698699-bda9-49a2-97f3-80698790eff6";
+            string guidNode3 = "19465efa-417b-4c5a-9a12-277499491a6a";
+            string guidNode4 = "2bdf6cc8-52a3-4c43-9e29-bb8336c5715e";
+            string guidNode5 = "6db6562a-65be-4701-bf08-d3b50276601e";
+
+            controlRunner.RunningUpdate(0);
+            AssertExecutionOrderByGUIDOnly(new List<string>()
+            {
+                guidNode1,
+                guidNode3,
+            });
+            
+            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlRunner.RunningUpdate(0);
+            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlAgent.BlackboardAgent.OtherExitEvent.OnNext(Unit.Default);
+            controlRunner.RunningUpdate(0);
+            AssertExecutionOrderByGUIDOnly(new List<string>()
+            {
+                guidNode1,
+                guidNode3,
+                guidNode2,
+                guidNode1,
+                guidNode4,//4 and not 3 because subscription is not removed
+            });
+            
+            CleanUpTest();
+        }
     }
 }
