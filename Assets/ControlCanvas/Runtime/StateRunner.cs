@@ -89,5 +89,10 @@ namespace ControlCanvas.Runtime
         {
             
         }
+
+        public bool CheckIfDone()
+        {
+            return true;
+        }
     }
 }

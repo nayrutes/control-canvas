@@ -36,10 +36,10 @@ namespace ControlCanvas.Runtime
         public IControl GetNext(IDecision decision, CanvasData controlFlow, IControlAgent agentContext)
         {
             IControl next = _nodeManager.GetNextForNode(decision, _decision, controlFlow);
-            if (_nodeManager.GetExecutionTypeOfNode(next, controlFlow) != typeof(IDecision))
-            {
-                CompleteUpdateDone(null);
-            }
+            // if (_nodeManager.GetExecutionTypeOfNode(next, controlFlow) != typeof(IDecision))
+            // {
+            //     //CompleteUpdateDone(null);
+            // }
             return next;
         }
 
@@ -48,9 +48,14 @@ namespace ControlCanvas.Runtime
             return null;
         }
 
+        public bool CheckIfDone()
+        {
+            return false;
+        }
         public void CompleteUpdateDone(IControlAgent agentContext)
         {
             _decisionsTracker.Clear();
         }
+
     }
 }

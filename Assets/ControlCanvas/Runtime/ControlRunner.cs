@@ -13,13 +13,25 @@ namespace ControlCanvas.Runtime
         
         public Dictionary<Type, Action<IControl, float>> updateByType = new ();
         public Dictionary<Type, Func<IControl, IControl>> nextByType = new ();
+        public Dictionary<Type, Func<bool>> checkIfDoneByType = new ();
 
-        public RunInstance(int i)
+        public IControl InitControl { get; private set; }
+        public IControl LastControl { get; set; }
+        public IControl RunStartControl { get; set; }
+        
+        public RunInstance(int i, IControl initControl)
         {
             Id = i.ToString();
+            InitControl = initControl;
         }
 
         public string Id { get; set; }
+
+        public bool CheckIfDone(NodeManager nodeManager, CanvasData currentFlow)
+        {
+            Type executionType = nodeManager.GetExecutionTypeOfNode(LastControl, currentFlow);
+            return LastControl == null || checkIfDoneByType[executionType]();
+        }
     }
     
     public class ControlRunner
@@ -40,12 +52,12 @@ namespace ControlCanvas.Runtime
         private IControlAgent agentContext;
 
 
-        private Queue<IControl> _initQueue = new();
+        private Queue<RunInstance> _initQueue = new();
         private Dictionary<IControl, RunInstance> _runInstanceDict = new();
 
         private ReactiveProperty<Mode> mode = new();
         //private IControl nextSuggestedControl;
-        private IControl initInMainFlow;
+        //private IControl initInMainFlow;
         private bool stopped = false;
         private bool startedComplete;
         private bool _autoRestart = true;
@@ -60,9 +72,11 @@ namespace ControlCanvas.Runtime
         bool _safetyBreak = false;
         int _safetyCounter = 0;
         bool _running = false;
-        private IControl _lastControl;
+        //private IControl _lastControl;
         private bool _previewNext;
 
+        private IControl restartInitControl;
+        
         public void Initialize(string startPath, IControlAgent agentContext)
         {
             this.agentContext = agentContext;
@@ -78,13 +92,27 @@ namespace ControlCanvas.Runtime
             }
             
             mode.Value = Mode.CompleteUpdate;
-            InitializeControlFlow(startPath);
-            AddRunInstance(initInMainFlow);
+            restartInitControl = InitializeControlFlow(startPath);
+            Restart();
         }
 
+        private void AddRunInstanceToQueue(IControl initControl)
+        {
+            if (!_runInstanceDict.ContainsKey(initControl))
+            {
+                CreateRunInstance(initControl);
+            }
+
+            if (_initQueue.Contains(_runInstanceDict[initControl]))
+            {
+                Debug.LogWarning($"Already in queue {initControl}");
+                return;
+            }
+            _initQueue.Enqueue(_runInstanceDict[initControl]);
+        }
         private void CreateRunInstance(IControl initControl)
         {
-            RunInstance runInstance = new RunInstance(idCounter++);
+            RunInstance runInstance = new RunInstance(idCounter++, initControl);
             _runInstanceDict.Add(initControl, runInstance);
             runInstance.runnerDict.Add(typeof(IState), new StateRunner(_flowManager, _nodeManager));
             runInstance.runnerDict.Add(typeof(IDecision), new DecisionRunner(_flowManager, _nodeManager));
@@ -98,24 +126,20 @@ namespace ControlCanvas.Runtime
             runInstance.nextByType.Add(typeof(IDecision), RunnerGetNext<IDecision>);
             runInstance.nextByType.Add(typeof(IBehaviour), RunnerGetNext<IBehaviour>);
             
+            runInstance.checkIfDoneByType.Add(typeof(IState), RunnerCheckIfDone<IState>);
+            runInstance.checkIfDoneByType.Add(typeof(IDecision), RunnerCheckIfDone<IDecision>);
+            runInstance.checkIfDoneByType.Add(typeof(IBehaviour), RunnerCheckIfDone<IBehaviour>);
         }
 
-        private void AddRunInstance(IControl initControl)
-        {
-            if (!_runInstanceDict.ContainsKey(initControl))
-            {
-                CreateRunInstance(initControl);
-            }
-            _initQueue.Enqueue(initControl);
-        }
-        
-        private void InitializeControlFlow(string currentPath)
+
+
+        private IControl InitializeControlFlow(string currentPath)
         {
             CanvasData initControlFlow = null;
             
             _flowManager.SetCurrentFlow(currentPath);
-            initInMainFlow = _nodeManager.GetInitControl(CurrentFlow);
-            if (initInMainFlow == null)
+            IControl initControl = _nodeManager.GetInitControl(CurrentFlow);
+            if (initControl == null)
             {
                 Debug.LogWarning("No initial control found");
             }
@@ -124,10 +148,17 @@ namespace ControlCanvas.Runtime
             {
                 Debug.LogError("No agent context set");
             }
+            return initControl;
         }
 
+        private void Restart()
+        {
+            AddRunInstanceToQueue(restartInitControl);
+        }
+        
         public void RunningUpdate(float fixedDeltaTime)
         {
+            Debug.Log($"==Running update {fixedDeltaTime}");
             _currentDeltaTimeForSubUpdate += fixedDeltaTime;
             if (!stopped)
             {
@@ -150,77 +181,128 @@ namespace ControlCanvas.Runtime
                     Debug.LogError("Safety break hit");
                     return;
                 }
-                IControl next = GetNext(_lastControl, !startedComplete);
-                if (next == null)
+
+                bool completeUpdateDone = SingleUpdate();
+                if (completeUpdateDone)
                 {
                     _running = false;
-                    _lastControl = null;
-                    break;
                 }
-                if (next == _lastControl && startedComplete)
-                {
-                    _running = false;
-                    break;
-                }
-                SubUpdate(next);
-                _lastControl = next;
-                startedComplete = true;
             }
             startedComplete = false;
             PreviewNext();
         }
 
-        void SingleUpdate()
+        private bool SingleUpdate()
         {
-            IControl next = GetNext(_lastControl, true);
-            SubUpdate(next);
-            _lastControl = next;
-        }
-        
-        private IControl GetNext(IControl last, bool allowRestart)
-        {
-            IControl next = null;
-            Type executionType = _nodeManager.GetExecutionTypeOfNode(last, CurrentFlow);
-            if (executionType != null)
-            {
-                next = currentRunInstance.nextByType[executionType](last);
-            }
+            Debug.Log($"----Single update");
             
+            IControl next = GetNext();
             if (next == null)
             {
-                CompleteUpdateDoneInstance(currentRunInstance);
+                Debug.Log("No next control (single update)");
             }
+            SubUpdate(next);
+            CheckDone(out bool isCompleteDone, out bool isInstanceDone);
             
-            if(next == null && _initQueue.Count > 0)
+            if (_autoRestart && isCompleteDone)
             {
-                next = _initQueue.Dequeue();
-                currentRunInstance = _runInstanceDict[next];
+                Restart();
             }
 
-            if (next == null)
+            return isCompleteDone;
+        }
+        
+        private IControl GetNext()
+        {
+            IControl last = null;
+            IControl next = null;
+
+            currentRunInstance ??= GetNextRunInstanceFromQueue();
+            if (currentRunInstance == null)
             {
-                CompleteUpdateDone();
+                return null;
+            }
+            last = currentRunInstance.LastControl;
+
+            if (last != null)
+            {
+                Type executionType = _nodeManager.GetExecutionTypeOfNode(last, CurrentFlow);
+                if (executionType != null)
+                {
+                    next = currentRunInstance.nextByType[executionType](last);
+                }
+            }
+            else
+            {
+                next = currentRunInstance.InitControl;
             }
             
-            if (next == null && allowRestart)
-            {
-                if (_autoRestart)
-                {
-                    Debug.Log("Restarting control flow because no next suggested control");
-                    next = initInMainFlow;
-                }
-                else
-                {
-                    Debug.LogError("No next suggested control");
-                    return null;   
-                }
-            }
+            //bool instanceDone = currentRunInstance.CheckIfDone(next);
+            currentRunInstance.LastControl = next;
+            // if (instanceDone)
+            // {
+            //     InstanceUpdateDone(currentRunInstance);
+            //     currentRunInstance = null;
+            // }
+
+            
+            // if (next == null)
+            // {
+            //     CompleteUpdateDone();
+            //     completeUpdateDone = true;
+            // }
+            
+            // if (next == null && allowRestart)
+            // {
+            //     if (_autoRestart)
+            //     {
+            //         Debug.Log("Restarting control flow because no next suggested control");
+            //         next = initInMainFlow;
+            //     }
+            //     else
+            //     {
+            //         Debug.LogError("No next suggested control");
+            //         return null;   
+            //     }
+            // }
             return next;
         }
 
+        private void CheckDone(out bool isCompleteDone, out bool isInstanceDone)
+        {
+            isCompleteDone = currentRunInstance == null;
+            isInstanceDone = false;
+            if (!isCompleteDone)
+            {
+                isInstanceDone = currentRunInstance.CheckIfDone(_nodeManager, CurrentFlow);
+                if (isInstanceDone)
+                {
+                    InstanceUpdateDone(currentRunInstance);
+                    currentRunInstance = null;
+                }
+            }
+            else
+            {
+                CompleteUpdateDone();
+            }
+        }
+        
+        private RunInstance GetNextRunInstanceFromQueue()
+        {
+            if (_initQueue.Count == 0)
+            {
+                return null;
+            }
 
+            RunInstance nextRunInstanceFromQueue = _initQueue.Dequeue();
+            nextRunInstanceFromQueue.RunStartControl = nextRunInstanceFromQueue.LastControl;
+            return nextRunInstanceFromQueue;
+        }
+      
         private void SubUpdate(IControl current)
         {
+            if(current == null || currentRunInstance == null)
+                return;
             _flowManager.SetCurrentControlAndFlow(current, _nodeManager);
             
             Type executionType = _nodeManager.GetExecutionTypeOfNode(current, CurrentFlow);
@@ -236,7 +318,7 @@ namespace ControlCanvas.Runtime
             runner.DoUpdate(current as T, agentContext, deltaTime);
 
             runner.GetParallel(current, CurrentFlow)?
-                .ForEach(AddRunInstance);
+                .ForEach(AddRunInstanceToQueue);
         }
 
         private IControl RunnerGetNext<T>(IControl current) where T : class, IControl
@@ -250,7 +332,13 @@ namespace ControlCanvas.Runtime
             return next;
         }
         
-        private void CompleteUpdateDoneInstance(RunInstance runInstance)
+        private bool RunnerCheckIfDone<T>() where T : class, IControl
+        {
+            IRunner<T> runner = currentRunInstance.runnerDict[typeof(T)] as IRunner<T>;
+            return runner.CheckIfDone();
+        }
+        
+        private void InstanceUpdateDone(RunInstance runInstance)
         {
             if(runInstance == null)
                 return;

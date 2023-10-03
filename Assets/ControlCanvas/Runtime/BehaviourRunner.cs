@@ -59,6 +59,7 @@ namespace ControlCanvas.Runtime
         private readonly DefaultRunnerExecuter _behaviourRunnerExecuter = new ();
         private readonly FlowManager _flowManager;
         private readonly NodeManager _nodeManager;
+
         //private BehaviourRunnerBlackboard _tmpBlackboard = new();
 
         public BehaviourRunner(FlowManager flowManager, NodeManager instance)
@@ -180,6 +181,11 @@ namespace ControlCanvas.Runtime
             // }
         }
 
+        public bool CheckIfDone()
+        {
+            return false;
+        }
+        
         public void CompleteUpdateDone(IControlAgent agentContext)
         {
             CurrentBehaviourWrapper.Value = null;
@@ -193,7 +199,8 @@ namespace ControlCanvas.Runtime
             _blackboard.LastCombinedResult = State.Success;
             _blackboard.parallelStarted.Clear();
         }
-        
+
+
         // private void CombineResults()
         // {
         //     State currentResult = CurrentBehaviourWrapper.Value.CombinedResultState;

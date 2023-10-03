@@ -135,7 +135,7 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode4,
                 guidNode2,
                 guidNode4,
-                guidNode5,
+                //guidNode5,
                 guidNode6,
             });
             
@@ -152,7 +152,7 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode4,
                 guidNode2,
                 guidNode4,
-                guidNode5,
+                //guidNode5,
                 guidNode6,
                 guidNode3,
             });
