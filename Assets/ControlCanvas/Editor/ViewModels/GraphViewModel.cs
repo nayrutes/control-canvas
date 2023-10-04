@@ -29,6 +29,11 @@ namespace ControlCanvas.Editor.ViewModels
             return canvasViewModel.GetAllReactiveProperties();
         }
 
+        public IDisposable GetReactiveProperty(string fieldName)
+        {
+            return canvasViewModel.GetReactiveProperty(fieldName);
+        }
+
         public CanvasViewModel CanvasViewModel => canvasViewModel;
         public ReactiveCollection<EdgeData> Edges => canvasViewModel.Edges.Value;
         public ReactiveCollection<NodeData> Nodes => canvasViewModel.Nodes.Value;

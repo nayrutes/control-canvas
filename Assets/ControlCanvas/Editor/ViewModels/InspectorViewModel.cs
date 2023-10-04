@@ -45,6 +45,11 @@ namespace ControlCanvas.Editor.ViewModels
             throw new NotImplementedException();
         }
 
+        public IDisposable GetReactiveProperty(string fieldName)
+        {
+            throw new NotImplementedException();
+        }
+
         public void OnSelectionChanged(SelectedChangedArgs args, CanvasData canvasData)
         {
             if (args.Selectables.Count == 0)

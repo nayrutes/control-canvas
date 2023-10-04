@@ -137,17 +137,38 @@ namespace ControlCanvas.Editor.ViewModels.Base
         }
 
 
-        public TType GetReactiveProperty<TType>(string fieldName)
+        public IDisposable GetReactiveProperty(string fieldName)
         {
             if (DataFieldToReactivePropertyName.TryGetValue(fieldName, out var reactivePropertyName))
             {
-                return (TType)reactivePropertyManager.GetReactiveProperty(reactivePropertyName);
+                return reactivePropertyManager.GetReactiveProperty(reactivePropertyName);
             }
             else
             {
                 Debug.LogError($"Could not find reactive property for {fieldName}");
+                return null;
+            }
+        }
+        
+        public TType GetReactiveProperty<TType>(string fieldName)
+        {
+            var rp = GetReactiveProperty(fieldName);
+            if(rp is TType rpTyped)
+                return rpTyped;
+            else
+            {
+                Debug.LogError($"Could not find reactive property for {fieldName}. Type mismatch: {typeof(TType)} != {rp.GetType()}");
                 return default;
             }
+            // if (DataFieldToReactivePropertyName.TryGetValue(fieldName, out var reactivePropertyName))
+            // {
+            //     return (TType)reactivePropertyManager.GetReactiveProperty(reactivePropertyName);
+            // }
+            // else
+            // {
+            //     Debug.LogError($"Could not find reactive property for {fieldName}");
+            //     return default;
+            // }
         }
 
         public bool TryGetValue(string dataFieldKey, out string o)

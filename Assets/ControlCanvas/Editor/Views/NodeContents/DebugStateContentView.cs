@@ -15,12 +15,10 @@ namespace ControlCanvas.Editor.Views.NodeContents
             
             VisualElement view = new();
             
-            TextField visualElement = new TextField("Message");
-            var rpNodeMessage = vmBase.GetReactiveProperty<ReactiveProperty<string>>(nameof(DebugState.nodeMessage));
-            rpNodeMessage.Subscribe(x=> visualElement.value = x);
-            visualElement.RegisterValueChangedCallback(evt => rpNodeMessage.Value = evt.newValue);
-            view.Add(visualElement);
+            //Automatic view element creation
+            view.Add(ViewCreator.CreateLinkedGenericField(vm, nameof(DebugState.nodeMessage)));
             
+            //manual view element creation
             DropdownField exitEvents = new DropdownField("Exit Events");
             exitEvents.choices = Blackboard.GetExitEventNames();
             var rpExitEventIndex = vmBase.GetReactiveProperty<ReactiveProperty<int>>(nameof(DebugState.exitEventIndex));

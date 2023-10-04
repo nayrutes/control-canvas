@@ -22,9 +22,15 @@ namespace ControlCanvas.Editor.Views
         public Port portOut;
         public Port portOut2;
         public Port portOutParallel;
+        
+        private VisualElement portInVisualElementContainer;
+        private VisualElement portOutVisualElementContainer;
+        private VisualElement portOut2VisualElementContainer;
+        private VisualElement portOutParallelVisualElementContainer;
 
         private VisualElement m_DynamicContent;
         private CompositeDisposable disposables = new();
+        private VisualNodeSettings _visualNodeSettings = new();
 
         public VisualNodeView() : base("Assets/ControlCanvas/Editor/VisualNodeUXML.uxml")
         {
@@ -38,6 +44,29 @@ namespace ControlCanvas.Editor.Views
             
         }
 
+        public void SetViewModel(NodeViewModel viewModel)
+        {
+            UnbindViewFromViewModel();
+            UnbindViewModelFromView();
+            
+            m_DynamicContent = this.Q<VisualElement>("dynamic-content");
+            portInVisualElementContainer = this.Q<VisualElement>("input");
+            portOutVisualElementContainer = this.Q<VisualElement>("output");
+            portOut2VisualElementContainer = this.Q<VisualElement>("output-2");
+            portOutParallelVisualElementContainer = this.Q<VisualElement>("output-p");
+            nodeViewModel = viewModel;
+
+            
+            this.Q<DropdownField>("class-dropdown").choices = viewModel.ClassChoices;
+            
+            BindViewToViewModel();
+            BindViewModelToView();
+            //this.viewDataKey = nodeViewModel.Guid;
+
+            //TODO test if destroy ports is needed
+            CreatePorts();
+        }
+        
         private void OnTypeChanged(ChangeEvent<Enum> evt)
         {
             nodeViewModel.NodeType.Value = (NodeType)evt.newValue;
@@ -48,19 +77,16 @@ namespace ControlCanvas.Editor.Views
             m_DynamicContent.Clear();
             m_DynamicContent.Add(new Label($"This is a {type} node"));
             this.Q<EnumField>("type-enum").SetValueWithoutNotify(type);
-            HidePort1(false);
-            HidePortParallel(false);
+            _visualNodeSettings = new VisualNodeSettings();
             switch (type)
             {
                 case NodeType.State:
-                    HidePort2(true);
+                    _visualNodeSettings.portOut2Visible = false;
                     break;
                 case NodeType.Behaviour:
-                    HidePort2(false);
                     break;
                 case NodeType.Decision:
-                    HidePort2(false);
-                    HidePortParallel(true);
+                    _visualNodeSettings.portParallelVisible = false;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
@@ -75,59 +101,21 @@ namespace ControlCanvas.Editor.Views
 
             this.Q<DropdownField>("class-dropdown").value = control?.GetType().Name ?? "None";
             
-            if (control != null)// && NodeManager.stateDictionary.TryGetValue(className, out var t))
+            if (control != null)
             {
-                if (ViewCreator.IsControlViewManuallyDefined(control))
-                {
-                    m_DynamicContent.Add(ViewCreator.CreateViewFromControl(control));
-                
-                }else if (control.GetType() == typeof(MoveToControl))
-                {
-                    IntegerField integerField = new IntegerField("Index");
-                    m_DynamicContent.Add(integerField);
-                    var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
-                    var vmBase = vm as BaseViewModel<MoveToControl>;
-                    
-                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<int>>(nameof(MoveToControl.index));
-                    rp.Subscribe(x=> integerField.SetValueWithoutNotify(x));
-                    integerField.RegisterValueChangedCallback(evt => rp.Value = evt.newValue);
-                    
-                }else if (control.GetType() == typeof(Repeater))
-                {
-                    EnumField enumField = new EnumField("Mode");
-                    enumField.Init(RepeaterMode.Loop);
-                    m_DynamicContent.Add(enumField);
-                    var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
-                    var vmBase = vm as BaseViewModel<Repeater>;
-
-                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<RepeaterMode>>(nameof(Repeater.mode));
-                    rp.Subscribe(x => enumField.SetValueWithoutNotify(x));
-                    enumField.RegisterValueChangedCallback(evt => rp.Value = (RepeaterMode)evt.newValue);
-                }else if (control.GetType() == typeof(SubFlow))
-                {
-                    TextField textField = new TextField("Path");
-                    m_DynamicContent.Add(textField);
-                    var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
-                    var vmBase = vm as BaseViewModel<SubFlow>;
-                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<string>>(nameof(SubFlow.path));
-                    rp.Subscribe(x=> textField.SetValueWithoutNotify(x));
-                    textField.RegisterValueChangedCallback(evt => rp.Value = evt.newValue);
-                    HidePort1(true);
-                    HidePort2(true);
-                }else if (control.GetType() == typeof(DebugDecision))
-                {
-                    // Toggle toggle = new Toggle("Decision");
-                    // m_DynamicContent.Add(toggle);
-                    // var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
-                    // var vmBase = vm as BaseViewModel<DebugDecision>;
-                    // var rp = vmBase.GetReactiveProperty<ReactiveProperty<bool>>(nameof(DebugDecision.decision));
-                    // rp.Subscribe(x=> toggle.SetValueWithoutNotify(x));
-                    // toggle.RegisterValueChangedCallback(evt => rp.Value = evt.newValue);
-                    m_DynamicContent.Add(ViewCreator.CreateViewFromControl(control));
-                }
+                m_DynamicContent.Add(ViewCreator.CreateViewFromControl(control));
             }
+            ApplyVisualNodeSettings(ViewCreator.GetVisualSettings(control, _visualNodeSettings));
         }
-        
+
+        private void ApplyVisualNodeSettings(VisualNodeSettings getVisualSettings)
+        {
+            HidePortContainer(portInVisualElementContainer, !getVisualSettings.portInVisible);
+            HidePortContainer(portOutVisualElementContainer, !getVisualSettings.portOutVisible);
+            HidePortContainer(portOut2VisualElementContainer, !getVisualSettings.portOut2Visible);
+            HidePortContainer(portOutParallelVisualElementContainer, !getVisualSettings.portParallelVisible);
+        }
+
         public void CreatePorts()
         {
             portIn = InstantiatePort(Orientation.Horizontal, Direction.Input, Port.Capacity.Multi, typeof(bool));
@@ -229,29 +217,7 @@ namespace ControlCanvas.Editor.Views
                 }
             }
         }
-
-
-        public void SetViewModel(NodeViewModel viewModel)
-        {
-            UnbindViewFromViewModel();
-            UnbindViewModelFromView();
-            
-            m_DynamicContent = this.Q<VisualElement>("dynamic-content");
-            nodeViewModel = viewModel;
-
-            
-            this.Q<DropdownField>("class-dropdown").choices = viewModel.ClassChoices;
-            
-            BindViewToViewModel();
-            BindViewModelToView();
-            //this.viewDataKey = nodeViewModel.Guid;
-
-            //TODO test if destroy ports is needed
-            CreatePorts();
-
-            //this.Q<EnumField>("type-enum").value = nodeViewModel.NodeType;
-            //SetNewType(nodeViewModel.NodeType);
-        }
+        
 
         private void OnGeometryChanged(GeometryChangedEvent evt)
         {
@@ -332,40 +298,12 @@ namespace ControlCanvas.Editor.Views
             }).AddTo(disposables);
         }
 
-        private void HidePort1(bool x)
+        private void HidePortContainer(VisualElement container, bool hide)
         {
-            if (x)
-            {
-                this.Q<VisualElement>("output").AddToClassList("hide-port-2");
-            }
+            if(hide)
+                container.AddToClassList("hide-port-2");
             else
-            {
-                this.Q<VisualElement>("output").RemoveFromClassList("hide-port-2");
-            }
-        }
-        
-        private void HidePort2(bool x)
-        {
-            if (x)
-            {
-                this.Q<VisualElement>("output-2").AddToClassList("hide-port-2");
-            }
-            else
-            {
-                this.Q<VisualElement>("output-2").RemoveFromClassList("hide-port-2");
-            }
-        }
-        
-        private void HidePortParallel(bool x)
-        {
-            if (x)
-            {
-                this.Q<VisualElement>("output-p").AddToClassList("hide-port-2");
-            }
-            else
-            {
-                this.Q<VisualElement>("output-p").RemoveFromClassList("hide-port-2");
-            }
+                container.RemoveFromClassList("hide-port-2");
         }
 
         private void UnbindViewFromViewModel()
@@ -404,10 +342,6 @@ namespace ControlCanvas.Editor.Views
 
         public Port GetPort(PortType portType)
         {
-            Port portIn = inputContainer.Q<Port>();
-            Port portOut = outputContainer.Q<Port>();
-            Port portOut2 = mainContainer.Q<VisualElement>("output-2").Q<Port>();
-            Port portOutParallel = mainContainer.Q<VisualElement>("output-p").Q<Port>();
             switch (portType)
             {
                 case PortType.In:
@@ -427,5 +361,14 @@ namespace ControlCanvas.Editor.Views
         {
             return nodeViewModel;
         }
+    }
+
+    public class VisualNodeSettings
+    {
+        public bool portInVisible = true;
+        public bool portOutVisible = true;
+        public bool portOut2Visible = true;
+        public bool portParallelVisible = true;
+        
     }
 }
