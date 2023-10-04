@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <CanvasData xmlns:sys="https://extendedxmlserializer.github.io/system" xmlns:exs="https://extendedxmlserializer.github.io/v2" xmlns:ns1="clr-namespace:ControlCanvas.Runtime;assembly=RuntimeScripts">
-  <Nodes Capacity="6">
+  <Nodes Capacity="7">
     <NodeData Name="New Node" Guid="8dbea7d5-c0a3-468c-8379-82efa7cb2922" nodeType="Decision" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
       <Position x="3555" y="509" />
       <Size x="428" y="160" />
@@ -30,6 +30,10 @@
       <Position x="4835" y="835" />
       <Size x="394" y="137" />
       <specificControl exs:type="ns1:SubFlow" path="pathTest" />
+    </NodeData>
+    <NodeData Name="New Node" Guid="b3f49ae6-8b19-4e91-a8a2-02c18dfddbb2" nodeType="State" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="4862" y="527" />
+      <Size x="367" y="142" />
     </NodeData>
   </Nodes>
 </CanvasData>

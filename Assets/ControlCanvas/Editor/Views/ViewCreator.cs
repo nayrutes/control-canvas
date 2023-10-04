@@ -190,6 +190,8 @@ namespace ControlCanvas.Editor.Views
 
         public static VisualNodeSettings GetVisualSettings(IControl control, VisualNodeSettings visualNodeSettings)
         {
+            if (control == null)
+                return visualNodeSettings;
             if(!isInitialized)
                 Initialize();
             if(viewSettingsTypes.TryGetValue(control.GetType(), out var settings))
