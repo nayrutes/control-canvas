@@ -9,6 +9,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
     public interface IViewModel : IDisposable
     {
         public IViewModel GetChildViewModel(object data);
+        public Dictionary<string, IDisposable> GetAllReactiveProperties();
     }
 
     public abstract class BaseViewModel<TData> : IViewModel
@@ -75,6 +76,9 @@ namespace ControlCanvas.Editor.ViewModels.Base
         public TType GetReactiveProperty<TType>(string fieldName) =>
             fieldToPropertyMapper.GetReactiveProperty<TType>(fieldName);
 
+        public Dictionary<string, IDisposable> GetAllReactiveProperties() =>
+            reactivePropertyManager.GetAllReactiveProperties();
+        
         /// <summary>
         /// Override this to manual map data fields to reactive properties
         /// </summary>

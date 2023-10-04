@@ -77,37 +77,10 @@ namespace ControlCanvas.Editor.Views
             
             if (control != null)// && NodeManager.stateDictionary.TryGetValue(className, out var t))
             {
-                if (control.GetType() == typeof(DebugState))
+                if (ViewCreator.IsControlViewManuallyDefined(control))
                 {
-                    //m_DynamicContent.Add(new DebugStateView());
-                    TextField visualElement = new TextField("Message");
-                    m_DynamicContent.Add(visualElement);
-                    var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
-                    var vmBase = vm as BaseViewModel<DebugState>;
-                    //var vm = nodeViewModel.GetChildViewModel(nodeViewModel.specificState.Value) as BaseViewModel<DebugState>;
-                    var rpNodeMessage = vmBase.GetReactiveProperty<ReactiveProperty<string>>(nameof(DebugState.nodeMessage));
-                    rpNodeMessage.Subscribe(x=> visualElement.value = x);
-                    visualElement.RegisterValueChangedCallback(evt => rpNodeMessage.Value = evt.newValue);
-                    
-                    DropdownField exitEvents = new DropdownField("Exit Events");
-                    exitEvents.choices = Blackboard.GetExitEventNames();
-                    m_DynamicContent.Add(exitEvents);
-                    var rpExitEventIndex = vmBase.GetReactiveProperty<ReactiveProperty<int>>(nameof(DebugState.exitEventIndex));
-                    rpExitEventIndex.Subscribe(x=> exitEvents.value = exitEvents.choices[x]);
-                    exitEvents.RegisterValueChangedCallback(evt => rpExitEventIndex.Value = exitEvents.choices.IndexOf(evt.newValue));
-
-                }else if (control.GetType() == typeof(DebugBehaviour))
-                {
-                    EnumField enumField = new EnumField("State");
-                    enumField.Init(State.Running);
-                    m_DynamicContent.Add(enumField);
-                    var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
-                    var vmBase = vm as BaseViewModel<DebugBehaviour>;
-                    //var vm = nodeViewModel.GetChildViewModel(nodeViewModel.specificState.Value) as BaseViewModel<DebugState>;
-                    
-                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<State>>( nameof(DebugBehaviour.nodeState));
-                    rp.Subscribe(x=> enumField.SetValueWithoutNotify(x));
-                    enumField.RegisterValueChangedCallback(evt => rp.Value = (State)evt.newValue);
+                    m_DynamicContent.Add(ViewCreator.CreateViewFromControl(control));
+                
                 }else if (control.GetType() == typeof(MoveToControl))
                 {
                     IntegerField integerField = new IntegerField("Index");
@@ -143,13 +116,14 @@ namespace ControlCanvas.Editor.Views
                     HidePort2(true);
                 }else if (control.GetType() == typeof(DebugDecision))
                 {
-                    Toggle toggle = new Toggle("Decision");
-                    m_DynamicContent.Add(toggle);
-                    var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
-                    var vmBase = vm as BaseViewModel<DebugDecision>;
-                    var rp = vmBase.GetReactiveProperty<ReactiveProperty<bool>>(nameof(DebugDecision.decision));
-                    rp.Subscribe(x=> toggle.SetValueWithoutNotify(x));
-                    toggle.RegisterValueChangedCallback(evt => rp.Value = evt.newValue);
+                    // Toggle toggle = new Toggle("Decision");
+                    // m_DynamicContent.Add(toggle);
+                    // var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
+                    // var vmBase = vm as BaseViewModel<DebugDecision>;
+                    // var rp = vmBase.GetReactiveProperty<ReactiveProperty<bool>>(nameof(DebugDecision.decision));
+                    // rp.Subscribe(x=> toggle.SetValueWithoutNotify(x));
+                    // toggle.RegisterValueChangedCallback(evt => rp.Value = evt.newValue);
+                    m_DynamicContent.Add(ViewCreator.CreateViewFromControl(control));
                 }
             }
         }

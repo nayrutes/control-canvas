@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
@@ -21,6 +22,11 @@ namespace ControlCanvas.Editor.ViewModels
         public IViewModel GetChildViewModel(object data)
         {
             return canvasViewModel.GetChildViewModel(data);
+        }
+
+        public Dictionary<string, IDisposable> GetAllReactiveProperties()
+        {
+            return canvasViewModel.GetAllReactiveProperties();
         }
 
         public CanvasViewModel CanvasViewModel => canvasViewModel;

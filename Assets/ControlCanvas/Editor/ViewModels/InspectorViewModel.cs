@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Editor.Views;
 using ControlCanvas.Serialization;
@@ -35,6 +36,11 @@ namespace ControlCanvas.Editor.ViewModels
         }
 
         public IViewModel GetChildViewModel(object data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Dictionary<string, IDisposable> GetAllReactiveProperties()
         {
             throw new NotImplementedException();
         }

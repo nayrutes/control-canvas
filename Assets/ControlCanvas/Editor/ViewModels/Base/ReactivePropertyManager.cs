@@ -161,6 +161,10 @@ namespace ControlCanvas.Editor.ViewModels.Base
             }
         }
 
+        public Dictionary<string, IDisposable> GetAllReactiveProperties()
+        {
+            return VmReactivePropertiesTyped;
+        }
 
         public bool ContainsKey(string fieldName)
         {

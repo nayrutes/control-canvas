@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Reflection;
 using ControlCanvas.Editor.Extensions;
-using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels.Base
 {
