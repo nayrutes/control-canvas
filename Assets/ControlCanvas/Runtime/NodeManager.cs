@@ -10,47 +10,6 @@ namespace ControlCanvas.Runtime
 {
     public class NodeManager
     {
-        // public static NodeManager Instance
-        // {
-        //     get
-        //     {
-        //         if (instance == null)
-        //             instance = new NodeManager();
-        //         return instance;
-        //     }
-        //     set => instance = value;
-        // }
-
-        // public static readonly Dictionary<string, Type> stateDictionary = new()
-        // {
-        //     {"DebugState", typeof(DebugState)},
-        //     {"IdleState", typeof(IdleState)},
-        //     {"MoveToState", typeof(MoveToControl)},
-        //     {"SubFlow", typeof(SubFlow)},
-        // };
-        //
-        // public static readonly Dictionary<string, Type> behaviourDictionary = new()
-        // {
-        //     {"DebugBehaviour", typeof(DebugBehaviour)},
-        //     {"WaitBehaviour", typeof(WaitBehaviour)},
-        //     {"MoveToBehaviour", typeof(MoveToControl)},
-        //     {"Repeater", typeof(Repeater)},
-        //     {"SubFlow", typeof(SubFlow)},
-        // };
-        //
-        // public static readonly Dictionary<string, Type> decisionDictionary = new()
-        // {
-        //     {"TestDecision", typeof(TestDecision)},
-        //     {"TestDecision2", typeof(TestDecisionSecond)},
-        //     {"SubFlow", typeof(SubFlow)},
-        //     {"DebugDecision", typeof(DebugDecision)},
-        // };
-        //
-        // public static readonly Dictionary<string, Type> otherDictionary = new()
-        // {
-        //     
-        // };
-        
         private static List<Type> controlTypes;
         public static List<Type> ControlTypes
         {

@@ -1,5 +1,6 @@
 ﻿//using Demo;
 
+using System;
 using UniRx;
 using UnityEngine;
 
@@ -10,6 +11,10 @@ namespace ControlCanvas.Runtime
         public Blackboard BlackboardAgent { get; set; } = new();
         public BlackboardFlowControl BlackboardFlowControl { get; set; } = new();
         public string Name { get; set; }
+        public IBlackboard GetBlackboard(Type blackboardType)
+        {
+            return BlackboardAgent;
+        }
 
         public bool testBool;
         public bool testBoolSecond;

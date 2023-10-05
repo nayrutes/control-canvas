@@ -1,39 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <CanvasData xmlns:sys="https://extendedxmlserializer.github.io/system" xmlns:exs="https://extendedxmlserializer.github.io/v2" xmlns:ns1="clr-namespace:ControlCanvas.Runtime;assembly=RuntimeScripts">
-  <Nodes Capacity="7">
-    <NodeData Name="New Node" Guid="8dbea7d5-c0a3-468c-8379-82efa7cb2922" nodeType="Decision" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="3555" y="509" />
-      <Size x="428" y="160" />
-      <specificControl exs:type="ns1:DebugDecision" decision="true" />
-    </NodeData>
-    <NodeData Name="New Node" Guid="400d2667-e11a-49af-9a78-28d2834dc19c" nodeType="State" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="4396" y="308" />
-      <Size x="394" y="181" />
-      <specificControl exs:type="ns1:DebugState" nodeMessage="Test123" exitEventIndex="0" />
-    </NodeData>
-    <NodeData Name="New Node" Guid="9cf0a92d-9e94-44e4-a5af-14b0c8be9c11" nodeType="Behaviour" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="4259" y="556" />
-      <Size x="444" y="162" />
-      <specificControl exs:type="ns1:DebugBehaviour" nodeState="Success" />
-    </NodeData>
-    <NodeData Name="New Node" Guid="5f7d76d6-35ca-4b38-8eb4-a4f5d4ac3ade" nodeType="Behaviour" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="3663" y="835" />
-      <Size x="438" y="161" />
-      <specificControl exs:type="ns1:MoveToControl" index="4" />
-    </NodeData>
-    <NodeData Name="New Node" Guid="3a05f528-46ab-4e23-8d95-a049a87a3e24" nodeType="Behaviour" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="4259" y="835" />
-      <Size x="405" y="162" />
-      <specificControl exs:type="ns1:Repeater" mode="Always" />
-    </NodeData>
-    <NodeData Name="New Node" Guid="52c2548a-196f-4df8-9513-793bc9d996e0" nodeType="Decision" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="4835" y="835" />
-      <Size x="394" y="137" />
-      <specificControl exs:type="ns1:SubFlow" path="pathTest" />
-    </NodeData>
-    <NodeData Name="New Node" Guid="b3f49ae6-8b19-4e91-a8a2-02c18dfddbb2" nodeType="State" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="4862" y="527" />
-      <Size x="367" y="142" />
+  <Nodes Capacity="1">
+    <NodeData Name="New Node" Guid="edeab331-4a6a-42fa-8d20-f97923bdaf67" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="840" y="32" />
+      <Size x="583" y="202" />
+      <specificControl exs:type="ns1:GenericDecision" variableType1="Constant" valueType1="Bool" bool1="true" int1="0" float1="0" variableType2="Reference" valueType2="Bool" bool2="true" int2="0" float2="0" blackboardKey2="TestBool" decisionType="Equal">
+        <blackboardType2 exs:type="sys:RuntimeType" xmlns:ns2="clr-namespace:ControlCanvas;assembly=RuntimeScripts">ns2:Blackboard</blackboardType2>
+      </specificControl>
     </NodeData>
   </Nodes>
 </CanvasData>

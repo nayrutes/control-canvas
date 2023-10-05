@@ -200,5 +200,18 @@ namespace ControlCanvas.Editor.Views
             }
             return visualNodeSettings;
         }
+
+        public static VisualElement CreateLinkedDropDownField<T>(ReactiveProperty<T> rp, string name, List<T> choices)
+        {
+            DropdownField dropdownField = new DropdownField(name);
+            dropdownField.choices = choices.Select(x => x.ToString()).ToList();
+            dropdownField.RegisterValueChangedCallback(evt => rp.Value = choices[dropdownField.choices.IndexOf(evt.newValue)]);
+            rp.Subscribe(x=>
+            {
+                var index = choices.IndexOf(x);
+                dropdownField.value = index == -1 ? null : dropdownField.choices[index];
+            });
+            return dropdownField;
+        }
     }
 }

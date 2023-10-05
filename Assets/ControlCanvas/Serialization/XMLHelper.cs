@@ -16,6 +16,7 @@ namespace ControlCanvas.Serialization
                     .UseAutoFormatting()
                     .EnableImplicitTyping(typeof(CanvasData))
                     .UseOptimizedNamespaces()
+                    .AllowMultipleReferences()
                     .Create();
             
             XmlWriterSettings settings = new XmlWriterSettings();
@@ -51,6 +52,7 @@ namespace ControlCanvas.Serialization
                 //.Continue()
                 .EnableImplicitTyping(typeof(CanvasData))
                 .UseOptimizedNamespaces()
+                .AllowMultipleReferences()
                 .Create();
 
             try
