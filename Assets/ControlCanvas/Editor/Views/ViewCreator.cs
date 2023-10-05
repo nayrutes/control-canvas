@@ -22,7 +22,7 @@ namespace ControlCanvas.Editor.Views
             var assembly = Assembly.GetExecutingAssembly();
             var attributesTypes = assembly
                 .GetTypes()
-                .Where(t => t.GetCustomAttribute<NodeContentAttribute>() != null).ToList();
+                .Where(t => t.GetCustomAttributes<NodeContentAttribute>().Any()).ToList();
             
             var nodeContentTypes = attributesTypes.Where(t=>typeof(INodeContent).IsAssignableFrom(t))
                 .Select(t => (INodeContent)Activator.CreateInstance(t))
@@ -38,8 +38,12 @@ namespace ControlCanvas.Editor.Views
                 .ToList();
             foreach (INodeSettings nodeSettingsType in nodeSettingsTypes)
             {
-                var targetType = nodeSettingsType.GetType().GetCustomAttribute<NodeContentAttribute>().ContentType;
-                viewSettingsTypes.Add(targetType, nodeSettingsType);
+                foreach (var attribute in nodeSettingsType.GetType().GetCustomAttributes<NodeContentAttribute>())
+                {
+                    viewSettingsTypes.Add(attribute.ContentType, nodeSettingsType);
+                }
+                // var targetType = nodeSettingsType.GetType().GetCustomAttribute<NodeContentAttribute>().ContentType;
+                // viewSettingsTypes.Add(targetType, nodeSettingsType);
             }
             
             isInitialized = true;

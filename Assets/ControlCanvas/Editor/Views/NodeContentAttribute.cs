@@ -2,7 +2,7 @@
 
 namespace ControlCanvas.Editor.Views
 {
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
     public class NodeContentAttribute : Attribute
     {
         public Type ContentType { get; }

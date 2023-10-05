@@ -2,7 +2,9 @@
 
 namespace ControlCanvas.Editor.Views.NodeContents
 {
-    [NodeContent(typeof(SubFlow))]
+    [NodeContent(typeof(SubFlowState))]
+    [NodeContent(typeof(SubFlowBehaviour))]
+    [NodeContent(typeof(SubFlowDecision))]
     public class SubFlowContentView : INodeSettings
     {
         public VisualNodeSettings GetSettings(VisualNodeSettings settings)
