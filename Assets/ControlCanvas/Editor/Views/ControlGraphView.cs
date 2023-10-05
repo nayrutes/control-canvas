@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ControlCanvas.Editor.Extensions;
 using ControlCanvas.Editor.ViewModels;
+using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
 using UniRx;
 using UnityEditor;
@@ -87,8 +88,22 @@ namespace ControlCanvas.Editor.Views
 
         private void BindViewToVM()
         {
-            viewModel.Nodes.SubscribeAndProcessExisting(x => CreateVisualNode(x)).AddTo(disposables);
+            viewModel.Nodes.SubscribeAndProcessExisting(x =>
+            {
+                if (viewModel.GetChildViewModel(x) is NodeViewModel nodeViewModel)
+                {
+                    nodeViewModel.specificControl
+                        .DoWithLastWithNull(cLast =>
+                        {
+                            RemoveVisualNode(nodeViewModel.DataProperty.Value);
+                        })
+                        .Subscribe(c => CreateVisualNode(nodeViewModel.DataProperty.Value));
+                }
+                //CreateVisualNode(x);
+                
+            }).AddTo(disposables);
             viewModel.Nodes.ObserveRemove().Subscribe(x => RemoveVisualNode(x.Value)).AddTo(disposables);
+            
             viewModel.Edges.SubscribeAndProcessExisting(x => CreateVisualEdge(x)).AddTo(disposables);
             viewModel.Edges.ObserveRemove().Subscribe(x => RemoveVisualEdge(x.Value)).AddTo(disposables);
         }
@@ -188,7 +203,7 @@ namespace ControlCanvas.Editor.Views
         private void CreateVisualNode(NodeData nodeData)
         {
             NodeViewModel nodeViewModel = (NodeViewModel)viewModel.GetChildViewModel(nodeData);
-            if (nodeData.nodeType == NodeType.Routing)
+            if (nodeData.specificControl is IRouting)
             {
                 RoutingNodeView routingNodeView = new RoutingNodeView();
                 routingNodeView.SetViewModel(nodeViewModel);
@@ -204,6 +219,11 @@ namespace ControlCanvas.Editor.Views
 
         private void RemoveVisualNode(NodeData nodeData)
         {
+            var node = nodes.ToList().Find(x => x is IVisualNode node && node.GetVmGuid() == nodeData.guid);
+            if (node != null)
+            {
+                RemoveElement(node);
+            }
         }
 
         private void CreateVisualEdge(EdgeData edgeData)

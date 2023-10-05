@@ -18,7 +18,7 @@ namespace ControlCanvas.Serialization
         // public Blackboard blackboardCanvas;
         // public ControlAgent controlAgent;
 
-        public NodeType nodeType;
+        //public NodeType nodeType;
         //public string className;
         public string specificGuid;
         
@@ -28,13 +28,13 @@ namespace ControlCanvas.Serialization
     }
     
     
-    public enum NodeType
-    {
-        State,
-        Behaviour,
-        Decision,
-        Routing
-    }
+    // public enum NodeType
+    // {
+    //     State,
+    //     Behaviour,
+    //     Decision,
+    //     Routing
+    // }
     
     public enum PortType
     {

@@ -17,7 +17,6 @@
             <ui:VisualElement name="divider" class="horizontal" />
             <ui:Label tabindex="-1" text="This is a description" display-tooltip-when-elided="true" name="description" />
             <ui:VisualElement name="node-definer" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); flex-direction: row;">
-                <ui:EnumField label="Type" type="ControlCanvas.Serialization.NodeType, SerializationScripts" name="type-enum" />
                 <ui:DropdownField label="Class" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="class-dropdown" />
             </ui:VisualElement>
             <ui:VisualElement name="dynamic-content" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);" />

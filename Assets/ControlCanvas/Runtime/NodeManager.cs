@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using ControlCanvas.Serialization;
+using LightInject;
 using UnityEngine;
 
 namespace ControlCanvas.Runtime
@@ -19,36 +21,95 @@ namespace ControlCanvas.Runtime
         //     set => instance = value;
         // }
 
-        public static readonly Dictionary<string, Type> stateDictionary = new()
-        {
-            {"DebugState", typeof(DebugState)},
-            {"IdleState", typeof(IdleState)},
-            {"MoveToState", typeof(MoveToControl)},
-            {"SubFlow", typeof(SubFlow)},
-        };
+        // public static readonly Dictionary<string, Type> stateDictionary = new()
+        // {
+        //     {"DebugState", typeof(DebugState)},
+        //     {"IdleState", typeof(IdleState)},
+        //     {"MoveToState", typeof(MoveToControl)},
+        //     {"SubFlow", typeof(SubFlow)},
+        // };
+        //
+        // public static readonly Dictionary<string, Type> behaviourDictionary = new()
+        // {
+        //     {"DebugBehaviour", typeof(DebugBehaviour)},
+        //     {"WaitBehaviour", typeof(WaitBehaviour)},
+        //     {"MoveToBehaviour", typeof(MoveToControl)},
+        //     {"Repeater", typeof(Repeater)},
+        //     {"SubFlow", typeof(SubFlow)},
+        // };
+        //
+        // public static readonly Dictionary<string, Type> decisionDictionary = new()
+        // {
+        //     {"TestDecision", typeof(TestDecision)},
+        //     {"TestDecision2", typeof(TestDecisionSecond)},
+        //     {"SubFlow", typeof(SubFlow)},
+        //     {"DebugDecision", typeof(DebugDecision)},
+        // };
+        //
+        // public static readonly Dictionary<string, Type> otherDictionary = new()
+        // {
+        //     
+        // };
         
-        public static readonly Dictionary<string, Type> behaviourDictionary = new()
+        private static List<Type> controlTypes;
+        public static List<Type> ControlTypes
         {
-            {"DebugBehaviour", typeof(DebugBehaviour)},
-            {"WaitBehaviour", typeof(WaitBehaviour)},
-            {"MoveToBehaviour", typeof(MoveToControl)},
-            {"Repeater", typeof(Repeater)},
-            {"SubFlow", typeof(SubFlow)},
-        };
+            get
+            {
+                if (controlTypes == null)
+                {
+                    controlTypes = GatherAllControlTypes();
+                }
+                return controlTypes;
+            }
+            //set => controlTypes = value;
+        }
         
-        public static readonly Dictionary<string, Type> decisionDictionary = new()
+        private static Dictionary<Type, Dictionary<string, Type>> controlDictionary;
+        private static Dictionary<Type, Dictionary<string, Type>> ControlDictionary
         {
-            {"TestDecision", typeof(TestDecision)},
-            {"TestDecision2", typeof(TestDecisionSecond)},
-            {"SubFlow", typeof(SubFlow)},
-            {"DebugDecision", typeof(DebugDecision)},
-        };
-        
-        public static readonly Dictionary<string, Type> otherDictionary = new()
-        {
-            
-        };
+            get
+            {
+                if (controlDictionary == null)
+                {
+                    controlDictionary = new();
+                    foreach (Type controlType in ControlTypes)
+                    {
+                        controlDictionary.Add(controlType, GatherAllControlsOfAType(controlType));
+                    }
+                }
+                return controlDictionary;
+            }
+            //set => controlDictionary = value;
+        }
 
+        private static List<Type> GatherAllControlTypes()
+        {
+            return Assembly.GetExecutingAssembly().GetTypes()
+                .Where(t => t.GetInterfaces().Contains(typeof(IControl))
+                && t.GetCustomAttribute<RunTypeAttribute>() != null).ToList();
+        }
+
+        private static Dictionary<string, Type> GatherAllControlsOfAType(Type type)
+        {
+            List<Type> types = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(t=>t.GetInterfaces().Contains(type)).ToList();
+            Dictionary<string, Type> dictionary = new();
+            foreach (var t in types)
+            {
+                ControlNameAttribute attribute = t.GetCustomAttribute<ControlNameAttribute>();
+                if (attribute != null && attribute.ControlType == type)
+                {
+                    dictionary.Add(attribute.Name, t);
+                }
+                else
+                {
+                    dictionary.Add(t.Name, t);
+                }
+            }
+            return dictionary;
+        }
+        
         //private static NodeManager instance = new NodeManager();
 
         private Dictionary<string, IControl> controlCache = new();
@@ -88,29 +149,23 @@ namespace ControlCanvas.Runtime
             }
         }
 
+        //TODO: cache
         public Type GetExecutionTypeOfNode(IControl control, CanvasData canvasData)
         {
             if (control == null)
             {
                 return null;
             }
-            NodeType? nodeType = canvasData.Nodes.FirstOrDefault(x => x.specificControl == control)?.nodeType;
-            if (nodeType == null)
+
+            foreach (var i in control.GetType().GetInterfaces())
             {
-                Debug.LogError($"No node or node type found for {control}");
-                return null;
+                if(typeof(IControl).IsAssignableFrom(i) && i != typeof(IControl))
+                {
+                    return i;
+                }
             }
-            switch (nodeType)
-            {
-                case NodeType.State:
-                    return typeof(IState);
-                case NodeType.Behaviour:
-                    return typeof(IBehaviour);
-                case NodeType.Decision:
-                    return typeof(IDecision);
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+
+            return null;
         }
         
         public IState GetStateForNode(string controlFlowInitialNode, CanvasData controlFlow)
@@ -123,50 +178,44 @@ namespace ControlCanvas.Runtime
             return controlCache.FirstOrDefault(x => x.Value == control).Key;
         }
 
-        public static IEnumerable<string> GetSpecificTypes(NodeType type)
+        public static IEnumerable<string> GetSpecificTypes()
         {
-            switch (type)
+            List<string> result = new();
+            foreach (KeyValuePair<Type,Dictionary<string,Type>> keyValuePair in ControlDictionary)
             {
-                case NodeType.State:
-                    return stateDictionary.Keys;
-                case NodeType.Behaviour:
-                    return behaviourDictionary.Keys;
-                case NodeType.Decision:
-                    return decisionDictionary.Keys;
-                default:
-                    //throw new ArgumentOutOfRangeException(nameof(type), type, null);
-                    return otherDictionary.Keys;
+                var typeName = keyValuePair.Key.Name;
+                foreach (KeyValuePair<string,Type> valuePair in keyValuePair.Value)
+                {
+                    result.Add($"{typeName}/{valuePair.Key}");
+                }
             }
+            return result;
         }
 
 
         public static bool TryGetInstance(string className, out IControl o)
         { 
-            if (stateDictionary.TryGetValue(className, out var type))
+            var typeName = className.Split('/')[0];
+            var controlName = className.Split('/')[1];
+
+            Type key = ControlTypes.Find(x => x.Name == typeName);
+            
+            if (key != null && ControlDictionary.TryGetValue(key, out var dictionary))
             {
-                o = (IState)Activator.CreateInstance(type);
-                return true;
+                if (dictionary.TryGetValue(controlName, out var type))
+                {
+                    o = GetControlInstance(type);
+                    return true;
+                }
             }
-            else if (behaviourDictionary.TryGetValue(className, out type))
-            {
-                o = (IControl)Activator.CreateInstance(type);
-                return true;
-            }
-            else if (decisionDictionary.TryGetValue(className, out type))
-            {
-                o = (IDecision)Activator.CreateInstance(type);
-                return true;
-            }
-            else if (otherDictionary.TryGetValue(className, out type))
-            {
-                o = (IControl)Activator.CreateInstance(type);
-                return true;
-            }
-            else
-            {
-                o = null;
-                return false;
-            }
+            
+            o = null;
+            return false;
+        }
+
+        public static IControl GetControlInstance(Type type)
+        {
+            return (IControl) Activator.CreateInstance(type);
         }
 
         public IControl GetNextForNode(IControl currentControlValue, CanvasData controlFlow)
@@ -205,7 +254,7 @@ namespace ControlCanvas.Runtime
             if (edgeData == null) return null;
 
             NodeData nodeData = controlFlow.Nodes.FirstOrDefault(x => x.guid == edgeData.EndNodeGuid);
-            if (nodeData is { nodeType: NodeType.Routing })
+            if (nodeData?.specificControl is IRouting)
             {
                 Debug.Log($"Routing node {nodeData.guid} found. Getting next...");
                 nodeData = GetNextForNode(nodeData.guid, controlFlow, portType, currentNodeDataGuid);
@@ -252,7 +301,7 @@ namespace ControlCanvas.Runtime
             foreach (var edgeData in edgeDataSelected)
             {
                 NodeData nodeData = controlFlow.Nodes.FirstOrDefault(x => x.guid == edgeData.EndNodeGuid);
-                if (nodeData is { nodeType: NodeType.Routing })
+                if (nodeData?.specificControl is IRouting)
                 {
                     Debug.Log($"Routing node {nodeData.guid} found. Getting next...");
                     nodeData = GetNextForNode(nodeData.guid, controlFlow, portType, currentNodeDataGuid);

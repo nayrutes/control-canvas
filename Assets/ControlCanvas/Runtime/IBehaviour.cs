@@ -1,5 +1,6 @@
 ﻿namespace ControlCanvas.Runtime
 {
+    [RunType]
     public interface IBehaviour : IControl
     {
         

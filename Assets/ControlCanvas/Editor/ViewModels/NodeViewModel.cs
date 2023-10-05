@@ -33,16 +33,10 @@ namespace ControlCanvas.Editor.ViewModels
         //[NonSerialized]
         public ControlAgent controlAgent;
 
-        public ReactiveProperty<NodeType> NodeType = new();
+        //public ReactiveProperty<NodeType> NodeType = new();
 
         public NodeViewModel(NodeData nodeData) : base(nodeData)
         {
-            InitNode();
-        }
-
-        public NodeViewModel(NodeType nodeType): base()
-        {
-            NodeType.Value = nodeType;
             InitNode();
         }
         
@@ -58,14 +52,9 @@ namespace ControlCanvas.Editor.ViewModels
 
         void InitNode()
         {
+            ClassChoices.Clear();
             ClassChoices.Add("None");
-
-            NodeType.Subscribe(type =>
-            {
-                ClassChoices.Clear();
-                ClassChoices.Add("None");
-                ClassChoices.AddRange(NodeManager.GetSpecificTypes(type));
-            }).AddTo(disposables);
+            ClassChoices.AddRange(NodeManager.GetSpecificTypes());
             
             specificControl.Subscribe(control =>
             {

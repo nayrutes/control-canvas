@@ -67,31 +67,31 @@ namespace ControlCanvas.Editor.Views
             CreatePorts();
         }
         
-        private void OnTypeChanged(ChangeEvent<Enum> evt)
-        {
-            nodeViewModel.NodeType.Value = (NodeType)evt.newValue;
-        }
+        // private void OnTypeChanged(ChangeEvent<Enum> evt)
+        // {
+        //     nodeViewModel.NodeType.Value = (NodeType)evt.newValue;
+        // }
         
-        private void SetNewType(NodeType type)
-        {
-            m_DynamicContent.Clear();
-            m_DynamicContent.Add(new Label($"This is a {type} node"));
-            this.Q<EnumField>("type-enum").SetValueWithoutNotify(type);
-            _visualNodeSettings = new VisualNodeSettings();
-            switch (type)
-            {
-                case NodeType.State:
-                    _visualNodeSettings.portOut2Visible = false;
-                    break;
-                case NodeType.Behaviour:
-                    break;
-                case NodeType.Decision:
-                    _visualNodeSettings.portParallelVisible = false;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
-            }
-        }
+        // private void SetNewType(NodeType type)
+        // {
+        //     m_DynamicContent.Clear();
+        //     m_DynamicContent.Add(new Label($"This is a {type} node"));
+        //     this.Q<EnumField>("type-enum").SetValueWithoutNotify(type);
+        //     _visualNodeSettings = new VisualNodeSettings();
+        //     switch (type)
+        //     {
+        //         case NodeType.State:
+        //             _visualNodeSettings.portOut2Visible = false;
+        //             break;
+        //         case NodeType.Behaviour:
+        //             break;
+        //         case NodeType.Decision:
+        //             _visualNodeSettings.portParallelVisible = false;
+        //             break;
+        //         default:
+        //             throw new ArgumentOutOfRangeException(nameof(type), type, null);
+        //     }
+        // }
         
         private void SetNewClass(IControl control)
         {
@@ -234,7 +234,7 @@ namespace ControlCanvas.Editor.Views
             nodeViewModel.Position.CombineLatest(nodeViewModel.Size, (position, size) => new Rect(position, size))
                 .Subscribe(rect => this.SetPosition(rect)).AddTo(disposables);
             
-            nodeViewModel.NodeType.Subscribe(type => SetNewType(type)).AddTo(disposables);
+            //nodeViewModel.NodeType.Subscribe(type => SetNewType(type)).AddTo(disposables);
             
             nodeViewModel.specificControl.Subscribe(control => SetNewClass(control)).AddTo(disposables);
             
@@ -315,7 +315,7 @@ namespace ControlCanvas.Editor.Views
         private void BindViewModelToView()
         {
             RegisterCallback((GeometryChangedEvent evt) => OnGeometryChanged(evt));
-            this.Q<EnumField>("type-enum").RegisterValueChangedCallback(OnTypeChanged);
+            //this.Q<EnumField>("type-enum").RegisterValueChangedCallback(OnTypeChanged);
             
             this.Q<DropdownField>("class-dropdown").RegisterValueChangedCallback(evt =>
             {
@@ -326,7 +326,7 @@ namespace ControlCanvas.Editor.Views
         private void UnbindViewModelFromView()
         {
             UnregisterCallback((GeometryChangedEvent evt) => OnGeometryChanged(evt));
-            this.Q<EnumField>("type-enum").UnregisterValueChangedCallback(OnTypeChanged);
+            //this.Q<EnumField>("type-enum").UnregisterValueChangedCallback(OnTypeChanged);
         }
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)

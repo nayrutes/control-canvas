@@ -47,6 +47,19 @@ namespace ControlCanvas.Editor.Extensions
             );
         }
         
+        public static IObservable<T> DoWithLastWithNull<T>(this IObservable<T> source, Action<T> doOnLast)
+        {
+            T previous = default(T);
+            return Observable.Create<T>(observer =>
+                source.Subscribe(value =>
+                {
+                    doOnLast?.Invoke(previous);
+
+                    previous = value;
+                    observer.OnNext(value);
+                }, observer.OnError, observer.OnCompleted)
+            );
+        }
 
     }
 }

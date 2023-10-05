@@ -181,9 +181,9 @@ namespace ControlCanvas.Editor.ViewModels
             InspectorViewModel.OnSelectionChanged(obj, DataProperty.Value);
         }
 
-        public NodeViewModel CreateNode(NodeType nodeType = NodeType.State)
+        public NodeViewModel CreateNode()
         {
-            NodeViewModel cvm = AddChildViewModel<NodeViewModel, NodeData>(new NodeViewModel(nodeType), Nodes);
+            NodeViewModel cvm = AddChildViewModel<NodeViewModel, NodeData>(new NodeViewModel(), Nodes);
             return cvm;
         }
 
@@ -253,8 +253,8 @@ namespace ControlCanvas.Editor.ViewModels
             if (oldEdge != null)
             {
                 DeleteEdge(oldEdge);
-                NodeViewModel routingNode = CreateNode(NodeType.Routing);
-                routingNode.NodeType.Value = NodeType.Routing;
+                NodeViewModel routingNode = CreateNode();
+                routingNode.specificControl.Value = NodeManager.GetControlInstance(typeof(RoutingControl));
                 
                 CreateEdge(node1, routingNode, oldEdge.StartPortType.Value, PortType.InOut);
                 CreateEdge(routingNode, node2, PortType.InOut, oldEdge.EndPortType.Value);

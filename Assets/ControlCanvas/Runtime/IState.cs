@@ -3,6 +3,7 @@ using UniRx;
 
 namespace ControlCanvas.Runtime
 {
+    [RunType]
     public interface IState : IControl
     {
         void Execute(IControlAgent agentContext, float deltaTime);
