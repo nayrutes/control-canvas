@@ -85,7 +85,7 @@ namespace ControlCanvas.Runtime
         // }
         
         
-        public void CompleteUpdateDone(IControlAgent agentContext)
+        public void InstanceUpdateDone(IControlAgent agentContext)
         {
             
         }

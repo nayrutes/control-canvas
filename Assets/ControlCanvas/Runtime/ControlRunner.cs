@@ -158,7 +158,7 @@ namespace ControlCanvas.Runtime
         
         public void RunningUpdate(float fixedDeltaTime)
         {
-            Debug.Log($"==Running update {fixedDeltaTime}");
+            //Debug.Log($"==Running update {fixedDeltaTime}");
             _currentDeltaTimeForSubUpdate += fixedDeltaTime;
             if (!stopped)
             {
@@ -176,17 +176,28 @@ namespace ControlCanvas.Runtime
             _safetyCounter = 0;
             while (_running)
             {
-                if (_safetyBreak || _safetyCounter++ > 1000)
+                try
                 {
-                    Debug.LogError("Safety break hit");
-                    return;
-                }
+                    if (_safetyBreak || _safetyCounter++ > 1000)
+                    {
+                        Debug.LogError("Safety break hit");
+                        return;
+                    }
 
-                bool completeUpdateDone = SingleUpdate();
-                if (completeUpdateDone)
-                {
-                    _running = false;
+                    bool completeUpdateDone = SingleUpdate();
+                    if (completeUpdateDone)
+                    {
+                        _running = false;
+                    }
                 }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    _running = false;
+                    stopped = true;
+                    throw;
+                }
+                
             }
             startedComplete = false;
             PreviewNext();
@@ -194,12 +205,12 @@ namespace ControlCanvas.Runtime
 
         private bool SingleUpdate()
         {
-            Debug.Log($"----Single update");
+            //Debug.Log($"----Single update");
             
             IControl next = GetNext();
             if (next == null)
             {
-                Debug.Log("No next control (single update)");
+                //Debug.Log("No next control (single update)");
             }
             SubUpdate(next);
             CheckDone(out bool isCompleteDone, out bool isInstanceDone);
@@ -342,20 +353,23 @@ namespace ControlCanvas.Runtime
         {
             if(runInstance == null)
                 return;
-            Debug.Log($"Complete update done instance {runInstance.Id}");
+            //Debug.Log($"Complete update done instance {runInstance.Id}");
             foreach (KeyValuePair<Type, IRunnerBase> keyValuePair in runInstance.runnerDict)
             {
-                keyValuePair.Value.CompleteUpdateDone(agentContext);
+                keyValuePair.Value.InstanceUpdateDone(agentContext);
             }
         }
         private void CompleteUpdateDone()
         {
-            Debug.Log("Complete update done");
+            //Debug.Log("Complete update done");
             OnCompleteUpdateDone.OnNext(Unit.Default);
-            // foreach (KeyValuePair<IControl,RunInstance> keyValuePair in _runInstanceDict)
-            // {
-            //     CompleteUpdateDoneInstance(keyValuePair.Value);
-            // }
+            foreach (KeyValuePair<IControl,RunInstance> keyValuePair in _runInstanceDict)
+            {
+                foreach (KeyValuePair<Type, IRunnerBase> keyValuePair2 in keyValuePair.Value.runnerDict)
+                {
+                    keyValuePair2.Value.InstanceUpdateDone(agentContext);
+                }
+            }
         }
         
         public void Play()

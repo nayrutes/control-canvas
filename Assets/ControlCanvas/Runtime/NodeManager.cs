@@ -44,14 +44,16 @@ namespace ControlCanvas.Runtime
 
         private static List<Type> GatherAllControlTypes()
         {
-            return Assembly.GetExecutingAssembly().GetTypes()
+            return  AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(s => s.GetTypes())
                 .Where(t => t.GetInterfaces().Contains(typeof(IControl))
                 && t.GetCustomAttribute<RunTypeAttribute>() != null).ToList();
         }
 
         private static Dictionary<string, Type> GatherAllControlsOfAType(Type type)
         {
-            List<Type> types = Assembly.GetExecutingAssembly().GetTypes()
+            List<Type> types =  AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(s => s.GetTypes())
                 .Where(t=>t.GetInterfaces().Contains(type)).ToList();
             Dictionary<string, Type> dictionary = new();
             foreach (var t in types)
