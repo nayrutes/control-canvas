@@ -1,6 +1,8 @@
 using System;
+using Playground.Scripts.AI;
 using UnityEngine;
 using UnityEngine.AI;
+using UniRx;
 
 namespace Playground.Scripts
 {
@@ -12,6 +14,8 @@ namespace Playground.Scripts
         
         public bool flipX;
 
+        public MovementBlackboard MovementBlackboard { get; set; } = new();
+        
         private void Start()
         {
             //agent = GetComponent<NavMeshAgent>();
@@ -19,6 +23,11 @@ namespace Playground.Scripts
             //spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             agent.updateRotation = false;
             agent.updateUpAxis = false;
+            GetComponent<Character2DAgent>().AddBlackboard(MovementBlackboard);
+            MovementBlackboard.TargetPosition.SkipLatestValueOnSubscribe().Subscribe(target =>
+            {
+                agent.SetDestination(target);
+            }).AddTo(this);
         }
 
         private void Update()
@@ -35,6 +44,7 @@ namespace Playground.Scripts
             {
                 spriteRenderer.flipX = false;
             }
+            MovementBlackboard.CurrentPosition = transform.position;
         }
 
 

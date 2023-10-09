@@ -19,17 +19,18 @@ namespace Playground.Scripts
             {
                 Debug.LogError("CharacterMovement not found");
             }
-            cm.SetDestination(targets[currentTargetIndex].position);
+            //cm.SetDestination(targets[currentTargetIndex].position);
+            cm.MovementBlackboard.TargetPositions = targets.ConvertAll(t => t.position);
         }
 
-        private void Update()
-        {
-            if (IsAtTarget())
-            {
-                currentTargetIndex = (currentTargetIndex + 1) % targets.Count;
-                cm.SetDestination(targets[currentTargetIndex].position);
-            }
-        }
+        // private void Update()
+        // {
+        //     if (IsAtTarget())
+        //     {
+        //         currentTargetIndex = (currentTargetIndex + 1) % targets.Count;
+        //         cm.SetDestination(targets[currentTargetIndex].position);
+        //     }
+        // }
         
         private bool IsAtTarget()
         {
