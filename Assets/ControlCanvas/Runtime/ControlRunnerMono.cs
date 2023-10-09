@@ -8,8 +8,8 @@ namespace ControlCanvas.Runtime
     {
         [SerializeField]
         private string startPath = "";
-        [SerializeField]
-        private ControlAgent controlAgent;
+        //[SerializeField]
+        private IControlAgent controlAgent;
         
         private ControlRunner _controlRunner;
         
@@ -24,6 +24,12 @@ namespace ControlCanvas.Runtime
             {
                 startPath = EditorPrefs.GetString("ControlFlowPath");
             }
+            
+        }
+
+        private void Start()
+        {
+            controlAgent = GetComponent<IControlAgent>();
             _controlRunner.Initialize(startPath, controlAgent);
             if (startStopped)
             {

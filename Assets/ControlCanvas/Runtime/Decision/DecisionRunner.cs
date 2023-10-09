@@ -52,7 +52,7 @@ namespace ControlCanvas.Runtime
         {
             return false;
         }
-        public void CompleteUpdateDone(IControlAgent agentContext)
+        public void InstanceUpdateDone(IControlAgent agentContext)
         {
             _decisionsTracker.Clear();
         }

@@ -186,7 +186,7 @@ namespace ControlCanvas.Runtime
             return false;
         }
         
-        public void CompleteUpdateDone(IControlAgent agentContext)
+        public void InstanceUpdateDone(IControlAgent agentContext)
         {
             CurrentBehaviourWrapper.Value = null;
             foreach (var wrapper in _behaviourWrappers.Values)

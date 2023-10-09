@@ -94,6 +94,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         
         debugRunnerField.RegisterValueChangedCallback(evt =>
         {
+            debugLinker?.Unlink();
             var runnerMono = evt.newValue as ControlRunnerMono;
             if (runnerMono == null) return;
             ControlRunner runner = runnerMono.GetControlRunner();
