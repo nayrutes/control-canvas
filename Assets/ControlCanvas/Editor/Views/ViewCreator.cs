@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ControlCanvas.Editor.Extensions;
 using ControlCanvas.Editor.ReactiveInspector;
 using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Runtime;
@@ -216,6 +217,56 @@ namespace ControlCanvas.Editor.Views
                 dropdownField.value = index == -1 ? null : dropdownField.choices[index];
             });
             return dropdownField;
+        }
+
+        public static VisualElement CreateAndLink(string name, IDisposable reactiveProperty,
+            IViewModel viewModelParent, Type viewType)
+        {
+            VisualElement result = null;
+            Type viewModelType = viewType.GetInterfaces()
+                .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IView<>)).GetInnerType();
+
+            Type vmGenericType = reactiveProperty.GetType().GetInnerType().GetInnerType();
+            if (viewModelType.IsGenericType)
+            {
+                viewModelType = viewModelType.GetGenericTypeDefinition().MakeGenericType(vmGenericType);
+            }
+
+            if (viewType.IsGenericType)
+            {
+                viewType = viewType.GetGenericTypeDefinition().MakeGenericType(vmGenericType);
+            }
+            
+            if (typeof(IViewModel).IsAssignableFrom(viewModelType))
+            {
+                var methodInfo = typeof(ViewCreator).GetMethod(nameof(CreateAndLink),
+                    BindingFlags.NonPublic | BindingFlags.Static);
+                var resultOfMethod = methodInfo.MakeGenericMethod(viewModelType, reactiveProperty.GetType().GetInnerType()).Invoke(null,
+                    new object[] { name, reactiveProperty, viewModelParent, viewType });
+                result = (VisualElement)resultOfMethod;
+            }
+            return result;
+        }
+
+        private static VisualElement CreateAndLink<TViewModel, TInner>(string name, ReactiveProperty<TInner> reactiveProperty,
+            IViewModel viewModelParent, Type viewType) where TViewModel : class, IViewModel
+        {
+            Foldout foldout = new Foldout();
+            foldout.text = name;
+            foldout.value = true;
+            
+            IView<TViewModel> view = CreateView<TViewModel>(viewType);
+            TViewModel viewModel = viewModelParent.GetChildViewModel(reactiveProperty.Value) as TViewModel;
+            view.SetViewModel(viewModel);
+            foldout.Add(view.GetVisualElement());
+            return foldout;
+        }
+        
+        public static IView<T> CreateView<T>(Type viewType) where T : IViewModel
+        {
+            //Type viewType = typeof(IView<>).MakeGenericType(typeof(T));
+            var view = (IView<T>)Activator.CreateInstance(viewType);
+            return view;
         }
     }
 }

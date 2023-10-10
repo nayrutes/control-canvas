@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using ControlCanvas.Editor.Extensions;
+using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels.Base
 {
@@ -14,9 +16,10 @@ namespace ControlCanvas.Editor.ViewModels.Base
         {
             //viewModelTypes.Add(typeof(object), typeof(DynamicViewModel));
             var baseViewModelType = typeof(BaseViewModel<>);
-            var assembly = Assembly.GetExecutingAssembly();
+            //var assembly = Assembly.GetExecutingAssembly();
+            var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(s => s.GetTypes());
 
-            foreach (var type in assembly.GetTypes())
+            foreach (var type in types)
             {
                 if(type == typeof(DynamicViewModel<>))
                     continue;
@@ -24,8 +27,22 @@ namespace ControlCanvas.Editor.ViewModels.Base
                 if (type.IsClass && !type.IsAbstract && type.IsSubclassOfRawGeneric(baseViewModelType))
                 {
                     var dataType = type.BaseType.GetGenericArguments()[0];
+                    if (dataType.IsGenericType)
+                    {
+                        dataType = dataType.GetGenericTypeDefinition();
+                    }
                     viewModelTypes.Add(dataType, type);
                 }
+                else if(type.IsClass && !type.IsAbstract && type.GetCustomAttribute<CustomViewModelAttribute>() != null)
+                {
+                    //check if it implements IViewModel
+                    if(!type.GetInterfaces().Contains(typeof(IViewModel)))
+                        throw new Exception($"CustomViewModel {type} does not implement IViewModel");
+                    
+                    var dataType = type.GetCustomAttribute<CustomViewModelAttribute>().DataType.GetGenericTypeDefinition();
+                    viewModelTypes.Add(dataType, type);
+                }
+                
             }
             isInitialized = true;
         }
@@ -34,10 +51,35 @@ namespace ControlCanvas.Editor.ViewModels.Base
         {
             if(!isInitialized)
                 Initialize();
+            
             if (!viewModelTypes.TryGetValue(dataType, out var viewModelType))
             {
-                //Debug.LogWarning("Usage of DynamicViewModel is not tested!");
-                viewModelType = typeof(DynamicViewModel<>).MakeGenericType(dataType);
+                if (dataType.IsGenericType)
+                {
+                    Type dataTypeGeneric = dataType.GetGenericTypeDefinition();
+                    if (viewModelTypes.TryGetValue(dataTypeGeneric, out viewModelType))
+                    {
+                        Debug.LogWarning("Usage of ViewModel for Generic types is not fully tested!");
+                        if (viewModelType.IsGenericTypeDefinition)
+                        {
+                            viewModelType = viewModelType.MakeGenericType(dataType.GetGenericArguments());   
+                        }
+                        
+                    }
+                    else
+                    {
+                        Debug.LogError($"Dynamic generic types not supported yet: {dataType}");
+                        return null;
+                    }
+                    //return (IViewModel)Activator.CreateInstance(viewModelType);
+                }
+                else
+                {
+                    
+                    //Debug.LogWarning("Usage of DynamicViewModel is not tested!");
+                    viewModelType = typeof(DynamicViewModel<>).MakeGenericType(dataType);
+                }
+                
             }
 
             return (IViewModel)Activator.CreateInstance(viewModelType, data, autobind);
@@ -45,9 +87,25 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
         public static bool IsTypeSupported(Type type)
         {
+            if (type.IsGenericType)
+            {
+                type = type.GetGenericTypeDefinition();
+            }
             if(!isInitialized)
                 Initialize();
-            return viewModelTypes.ContainsKey(type);
+            bool result = viewModelTypes.ContainsKey(type);
+            return result;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    public class CustomViewModelAttribute : Attribute
+    {
+        public Type DataType { get; }
+
+        public CustomViewModelAttribute(Type dataType)
+        {
+            DataType = dataType;
         }
     }
 }

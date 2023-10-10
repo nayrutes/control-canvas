@@ -139,6 +139,12 @@ namespace ControlCanvas.Editor.ViewModels
             {
                 return GetChildViewModel<EdgeViewModel>(edge);
             }
+            edge = Edges.Value.ToList().Find(x => x.StartNodeGuid == endNode.Guid.Value && x.EndNodeGuid == startNode.Guid.Value);
+            if (edge != null)
+            {
+                Debug.LogWarning("Edge was found but start and end nodes were switched");
+                return GetChildViewModel<EdgeViewModel>(edge);
+            }
             return null;
         }
         

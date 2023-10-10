@@ -51,13 +51,13 @@ namespace ControlCanvas.Editor.ViewModels.Base
                 MethodInfo helperMethod;
                 if (isCollection)
                 {
-                    helperMethod = GetType().GetMethod("SubscribeHelperCollection",
+                    helperMethod = GetType().GetMethod(nameof(SubscribeHelperCollection),
                         BindingFlags.NonPublic | BindingFlags.Instance);
                     genericHelperMethod = helperMethod.MakeGenericMethod(valueType, valueType.GetInnerType());
                 }
                 else
                 {
-                    helperMethod = GetType().GetMethod("SubscribeHelperField",
+                    helperMethod = GetType().GetMethod(nameof(SubscribeHelperField),
                         BindingFlags.NonPublic | BindingFlags.Instance);
                     genericHelperMethod = helperMethod.MakeGenericMethod(valueType);
                 }
@@ -108,7 +108,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
         }
 
         // ReSharper disable once UnusedMember.Local
-        private void SubscribeHelperField<T>(IDisposable property) where T : TData
+        private void SubscribeHelperField<T>(IDisposable property)// where T : TData
         {
             var typedProperty = (ReactiveProperty<T>)property;
             typedProperty.DoWithLast(DisposeAndRemove)
@@ -118,6 +118,8 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
         private void CreateViewModelIfNotTracked<TInnerData>(TInnerData value)
         {
+            if(value == null)
+                return;
             if (!CheckIfTracked(value))
             {
                 IViewModel viewModel = ViewModelCreator.CreateViewModel(typeof(TInnerData), value);

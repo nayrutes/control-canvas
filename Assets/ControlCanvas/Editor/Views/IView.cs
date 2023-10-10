@@ -1,6 +1,7 @@
 ﻿using System;
 using ControlCanvas.Editor.ViewModels;
 using ControlCanvas.Editor.ViewModels.Base;
+using UnityEngine.UIElements;
 
 namespace ControlCanvas.Editor.Views
 {
@@ -12,6 +13,10 @@ namespace ControlCanvas.Editor.Views
         // void UnbindViewFromViewModel();
         // void BindViewModelToView();
         // void UnbindViewModelFromView();
+        VisualElement GetVisualElement()
+        {
+            return this as VisualElement;
+        }
     }
 
 }
