@@ -87,7 +87,9 @@ namespace ControlCanvas.Editor.ViewModels.Base
             }
             else if (fieldType.IsGenericType)
             {
-                throw new Exception("Generic types are not supported (yet)");
+                Debug.LogWarning("Generic types in ReactiveProperties are not fully supported (yet)");
+                //throw new Exception("Generic types are not supported (yet)");
+                return fieldType;
             }
             else
             {
@@ -178,7 +180,22 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
         public List<Type> GetAllInnerTypes()
         {
-            return VmReactivePropertiesTyped.Values.Select(x => x.GetType().GetInnerType().GetInnerType()).ToList();
+            List<Type> types = new();
+            foreach (var v1 in VmReactivePropertiesTyped.Values)
+            {
+                Type inner1 = v1.GetType().GetInnerType();
+                if (inner1.IsReactiveProperty() || inner1.IsReactiveCollection())
+                {
+                    types.Add(inner1.GetInnerType());
+                }
+                else
+                {
+                    types.Add(inner1);
+                }
+            }
+
+            return types;
+            //return VmReactivePropertiesTyped.Values.Select(x => x.GetType().GetInnerType().GetInnerType()).ToList();
         }
 
         public List<IDisposable> GetFieldsOfType(Type type)

@@ -24,8 +24,10 @@ namespace ControlCanvas.Runtime
 
         private static List<Type> GatherBlackboardTypes()
         {
-            return Assembly.GetExecutingAssembly().GetTypes()
+            return AppDomain.CurrentDomain.GetAssemblies().SelectMany(s => s.GetTypes())
                 .Where(x => x.GetInterfaces().Contains(typeof(IBlackboard))).ToList();
+            // return Assembly.GetExecutingAssembly().GetTypes()
+            //     .Where(x => x.GetInterfaces().Contains(typeof(IBlackboard))).ToList();
         }
 
 
@@ -38,12 +40,22 @@ namespace ControlCanvas.Runtime
         {
             return blackboardType.GetProperties().Select(x => x.Name).ToList();
         }
+        public static List<string> GetBlackboardVariableChoicesTyped<T>(Type blackboardType)
+        {
+            return blackboardType.GetProperties().Where(x=>x.PropertyType == typeof(T)).Select(x => x.Name).ToList();
+        }
 
         public static object GetValueOfProperty(Type blackboardType, string blackboardKey, object instance)
         {
             var property = blackboardType.GetProperty(blackboardKey);
             var value = property.GetValue(instance);
             return value;
+        }
+        public static T GetValueOfProperty<T>(Type blackboardType, string blackboardKey, object instance)
+        {
+            var property = blackboardType.GetProperty(blackboardKey);
+            var value = property.GetValue(instance);
+            return (T)value;
         }
 
         public static Type GetTypeOfProperty(Type blackboardType, string blackboardKey)
@@ -52,5 +64,6 @@ namespace ControlCanvas.Runtime
             var type = property.PropertyType;
             return type;
         }
+
     }
 }

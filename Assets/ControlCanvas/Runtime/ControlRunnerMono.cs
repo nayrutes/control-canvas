@@ -16,6 +16,8 @@ namespace ControlCanvas.Runtime
         
         private float _currentDeltaTimeForSubUpdate;
         public bool startStopped = false;
+        public float updatesPerSecond = 10;
+        private float _currentUpdateTimer;
         private void Awake()
         {
             _controlRunner = new ControlRunner();
@@ -44,7 +46,13 @@ namespace ControlCanvas.Runtime
         
         private void FixedUpdate()
         {
-            _controlRunner.RunningUpdate(Time.fixedDeltaTime);
+            _currentUpdateTimer += Time.fixedDeltaTime;
+            if (_currentUpdateTimer >= 1f / updatesPerSecond)
+            {
+                _controlRunner.RunningUpdate(_currentUpdateTimer);
+                _currentUpdateTimer = 0;
+            }
+            //_controlRunner.RunningUpdate(Time.fixedDeltaTime);
         }
     }
 }
