@@ -11,5 +11,6 @@ namespace Playground.Scripts.AI
         public List<Vector3> TargetPositions { get; set; }
         public Vector3 CurrentPosition { get; set; }
         public bool NoTargetSet { get; set; } = true;
+        public bool IsAgentMoving { get; set; }
     }
 }

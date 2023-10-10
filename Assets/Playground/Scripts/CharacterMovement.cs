@@ -45,13 +45,14 @@ namespace Playground.Scripts
                 spriteRenderer.flipX = false;
             }
             MovementBlackboard.CurrentPosition = transform.position;
+            MovementBlackboard.IsAgentMoving = agent.velocity.sqrMagnitude > 0.01f;
         }
 
 
 
         public void SetDestination(Vector3 position)
         {
-            agent.SetDestination(position);
+            MovementBlackboard.TargetPosition.Value = position;
         }
     }
 }

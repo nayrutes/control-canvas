@@ -25,7 +25,7 @@ namespace Playground.Scripts.AI.Nodes
                 return State.Failure;
             }
             Vector3 targetPosition = bb.TargetPositions[index];
-            if(bb.TargetPosition.Value != targetPosition || Vector3.Distance(targetPosition, bb.CurrentPosition) < 0.1f)
+            if(bb.TargetPosition.Value != targetPosition || Vector3.Distance(targetPosition, bb.CurrentPosition) < 0.5f)
             {
                 return State.Success;
             }else

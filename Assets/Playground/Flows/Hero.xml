@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CanvasData xmlns:sys="https://extendedxmlserializer.github.io/system" xmlns:exs="https://extendedxmlserializer.github.io/v2" xmlns:ns1="clr-namespace:ControlCanvas.Runtime;assembly=RuntimeScripts" xmlns:ns2="clr-namespace:Playground.Scripts.AI.Nodes;assembly=Assembly-CSharp" InitialNode="104f707f-917e-4e36-bece-cab6e50b7125">
+  <Nodes Capacity="5">
+    <NodeData Name="New Node" Guid="104f707f-917e-4e36-bece-cab6e50b7125" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="1761" y="-11" />
+      <Size x="328" y="142" />
+      <specificControl exs:type="ns1:IdleState" />
+    </NodeData>
+    <NodeData Name="New Node" Guid="cb0346ae-df8e-4353-8c01-23c32fea710f" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="2204" y="131" />
+      <Size x="377" y="219" />
+      <specificControl exs:type="ns2:MoveToPoint" overrideCurrentTarget="false">
+        <targetPosition blackboardKey="LakeSpotPosition">
+          <blackboardType exs:type="sys:RuntimeType" xmlns:ns3="clr-namespace:Playground.Scripts;assembly=Assembly-CSharp">ns3:WorldInfo</blackboardType>
+        </targetPosition>
+      </specificControl>
+    </NodeData>
+    <NodeData Name="New Node" Guid="d16189e9-12c0-406d-afdb-1d31c55bc14f" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="3052" y="131" />
+      <Size x="377" y="219" />
+      <specificControl exs:type="ns2:MoveToPoint" overrideCurrentTarget="false">
+        <targetPosition blackboardKey="TownSpotPosition">
+          <blackboardType exs:type="sys:RuntimeType" xmlns:ns4="clr-namespace:Playground.Scripts;assembly=Assembly-CSharp">ns4:WorldInfo</blackboardType>
+        </targetPosition>
+      </specificControl>
+    </NodeData>
+    <NodeData Name="New Node" Guid="df70e4ea-8021-4b38-be72-8f08c8fb0135" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="2632" y="189" />
+      <Size x="357" y="161" />
+      <specificControl exs:type="ns1:WaitBehaviour" timeToWait="5" />
+    </NodeData>
+    <NodeData Name="New Node" Guid="bccd6123-b8c2-4749-919a-000c2759e387" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="3016" y="407" />
+      <Size x="73" y="32" />
+      <specificControl exs:type="ns1:RoutingControl" />
+    </NodeData>
+  </Nodes>
+  <Edges Capacity="5">
+    <EdgeData Guid="e326dcde-a764-4206-84b1-80d7a5c92113" StartNodeGuid="104f707f-917e-4e36-bece-cab6e50b7125" EndNodeGuid="cb0346ae-df8e-4353-8c01-23c32fea710f" StartPortType="Parallel" EndPortType="In" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="23b6de32-3f81-4d2e-8473-84677ad53b2d" StartNodeGuid="cb0346ae-df8e-4353-8c01-23c32fea710f" EndNodeGuid="df70e4ea-8021-4b38-be72-8f08c8fb0135" StartPortType="Out" EndPortType="In" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="202f020e-94d4-4cda-aebc-c975bb6c3eb9" StartNodeGuid="df70e4ea-8021-4b38-be72-8f08c8fb0135" EndNodeGuid="d16189e9-12c0-406d-afdb-1d31c55bc14f" StartPortType="Out" EndPortType="In" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="622e91b0-a1de-4fe4-81c6-e5373848c37d" StartNodeGuid="cb0346ae-df8e-4353-8c01-23c32fea710f" EndNodeGuid="bccd6123-b8c2-4749-919a-000c2759e387" StartPortType="Out2" EndPortType="InOut" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="501c8226-f97d-4a5a-b844-9ed9f2bbdb29" StartNodeGuid="bccd6123-b8c2-4749-919a-000c2759e387" EndNodeGuid="d16189e9-12c0-406d-afdb-1d31c55bc14f" StartPortType="InOut" EndPortType="In" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+  </Edges>
+</CanvasData>
