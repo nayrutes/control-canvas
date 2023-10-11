@@ -52,7 +52,7 @@ namespace ControlCanvas.Runtime
                 ExitEvent = currentState.Value.RegisterExitEvent(agentContext);
                 disposable = ExitEvent.Subscribe(x =>
                 {
-                    Debug.Log($"Exit event called for {currentState.Value}");
+                    //Debug.Log($"Exit event called for {currentState.Value}");
                     _exitCalled = true;
                 });
                 currentState.Value?.OnEnter(agentContext);
@@ -66,6 +66,7 @@ namespace ControlCanvas.Runtime
             {
                 _exitCalled = false;
                 currentState.Value?.OnExit(agentContext);
+                disposable?.Dispose();
                 currentState.Value = null;
                 return _nodeManager.GetNextForNode(state, controlFlow);
             }

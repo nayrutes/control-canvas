@@ -48,6 +48,7 @@ namespace ControlCanvas.Runtime
         public Subject<IControl> NextPreview { get; } = new();
         //public Subject<List<IBehaviour>> ClearingBt { get; set; } = new();
         public Subject<Unit> OnCompleteUpdateDone { get; } = new();
+        public Subject<Unit> OnStart { get; } = new();
 
         private IControlAgent agentContext;
 
@@ -76,7 +77,8 @@ namespace ControlCanvas.Runtime
         private bool _previewNext;
 
         private IControl restartInitControl;
-        
+        private bool _wasDone = true;
+
         public void Initialize(string startPath, IControlAgent agentContext)
         {
             this.agentContext = agentContext;
@@ -167,7 +169,11 @@ namespace ControlCanvas.Runtime
                 else
                     SingleUpdate();
             }
-            _currentDeltaTimeForSubUpdate = 0;
+        }
+
+        public void Update()
+        {
+            
         }
 
         private void CompleteUpdate()
@@ -206,6 +212,11 @@ namespace ControlCanvas.Runtime
         private bool SingleUpdate()
         {
             //Debug.Log($"----Single update");
+            if (_wasDone)
+            {
+                _wasDone = false;
+                OnStart.OnNext(Unit.Default);
+            }
             
             IControl next = GetNext();
             if (next == null)
@@ -214,10 +225,15 @@ namespace ControlCanvas.Runtime
             }
             SubUpdate(next);
             CheckDone(out bool isCompleteDone, out bool isInstanceDone);
-            
-            if (_autoRestart && isCompleteDone)
+
+            if (isCompleteDone)
             {
-                Restart();
+                _wasDone = true;
+                _currentDeltaTimeForSubUpdate = 0;
+                if (_autoRestart)
+                {
+                    Restart();
+                }
             }
 
             return isCompleteDone;

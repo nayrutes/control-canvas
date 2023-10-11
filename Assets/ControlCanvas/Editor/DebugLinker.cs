@@ -26,12 +26,12 @@ namespace ControlCanvas.Editor
             //controlRunner.CurrentControl.Subscribe(OnControlChanged).AddTo(disposables);
             controlRunner.StepDoneCurrent.Subscribe(OnStepDoneCurrent).AddTo(disposables);
             //controlRunner.ClearingBt.Subscribe(ClearDebugMarker).AddTo(disposables);
-            controlRunner.OnCompleteUpdateDone.Subscribe(_=>ClearDebugMarker()).AddTo(disposables);
+            controlRunner.OnStart.Subscribe(_=>ClearDebugMarker()).AddTo(disposables);
             controlRunner.ControlFlowChanged.Subscribe(x=>canvasViewModel.DeserializeData(x.filePath)).AddTo(disposables);
 
             controlRunner.EnablePreview(true);
-            controlRunner.NextPreview.DoWithLast(x=>OnStepDoneNext(x,false))
-                .Subscribe(y=>OnStepDoneNext(y,true)).AddTo(disposables);
+            // controlRunner.NextPreview.DoWithLast(x=>OnStepDoneNext(x,false))
+            //     .Subscribe(y=>OnStepDoneNext(y,true)).AddTo(disposables);
         }
         
         public void Unlink()
@@ -58,6 +58,10 @@ namespace ControlCanvas.Editor
         {
             string currentControlGuid = controlRunner.NodeManager.GetGuidForControl(currentControl);
             canvasViewModel.SetCurrentDebugControl(currentControlGuid);
+            if (currentControl != null)
+            {
+                _visitedControls[currentControl] = currentControlGuid;
+            }
             if (currentControl is IBehaviour)
             {
                 canvasViewModel.SetDebugBehaviourState(currentControlGuid, controlRunner.LatestBehaviourState);

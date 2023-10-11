@@ -30,5 +30,14 @@ namespace ControlCanvas.Runtime
             }
             return val;
         }
+
+        public T Get<T>(IControl control, T defaultValue)
+        {
+            if (!TryGet(control, out T val))
+            {
+                return defaultValue;
+            }
+            return val;
+        }
     }
 }

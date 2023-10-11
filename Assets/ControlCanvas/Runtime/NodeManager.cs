@@ -217,7 +217,7 @@ namespace ControlCanvas.Runtime
             NodeData nodeData = controlFlow.Nodes.FirstOrDefault(x => x.guid == edgeData.EndNodeGuid);
             if (nodeData?.specificControl is IRouting)
             {
-                Debug.Log($"Routing node {nodeData.guid} found. Getting next...");
+                //Debug.Log($"Routing node {nodeData.guid} found. Getting next...");
                 nodeData = GetNextForNode(nodeData.guid, controlFlow, portType, currentNodeDataGuid);
             }
 

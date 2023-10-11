@@ -96,6 +96,10 @@ namespace ControlCanvas.Runtime
         //TODO: split this up to have a GetNext which changes nothing of the flow and a one that does if needed
         public IControl GetNext(IBehaviour behaviour, CanvasData controlFlow, IControlAgent agentContext)
         {
+            if (CurrentBehaviourWrapper.Value == null)
+            {
+                return behaviour;
+            }
             IBehaviourRunnerExecuter runnerExecuter = behaviour as IBehaviourRunnerExecuter ?? _behaviourRunnerExecuter;
 
             IControl nextControl = null;
@@ -114,6 +118,15 @@ namespace ControlCanvas.Runtime
             }
             
             _blackboard.LastDirection = newDirection;
+            if (newDirection == ExDirection.Backward)
+            {
+                CurrentBehaviourWrapper.Value.Behaviour.OnReset(agentContext, _blackboard.LastCombinedResult);
+                //Remember to start at the behaviour group again if it was running 
+                if (nextControl == null && _blackboard.LastCombinedResult == State.Running)
+                {
+                    nextControl = CurrentBehaviourWrapper.Value.Behaviour;
+                }
+            }
             return nextControl;
         }
 
@@ -183,6 +196,7 @@ namespace ControlCanvas.Runtime
 
         public bool CheckIfDone()
         {
+            return _blackboard.LastDirection == ExDirection.Backward && _blackboard.behaviourStack.Count == 0;
             return false;
         }
         
