@@ -9,6 +9,11 @@
         State OnUpdate(IControlAgent agentContext, float deltaTime);
         
         void OnStop(IControlAgent agentContext);
+
+        void OnReset(IControlAgent agentContext, State blackboardLastCombinedResult)
+        {
+            
+        }
     }
     
     public enum State { Success, Failure, Running }

@@ -6,7 +6,7 @@
         
         public void OnStart(IControlAgent agentContext)
         {
-            agentContext.BlackboardFlowControl.Set(this, 0f);
+            //agentContext.BlackboardFlowControl.Set(this, 0f);
             
             // float timePassed = agentContext.BlackboardFlowControl.SetIfNeededWithFunctionAndGet(this, () => 0f);
             // timePassed %= timeToWait;
@@ -15,10 +15,11 @@
 
         public State OnUpdate(IControlAgent agentContext, float deltaTime)
         {
-            if (!agentContext.BlackboardFlowControl.TryGet(this, out float timePassed))
-            {
-                return State.Failure;
-            }
+            // if (!agentContext.BlackboardFlowControl.TryGet(this, out float timePassed))
+            // {
+            //     return State.Failure;
+            // }
+            float timePassed = agentContext.BlackboardFlowControl.Get(this, 0f);
             timePassed += deltaTime;
             agentContext.BlackboardFlowControl.Set(this, timePassed);
             if (timePassed >= timeToWait)
@@ -31,6 +32,14 @@
         public void OnStop(IControlAgent agentContext)
         {
             
+        }
+        
+        public void OnReset(IControlAgent agentContext, State blackboardLastCombinedResult)
+        {
+            if (blackboardLastCombinedResult != State.Running)
+            {
+                agentContext.BlackboardFlowControl.Set(this, 0f);
+            }
         }
 
         public ExDirection ReEvaluateDirection(IControlAgent agentContext,

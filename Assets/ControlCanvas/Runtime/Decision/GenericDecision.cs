@@ -28,7 +28,9 @@ namespace ControlCanvas.Runtime
         
         public bool Decide(IControlAgent agentContext)
         {
-            return IsSameType(out Type vType) && Compare(vType, agentContext.GetBlackboard(blackboardType1), agentContext.GetBlackboard(blackboardType2));
+            IBlackboard blackboard1 = blackboardType1 != null ? agentContext.GetBlackboard(blackboardType1) : null;
+            IBlackboard blackboard2 = blackboardType2 != null ? agentContext.GetBlackboard(blackboardType2) : null;
+            return IsSameType(out Type vType) && Compare(vType, blackboard1, blackboard2);
             
 
             return false;
