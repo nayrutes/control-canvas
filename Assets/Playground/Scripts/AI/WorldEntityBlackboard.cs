@@ -1,11 +1,18 @@
-﻿using ControlCanvas.Runtime;
+﻿using System;
+using ControlCanvas.Runtime;
 using UnityEngine;
 
 namespace Playground.Scripts.AI
 {
-    public class WorldEntityBlackboard : IBlackboard
+    public class WorldEntityBlackboard : MonoBehaviour, IBlackboard
     {
-        public Character2DAgent[] entities;
+        private Character2DAgent[] entities;
+
+        private void Start()
+        {
+            entities = FindObjectsOfType<Character2DAgent>();
+        }
+
         public GameObject GetNearestEntityOfType(EntityTypes enemyType, Vector3 position, out float nearestDistance)
         {
             nearestDistance = float.MaxValue;

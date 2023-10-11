@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Playground.Scripts.AI;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -21,6 +22,7 @@ namespace Playground.Scripts
             }
             //cm.SetDestination(targets[currentTargetIndex].position);
             cm.MovementBlackboard.TargetPositions = targets.ConvertAll(t => t.position);
+            GetComponent<Character2DAgent>().AddBlackboard(FindObjectOfType<WorldEntityBlackboard>());
         }
 
         // private void Update()

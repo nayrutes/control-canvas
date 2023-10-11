@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ControlCanvas;
 using ControlCanvas.Runtime;
+using UniRx;
 using UnityEngine;
 
 namespace Playground.Scripts.AI
@@ -14,6 +15,7 @@ namespace Playground.Scripts.AI
         
         public EntityTypes EntityType;
         public Dictionary<Type, IBlackboard> Blackboards { get; set; } = new();
+        public Subject<GameObject> IsNearEnemyEvent { get; set; } = new();
 
         public void AddBlackboard(IBlackboard blackboard)
         {
@@ -36,6 +38,22 @@ namespace Playground.Scripts.AI
             }
             Debug.LogError($"Blackboard of type {blackboardType} not found");
             return null;
+        }
+
+        private void Update()
+        {
+            var bb= Blackboards[typeof(WorldEntityBlackboard)] as WorldEntityBlackboard;
+            EntityTypes enemyType = EntityType == EntityTypes.Forester ? EntityTypes.Townsfolk : EntityTypes.Forester;
+            var go = bb.GetNearestEntityOfType(enemyType, transform.position, out float neDistance);
+            if (go != null && neDistance < 5f)
+            {
+                IsNearEnemyEvent.OnNext(go);
+            }
+        }
+
+        public void PickupClosestItem()
+        {
+            GetComponent<Hero>()?.PickupClosestItem();
         }
     }
 }

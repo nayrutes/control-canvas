@@ -12,7 +12,7 @@ namespace Playground.Scripts.AI.Nodes
         {
             var bb = agentContext.GetBlackboard(typeof(MovementBlackboard)) as MovementBlackboard;
             Vector3 targetPositionV3 = this.targetPosition.GetValue(agentContext);
-            if ((!bb.IsAgentMoving || overrideCurrentTarget) && bb.TargetPosition.Value != targetPositionV3)
+            if ((!bb.IsAgentMoving || overrideCurrentTarget) && bb.TargetPosition.Value != targetPositionV3 && !agentContext.BlackboardFlowControl.Get<bool>(this, false))
             {
                 bb.TargetPosition.Value = targetPositionV3;
                 //bb.NoTargetSet = false;
@@ -21,6 +21,11 @@ namespace Playground.Scripts.AI.Nodes
 
         public State OnUpdate(IControlAgent agentContext, float deltaTime)
         {
+            if (agentContext.BlackboardFlowControl.Get(this, false))
+            {
+                return State.Success;
+            }
+            
             var bb = agentContext.GetBlackboard(typeof(MovementBlackboard)) as MovementBlackboard;
             Vector3 targetPositionV3 = this.targetPosition.GetValue(agentContext);
             if (bb.TargetPosition.Value != targetPositionV3)
@@ -29,6 +34,7 @@ namespace Playground.Scripts.AI.Nodes
             }
             else if (Vector3.Distance(targetPositionV3, bb.CurrentPosition) < 0.5f)
             {
+                agentContext.BlackboardFlowControl.Set(this,true);
                 return State.Success;
             }
             else
@@ -45,6 +51,14 @@ namespace Playground.Scripts.AI.Nodes
             // {
             //     bb.NoTargetSet = true;   
             // }
+        }
+
+        public void OnReset(IControlAgent agentContext, State blackboardLastCombinedResult)
+        {
+            if (blackboardLastCombinedResult != State.Running)
+            {
+                agentContext.BlackboardFlowControl.Set(this, false);
+            }
         }
     }
 
