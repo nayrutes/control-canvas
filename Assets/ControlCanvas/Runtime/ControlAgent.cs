@@ -8,12 +8,17 @@ namespace ControlCanvas.Runtime
 {
     public class ControlAgent : MonoBehaviour, IControlAgent
     {
-        public Blackboard BlackboardAgent { get; set; } = new();
+        public DebugBlackboard DebugBlackboardAgent { get; set; } = new();
         public BlackboardFlowControl BlackboardFlowControl { get; set; } = new();
         public string Name { get; set; }
         public IBlackboard GetBlackboard(Type blackboardType)
         {
-            return BlackboardAgent;
+            return DebugBlackboardAgent;
+        }
+
+        public T GetBlackboard<T>() where T : IBlackboard
+        {
+            return (T)(IBlackboard)DebugBlackboardAgent;
         }
 
         public bool testBool;
@@ -46,7 +51,7 @@ namespace ControlCanvas.Runtime
         [ContextMenu("Trigger Exit event")]
         public void TriggerExitEvent()
         {
-            BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            DebugBlackboardAgent.ExitEvent.OnNext(Unit.Default);
         }
     }
 }

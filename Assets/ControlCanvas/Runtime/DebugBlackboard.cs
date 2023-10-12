@@ -7,7 +7,7 @@ using UnityEngine;
 namespace ControlCanvas
 {
     [System.Serializable]
-    public class Blackboard : IBlackboard
+    public class DebugBlackboard : IBlackboard
     {
         public Vector3 moveToPosition;
         public GameObject moveToObject;
@@ -22,12 +22,12 @@ namespace ControlCanvas
         public float TestFloat { get; set; }= 4.2f;
         public bool TestBool { get; set; }= true;
         
-        public List<IObservable<Unit>> GetExitEvents()
+        public List<IObservable<object>> GetExitEvents()
         {
-            return new List<IObservable<Unit>>()
+            return new List<IObservable<object>>()
             {
-                ExitEvent,
-                OtherExitEvent
+                ExitEvent.Select(x => (object)x),
+                OtherExitEvent.Select(x => (object)x)
             };
         }
         

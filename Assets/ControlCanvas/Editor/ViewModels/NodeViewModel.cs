@@ -28,7 +28,7 @@ namespace ControlCanvas.Editor.ViewModels
         public ReactiveProperty<State?> CurrentDebugBehaviourState { get; private set; } = new();
         
         //[NonSerialized]
-        public Blackboard blackboardCanvas;
+        //public Blackboard blackboardCanvas;
 
         //[NonSerialized]
         public ControlAgent controlAgent;

@@ -3,8 +3,9 @@ using UniRx;
 
 namespace ControlCanvas.Runtime
 {
-    public class IdleState : IState
+    public class GenericState : IState
     {
+        public BlackboardVariable<IObservable<object>> exitEvent = new ();
         public void Execute(IControlAgent agentContext, float deltaTime)
         {
             
@@ -19,10 +20,10 @@ namespace ControlCanvas.Runtime
         {
             
         }
-        
+
         public IObservable<object> RegisterExitEvent(IControlAgent agentContext)
         {
-            return null;
+            return exitEvent.GetValue(agentContext);
         }
     }
 }

@@ -53,7 +53,7 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode1,
             });
             
-            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlAgent.DebugBlackboardAgent.ExitEvent.OnNext(Unit.Default);
             
             controlRunner.RunningUpdate(1);
             AssertExecutionOrderAndType(new List<string>()
@@ -71,7 +71,7 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode2,
             });
             
-            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlAgent.DebugBlackboardAgent.ExitEvent.OnNext(Unit.Default);
             
             controlRunner.RunningUpdate(1);
             AssertExecutionOrderAndType(new List<string>()

@@ -21,7 +21,7 @@ namespace ControlCanvas.Runtime
             }
             else
             {
-                Debug.Log($"Executing {nameof(DebugState)} for {agentContext.Name} : {nodeMessage}");   
+                Debug.Log($"Executing {nameof(DebugState)}: {nodeMessage}");   
             }
         }
 
@@ -33,7 +33,7 @@ namespace ControlCanvas.Runtime
             }
             else
             {
-                Debug.Log($"Entering {nameof(DebugState)} for {agentContext.Name} : {nodeMessage}");   
+                Debug.Log($"Entering {nameof(DebugState)}: {nodeMessage}");   
             }
         }
 
@@ -45,13 +45,13 @@ namespace ControlCanvas.Runtime
             }
             else
             {
-                Debug.Log($"Exiting {nameof(DebugState)} for {agentContext.Name} : {nodeMessage}");
+                Debug.Log($"Exiting {nameof(DebugState)}: {nodeMessage}");
             }
         }
 
-        public IObservable<Unit> RegisterExitEvent(IControlAgent agentContext)
+        public IObservable<object> RegisterExitEvent(IControlAgent agentContext)
         {
-            return agentContext.BlackboardAgent.GetExitEvents()[exitEventIndex];
+            return agentContext.GetBlackboard<DebugBlackboard>()?.GetExitEvents()[exitEventIndex];
         }
     }
 }

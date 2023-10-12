@@ -31,7 +31,7 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode3,
             });
             
-            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlAgent.DebugBlackboardAgent.ExitEvent.OnNext(Unit.Default);
             
             controlRunner.RunningUpdate(0);
             AssertExecutionOrderByGUIDOnly(new List<string>()
@@ -67,7 +67,7 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode1,
             });
             
-            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlAgent.DebugBlackboardAgent.ExitEvent.OnNext(Unit.Default);
             
             controlRunner.RunningUpdate(0);
             AssertExecutionOrderByGUIDOnly(new List<string>()
@@ -88,7 +88,7 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode3,
             });
             
-            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlAgent.DebugBlackboardAgent.ExitEvent.OnNext(Unit.Default);
             
             controlRunner.RunningUpdate(0);
             AssertExecutionOrderByGUIDOnly(new List<string>()

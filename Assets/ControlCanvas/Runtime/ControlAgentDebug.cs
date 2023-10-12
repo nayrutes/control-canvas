@@ -7,12 +7,17 @@ namespace ControlCanvas.Runtime
 {
     public class ControlAgentDebug : IControlAgent
     {
-        public Blackboard BlackboardAgent { get; set; } = new();
+        public DebugBlackboard DebugBlackboardAgent { get; set; } = new();
         public BlackboardFlowControl BlackboardFlowControl { get; set; } = new();
         public string Name { get; set; }
         public IBlackboard GetBlackboard(Type blackboardType)
         {
-            return BlackboardAgent;
+            return DebugBlackboardAgent;
+        }
+
+        public T GetBlackboard<T>() where T : IBlackboard
+        {
+            return (T)(IBlackboard)DebugBlackboardAgent;
         }
 
         public ControlRunner ControlRunner { get; set; }

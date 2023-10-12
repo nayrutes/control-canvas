@@ -50,9 +50,9 @@ namespace ControlCanvas.Runtime
             OnStop(agentContext);
         }
         
-        public IObservable<Unit> RegisterExitEvent(IControlAgent agentContext)
+        public IObservable<object> RegisterExitEvent(IControlAgent agentContext)
         {
-            return agentContext.BlackboardAgent.ExitEvent;
+            return agentContext.GetBlackboard<DebugBlackboard>()?.ExitEvent.Select(x => (object)x);
         }
     }
 }

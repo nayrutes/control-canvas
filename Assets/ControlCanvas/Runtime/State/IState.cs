@@ -10,6 +10,6 @@ namespace ControlCanvas.Runtime
         void OnEnter(IControlAgent agentContext);
         void OnExit(IControlAgent agentContext);
 
-        IObservable<Unit> RegisterExitEvent(IControlAgent agentContext);
+        IObservable<object> RegisterExitEvent(IControlAgent agentContext);
     }
 }

@@ -82,11 +82,6 @@ namespace ControlCanvas.Runtime
         public void Initialize(string startPath, IControlAgent agentContext)
         {
             this.agentContext = agentContext;
-            if (this.agentContext.BlackboardAgent == null)
-            {
-                Debug.LogError("No blackboard agent set");
-                return;
-            }
             if (this.agentContext.BlackboardFlowControl == null)
             {
                 Debug.LogError("No blackboard-flowControl agent set");
@@ -100,6 +95,11 @@ namespace ControlCanvas.Runtime
 
         private void AddRunInstanceToQueue(IControl initControl)
         {
+            if (initControl == null)
+            {
+                Debug.LogError("No init control, adding to run queue failed");
+                return;
+            }
             if (!_runInstanceDict.ContainsKey(initControl))
             {
                 CreateRunInstance(initControl);
@@ -155,6 +155,7 @@ namespace ControlCanvas.Runtime
 
         private void Restart()
         {
+            //Debug.LogWarning("Restarting control flow");
             AddRunInstanceToQueue(restartInitControl);
         }
         
@@ -261,6 +262,10 @@ namespace ControlCanvas.Runtime
             }
             else
             {
+                if (currentRunInstance.InitControl == restartInitControl)
+                {
+                    Debug.LogWarning("Restarting main flow with init control");
+                }
                 next = currentRunInstance.InitControl;
             }
             
@@ -306,9 +311,13 @@ namespace ControlCanvas.Runtime
                 {
                     InstanceUpdateDone(currentRunInstance);
                     currentRunInstance = null;
+                    if (_initQueue.Count == 0)
+                    {
+                        isCompleteDone = true;
+                    }
                 }
             }
-            else
+            if(isCompleteDone)
             {
                 CompleteUpdateDone();
             }

@@ -18,9 +18,9 @@ namespace ControlCanvas.Runtime
         {
         }
 
-        public IObservable<Unit> RegisterExitEvent(IControlAgent agentContext)
+        public IObservable<object> RegisterExitEvent(IControlAgent agentContext)
         {
-            return agentContext.BlackboardAgent.ExitEvent;
+            return agentContext.GetBlackboard<DebugBlackboard>()?.ExitEvent.Select(x => (object)x);
         }
 
         public string GetSubFlowPath(IControlAgent agentContext)

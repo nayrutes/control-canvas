@@ -101,7 +101,7 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode2,
             });
             
-            controlAgent.BlackboardAgent.TestBool = false;
+            controlAgent.DebugBlackboardAgent.TestBool = false;
             controlRunner.RunningUpdate(0);
             AssertExecutionOrderAndType(new List<string>()
             {

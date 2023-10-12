@@ -105,7 +105,7 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode1,
             });
             
-            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlAgent.DebugBlackboardAgent.ExitEvent.OnNext(Unit.Default);
             
             controlRunner.RunningUpdate(1);
             AssertExecutionOrderByGUIDOnly(new List<string>()
@@ -140,7 +140,7 @@ namespace ControlCanvas.Tests.EditorTests
             });
             
             
-            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlAgent.DebugBlackboardAgent.ExitEvent.OnNext(Unit.Default);
             
             controlRunner.RunningUpdate(1);
             AssertExecutionOrderByGUIDOnly(new List<string>()
@@ -177,7 +177,7 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode3,
             });
             
-            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlAgent.DebugBlackboardAgent.ExitEvent.OnNext(Unit.Default);
             controlRunner.RunningUpdate(0);
             AssertExecutionOrderByGUIDOnly(new List<string>()
             {
@@ -186,7 +186,7 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode2,
             });
             
-            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlAgent.DebugBlackboardAgent.ExitEvent.OnNext(Unit.Default);
             controlRunner.RunningUpdate(0);
             AssertExecutionOrderByGUIDOnly(new List<string>()
             {
@@ -197,24 +197,8 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode3,
             });
             
-            controlAgent.BlackboardAgent.OtherExitEvent.OnNext(Unit.Default);
+            controlAgent.DebugBlackboardAgent.OtherExitEvent.OnNext(Unit.Default);
             controlRunner.RunningUpdate(0);
-            AssertExecutionOrderByGUIDOnly(new List<string>()
-            {
-                guidNode1,
-                guidNode3,
-                guidNode2,
-                guidNode1,
-                guidNode3,
-                guidNode1,
-                guidNode4,
-            });
-            
-            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
-            controlRunner.RunningUpdate(0);
-            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
-            controlRunner.RunningUpdate(0);
-            
             AssertExecutionOrderByGUIDOnly(new List<string>()
             {
                 guidNode1,
@@ -224,12 +208,28 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode3,
                 guidNode1,
                 guidNode4,
+            });
+            
+            controlAgent.DebugBlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlRunner.RunningUpdate(0);
+            controlAgent.DebugBlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlRunner.RunningUpdate(0);
+            
+            AssertExecutionOrderByGUIDOnly(new List<string>()
+            {
+                guidNode1,
+                guidNode3,
+                guidNode2,
+                guidNode1,
+                guidNode3,
+                guidNode1,
+                guidNode4,
                 guidNode2,
                 guidNode1,
                 guidNode4,
             });
             
-            controlAgent.BlackboardAgent.OtherExitEvent.OnNext(Unit.Default);
+            controlAgent.DebugBlackboardAgent.OtherExitEvent.OnNext(Unit.Default);
             controlRunner.RunningUpdate(0);
             AssertExecutionOrderByGUIDOnly(new List<string>()
             {
@@ -267,10 +267,10 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode3,
             });
             
-            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlAgent.DebugBlackboardAgent.ExitEvent.OnNext(Unit.Default);
             controlRunner.RunningUpdate(0);
-            controlAgent.BlackboardAgent.ExitEvent.OnNext(Unit.Default);
-            controlAgent.BlackboardAgent.OtherExitEvent.OnNext(Unit.Default);
+            controlAgent.DebugBlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlAgent.DebugBlackboardAgent.OtherExitEvent.OnNext(Unit.Default);
             controlRunner.RunningUpdate(0);
             AssertExecutionOrderByGUIDOnly(new List<string>()
             {

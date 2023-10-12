@@ -14,7 +14,7 @@ namespace ControlCanvas.Runtime
         private bool _exitCalled;
 
         IDisposable disposable = null;
-        private IObservable<Unit> ExitEvent { get; set; }
+        private IObservable<object> ExitEvent { get; set; }
         
         
         public StateRunner(FlowManager flowManager, NodeManager instance)
