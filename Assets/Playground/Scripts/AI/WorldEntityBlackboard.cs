@@ -19,7 +19,7 @@ namespace Playground.Scripts.AI
             GameObject nearestEntity = null;
             foreach (var entity in entities)
             {
-                if (entity.EntityType == enemyType)
+                if (entity.EntityType == enemyType && entity.gameObject.activeSelf)
                 {
                     var distance = Vector3.Distance(entity.transform.position, position);
                     if (distance < nearestDistance)

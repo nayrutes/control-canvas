@@ -7,50 +7,42 @@ using UnityEngine;
 
 namespace Playground.Scripts.AI
 {
-    public class Character2DAgent : MonoBehaviour, IControlAgent
+    public class Character2DAgent : ControlAgentMonoBase, IControlAgent
     {
-        public Blackboard BlackboardAgent { get; set; } = new();
         public BlackboardFlowControl BlackboardFlowControl { get; set; } = new();
-        public string Name { get; set; }
         
         public EntityTypes EntityType;
-        public Dictionary<Type, IBlackboard> Blackboards { get; set; } = new();
-        public Subject<GameObject> IsNearEnemyEvent { get; set; } = new();
 
-        public void AddBlackboard(IBlackboard blackboard)
+        private void Start()
         {
-            if (Blackboards.ContainsKey(blackboard.GetType()))
-            {
-                Debug.LogWarning($"Blackboard of type {blackboard.GetType()} already exists. Replacing.");
-                Blackboards[blackboard.GetType()] = blackboard;
-            }
-            else
-            {
-                Blackboards.Add(blackboard.GetType(), blackboard);
-            }
-        }
-
-        public IBlackboard GetBlackboard(Type blackboardType)
-        {
-            if (Blackboards.TryGetValue(blackboardType, out var blackboard))
-            {
-                return blackboard;
-            }
-            Debug.LogError($"Blackboard of type {blackboardType} not found");
-            return null;
+            var bb = new SensorBlackboard();
+            AddBlackboard(bb);
         }
 
         private void Update()
         {
-            var bb= Blackboards[typeof(WorldEntityBlackboard)] as WorldEntityBlackboard;
+            var bb = GetBlackboard<WorldEntityBlackboard>();
             EntityTypes enemyType = EntityType == EntityTypes.Forester ? EntityTypes.Townsfolk : EntityTypes.Forester;
             var go = bb.GetNearestEntityOfType(enemyType, transform.position, out float neDistance);
-            if (go != null && neDistance < 5f)
+            SensorBlackboard sensorBlackboard = GetBlackboard<SensorBlackboard>();
+            if (go != null)
             {
-                IsNearEnemyEvent.OnNext(go);
+                sensorBlackboard.IsNearEnemyEventRp.Value = neDistance < 5f;
+                sensorBlackboard.Target = go.transform;
+            }
+            else
+            {
+                sensorBlackboard.Target = null;
             }
         }
 
+        public GameObject GetNearestEnemy(out float neDistance)
+        {
+            var bb = GetBlackboard<WorldEntityBlackboard>();
+            EntityTypes enemyType = EntityType == EntityTypes.Forester ? EntityTypes.Townsfolk : EntityTypes.Forester;
+            return bb.GetNearestEntityOfType(enemyType, transform.position, out neDistance);
+        }
+        
         public void PickupClosestItem()
         {
             GetComponent<Hero>()?.PickupClosestItem();

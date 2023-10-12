@@ -1670,7 +1670,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   startPath: Assets/Playground/Flows/Hero.xml
-  startStopped: 1
+  startStopped: 0
   updatesPerSecond: 10
 --- !u!114 &773886229
 MonoBehaviour:
@@ -25321,6 +25321,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 880310752438901623, guid: 7b0cffc7c0925a74d935f2c78f444c0b, type: 3}
+      propertyPath: m_Speed
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 1332714889436639960, guid: 7b0cffc7c0925a74d935f2c78f444c0b, type: 3}
       propertyPath: targets.Array.size
       value: 4
@@ -25415,7 +25419,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   startPath: Assets/Playground/Flows/TruntPatrol.xml
-  startStopped: 1
+  startStopped: 0
   updatesPerSecond: 10
 --- !u!1 &1734651910
 GameObject:
@@ -25572,7 +25576,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   startPath: Assets/Playground/Flows/TruntPatrol.xml
-  startStopped: 1
+  startStopped: 0
   updatesPerSecond: 10
 --- !u!1001 &1929069260
 PrefabInstance:
@@ -25582,6 +25586,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 880310752438901623, guid: 7b0cffc7c0925a74d935f2c78f444c0b, type: 3}
+      propertyPath: m_Speed
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 1332714889436639960, guid: 7b0cffc7c0925a74d935f2c78f444c0b, type: 3}
       propertyPath: targets.Array.size
       value: 4
@@ -26005,6 +26013,10 @@ PrefabInstance:
     - target: {fileID: 8741095467628487626, guid: 974648baecce05a46b6c867d7ebb7a00, type: 3}
       propertyPath: m_Name
       value: Hero
+      objectReference: {fileID: 0}
+    - target: {fileID: 8741095467628487626, guid: 974648baecce05a46b6c867d7ebb7a00, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

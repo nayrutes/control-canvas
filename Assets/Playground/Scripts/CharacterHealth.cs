@@ -1,6 +1,8 @@
-﻿namespace Playground.Scripts
+﻿using UnityEngine;
+
+namespace Playground.Scripts
 {
-    public class CharacterHealth
+    public class CharacterHealth : MonoBehaviour
     {
         public float maxHealth = 100f;
         public float currentHealth = 100f;
@@ -16,6 +18,7 @@
 
         private void Die()
         {
+            gameObject.SetActive(false);
         }
     }
 }
