@@ -12,7 +12,7 @@ namespace ControlCanvas.Editor.deprecated
         public List<NodeData> NodesCC = new List<NodeData>();
         public List<Edge> EdgesCC = new List<Edge>();
 
-        public Blackboard blackboard = new Blackboard();
+        //public Blackboard blackboard = new Blackboard();
 
         public NodeData selectedNode;
         
