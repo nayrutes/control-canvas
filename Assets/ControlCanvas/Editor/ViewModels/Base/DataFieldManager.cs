@@ -11,29 +11,48 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
         public static void GatherDataFields<TData>()
         {
-            if (!DataFieldsCache.TryGetValue(typeof(TData), out var dataFields))
+            Type dataType = typeof(TData);
+            if (dataType.IsInterface)
+            {
+                Debug.LogError($"Cannot gather data fields for interface {dataType}");
+            }
+            else
+            {
+                Debug.LogWarning($"Gathering data fields for {dataType} which is no interface, so this could be optimized");
+            }
+            GatherDataFields(dataType);
+        }
+        public static void GatherDataFields(object data)
+        {
+            Type dataType = data.GetType();
+            GatherDataFields(dataType);
+        }
+
+        public static void GatherDataFields(Type type)
+        {
+            if (!DataFieldsCache.TryGetValue(type, out var dataFields))
             {
                 dataFields = new Dictionary<string, FieldInfo>();
-                var fields = typeof(TData).GetFields(BindingFlags.Public | BindingFlags.Instance);
+                var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
                 foreach (var fieldInfo in fields)
                 {
                     dataFields.Add(fieldInfo.Name, fieldInfo);
                 }
 
-                DataFieldsCache[typeof(TData)] = dataFields;
-                LogFindings<TData>(dataFields);
+                DataFieldsCache[type] = dataFields;
+                LogFindings(type, dataFields);
             }
         }
-
-        public static Dictionary<string, FieldInfo> GetDataFields<TData>()
+        
+        public static Dictionary<string, FieldInfo> GetDataFields(object data)
         {
-            GatherDataFields<TData>();
-            return DataFieldsCache[typeof(TData)];
+            GatherDataFields(data);
+            return DataFieldsCache[data.GetType()];
         }
 
-        private static void LogFindings<TData>(Dictionary<string, FieldInfo> dataFields)
+        private static void LogFindings(Type type, Dictionary<string, FieldInfo> dataFields)
         {
-            string findings = $"DataFields for {typeof(TData)}:\n";
+            string findings = $"DataFields for {type}:\n";
             foreach (var dataField in dataFields)
             {
                 findings += $"{dataField.Key} {dataField.Value.FieldType}\n";

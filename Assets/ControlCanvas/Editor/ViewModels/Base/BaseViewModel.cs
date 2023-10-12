@@ -53,9 +53,16 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
             if (autobind)
             {
-                DataFieldManager.GatherDataFields<TData>();
+                if (typeof(TData).IsInterface)
+                {
+                    DataFieldManager.GatherDataFields(data);   
+                }
+                else
+                {
+                    DataFieldManager.GatherDataFields<TData>();
+                }
                 reactivePropertyManager.GatherVmReactiveProperties(this);
-                if (fieldToPropertyMapper.AutoDataFieldToReactivePropertyNameMapping())
+                if (fieldToPropertyMapper.AutoDataFieldToReactivePropertyNameMapping(data))
                 {
                     return;
                 }
@@ -64,8 +71,8 @@ namespace ControlCanvas.Editor.ViewModels.Base
                 disposables.Add(viewModelTracker);
 
                 DataProperty.DoWithLast(x => { viewModelTracker.ForceDisposeAll(); })
-                    .Subscribe(data => { autoDataSaving.AutoSetInitValues(); }).AddTo(disposables);
-                autoDataSaving.SetupAutoDataSaving();
+                    .Subscribe(data => { autoDataSaving.AutoSetInitValues(data); }).AddTo(disposables);
+                autoDataSaving.SetupAutoDataSaving(data);
                 disposables.Add(autoDataSaving);
             }
             else

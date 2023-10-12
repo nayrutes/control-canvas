@@ -11,10 +11,10 @@ namespace ControlCanvas.Editor.Views.NodeContents
     [NodeContent(typeof(GenericDecision))]
     public class GenericDecisionContentView : INodeContent
     {
-        public VisualElement CreateView(IControl control)
+        public VisualElement CreateView(IControl control, IViewModel viewModel)
         {
-            var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
-            var vmBase = vm as BaseViewModel<GenericDecision>;
+            //var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
+            var vmBase = viewModel as BaseViewModel<IControl>;
             
             VisualElement view = new();
             VisualElement viewRow = new();
@@ -30,9 +30,9 @@ namespace ControlCanvas.Editor.Views.NodeContents
             viewRow2.Add(viewRow2Center);
             viewRow2.Add(viewRow2Right);
             //Automatic view element creation
-            viewRow.Add(ViewCreator.CreateLinkedGenericField(vm, nameof(GenericDecision.variableType1)));
-            viewRow.Add(ViewCreator.CreateLinkedGenericField(vm, nameof(GenericDecision.decisionType)));
-            viewRow.Add(ViewCreator.CreateLinkedGenericField(vm, nameof(GenericDecision.variableType2)));
+            viewRow.Add(ViewCreator.CreateLinkedGenericField(viewModel, nameof(GenericDecision.variableType1)));
+            viewRow.Add(ViewCreator.CreateLinkedGenericField(viewModel, nameof(GenericDecision.decisionType)));
+            viewRow.Add(ViewCreator.CreateLinkedGenericField(viewModel, nameof(GenericDecision.variableType2)));
 
             vmBase.GetReactiveProperty<ReactiveProperty<VariableType>>(nameof(GenericDecision.variableType1))
                 .Subscribe(x => { SetContentType(viewRow2Left, vmBase, x, true);});
@@ -50,7 +50,7 @@ namespace ControlCanvas.Editor.Views.NodeContents
             return view;
         }
 
-        private void SetContentType(VisualElement view, BaseViewModel<GenericDecision> vmBase, VariableType variableType, bool isLeft)
+        private void SetContentType(VisualElement view, BaseViewModel<IControl> vmBase, VariableType variableType, bool isLeft)
         {
             view.Clear();
             VisualElement content = new();
@@ -80,7 +80,7 @@ namespace ControlCanvas.Editor.Views.NodeContents
             view.Add(content);
         }
 
-        private void SetConstantContent(VisualElement view, BaseViewModel<GenericDecision> vmBase, ValueType valueType, bool isLeft)
+        private void SetConstantContent(VisualElement view, BaseViewModel<IControl> vmBase, ValueType valueType, bool isLeft)
         {
             view.Clear();
             string fieldName;
@@ -104,7 +104,7 @@ namespace ControlCanvas.Editor.Views.NodeContents
             view.Add(ViewCreator.CreateLinkedGenericField(vmBase, fieldName));
         }
         
-        private void SetReferenceContent(VisualElement view, BaseViewModel<GenericDecision> vmBase, Type type, bool isLeft)
+        private void SetReferenceContent(VisualElement view, BaseViewModel<IControl> vmBase, Type type, bool isLeft)
         {
             view.Clear();
             string fieldName = isLeft ? nameof(GenericDecision.blackboardKey1) : nameof(GenericDecision.blackboardKey2);

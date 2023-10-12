@@ -82,11 +82,14 @@ namespace ControlCanvas.Editor.ViewModels.Base
                 
             }
 
-            return (IViewModel)Activator.CreateInstance(viewModelType, data, autobind);
+            var viewModel = (IViewModel)Activator.CreateInstance(viewModelType, data, autobind);
+            //parent.AddChildViewModel(viewModel, data);
+            return viewModel;
         }
 
         public static bool IsTypeSupported(Type type)
         {
+            return (type.IsClass || type.IsInterface) && !type.IsPrimitive && type != typeof(string);
             if (type.IsGenericType)
             {
                 type = type.GetGenericTypeDefinition();

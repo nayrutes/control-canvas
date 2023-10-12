@@ -93,7 +93,7 @@ namespace ControlCanvas.Editor.Views
         //     }
         // }
         
-        private void SetNewClass(IControl control)
+        private void SetNewClass(IControl control, IViewModel viewModel)
         {
             m_DynamicContent.Clear();
             var label = new Label($"This Node represents class {control?.GetType()}");
@@ -103,7 +103,7 @@ namespace ControlCanvas.Editor.Views
             
             if (control != null)
             {
-                m_DynamicContent.Add(ViewCreator.CreateViewFromControl(control));
+                m_DynamicContent.Add(ViewCreator.CreateViewFromControl(control, viewModel));
             }
             ApplyVisualNodeSettings(ViewCreator.GetVisualSettings(control, _visualNodeSettings));
         }
@@ -236,7 +236,10 @@ namespace ControlCanvas.Editor.Views
             
             //nodeViewModel.NodeType.Subscribe(type => SetNewType(type)).AddTo(disposables);
             
-            nodeViewModel.specificControl.Subscribe(control => SetNewClass(control)).AddTo(disposables);
+            nodeViewModel.specificControl.Subscribe(control =>
+            {
+                SetNewClass(control, nodeViewModel.GetChildViewModel(control));
+            }).AddTo(disposables);
             
             nodeViewModel.IsInitialNode.Subscribe(x =>
             {

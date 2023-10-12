@@ -37,10 +37,10 @@ namespace ControlCanvas.Editor.Views
             }
         }
 
-        public VisualElement CreateView(IControl control)
+        public VisualElement CreateView(IControl control, IViewModel viewModel)
         {
-            var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
-            var rps = vm.GetAllReactiveProperties();
+            //var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
+            var rps = viewModel.GetAllReactiveProperties();
             
             VisualElement view = new();
             
@@ -55,7 +55,7 @@ namespace ControlCanvas.Editor.Views
                     {
                         Type viewType = SpecialTypes[innerTypeGeneric];
                         //Type viewModelType = viewType.GetCustomAttribute<CustomViewAttribute>().ViewModelType;
-                        field = ViewCreator.CreateAndLink(keyValuePair.Key, keyValuePair.Value, vm, viewType);
+                        field = ViewCreator.CreateAndLink(keyValuePair.Key, keyValuePair.Value, viewModel, viewType);
                     }
                     else
                     {

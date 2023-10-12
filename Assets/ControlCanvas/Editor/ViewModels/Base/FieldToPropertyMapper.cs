@@ -23,10 +23,10 @@ namespace ControlCanvas.Editor.ViewModels.Base
             DataFieldToReactivePropertyName = initializeMappingDictionary;
         }
 
-        public bool AutoDataFieldToReactivePropertyNameMapping()
+        public bool AutoDataFieldToReactivePropertyNameMapping(object data)
         {
-            MapDataFieldsToReactiveProperties(DataFieldManager.GetDataFields<TData>());
-            bool error = CheckTypeMatch(DataFieldManager.GetDataFields<TData>());
+            MapDataFieldsToReactiveProperties(DataFieldManager.GetDataFields(data));
+            bool error = CheckTypeMatch(DataFieldManager.GetDataFields(data));
             reactivePropertyManager.WarnForUnmappedReactiveProperties(DataFieldToReactivePropertyName);
             return error;
         }

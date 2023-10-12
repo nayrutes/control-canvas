@@ -25,15 +25,15 @@ namespace ControlCanvas.Editor.ViewModels.Base
         }
 
 
-        public void SetupAutoDataSaving()
+        public void SetupAutoDataSaving(object data)
         {
-            Dictionary<string, FieldInfo> dataFields = DataFieldManager.GetDataFields<TData>();
+            Dictionary<string, FieldInfo> dataFields = DataFieldManager.GetDataFields(data);
             foreach (KeyValuePair<string, FieldInfo> dataField in dataFields)
             {
                 if (fieldToPropertyMapper.TryGetValue(dataField.Key, out var reactivePropertyName))
                 {
                     var reactiveProperty = reactivePropertyManager.GetReactiveProperty(reactivePropertyName);
-                    SetupDataSaving(reactiveProperty, dataField.Key);
+                    SetupDataSaving(reactiveProperty, dataField.Key, data);
                 }
                 else
                 {
@@ -44,11 +44,11 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
         // ReSharper disable once MemberCanBePrivate.Global
         //protected is needed for the reflection
-        protected void SetupDataSaving(IDisposable property, string dataFieldName)
+        protected void SetupDataSaving(IDisposable property, string dataFieldName, object data)
         {
             FieldInfo fieldInfo; // = DataProperty.Value.GetType().GetField(dataVariableName);
 
-            fieldInfo = DataFieldManager.GetDataFields<TData>()[dataFieldName];
+            fieldInfo = DataFieldManager.GetDataFields(data)[dataFieldName];
 
             // Get the type of T in ReactiveProperty<T>
             Type valueType = property.GetType().GetGenericArguments()[0];
@@ -101,9 +101,9 @@ namespace ControlCanvas.Editor.ViewModels.Base
             }
         }
 
-        public void AutoSetInitValues()
+        public void AutoSetInitValues(object data)
         {
-            Dictionary<string, FieldInfo> DataFields = DataFieldManager.GetDataFields<TData>();
+            Dictionary<string, FieldInfo> DataFields = DataFieldManager.GetDataFields(data);
             foreach (KeyValuePair<string, FieldInfo> dataField in DataFields)
             {
                 if (!fieldToPropertyMapper.ContainsKey(dataField.Key))

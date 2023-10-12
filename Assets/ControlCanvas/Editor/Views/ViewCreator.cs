@@ -75,15 +75,15 @@ namespace ControlCanvas.Editor.Views
             return IsTypeManuallyDefined(control.GetType());
         }
 
-        public static VisualElement CreateViewFromControl(IControl control)
+        public static VisualElement CreateViewFromControl(IControl control, IViewModel viewModel)
         {
             if (IsControlViewManuallyDefined(control))
             {
-                return GetContentViewCreator(control.GetType()).CreateView(control);
+                return GetContentViewCreator(control.GetType()).CreateView(control, viewModel);
             }
             else
             {
-                return new AutomaticContentView().CreateView(control);
+                return new AutomaticContentView().CreateView(control, viewModel);
             }
         }
 
