@@ -43,6 +43,12 @@ namespace ControlCanvas.Editor.ViewModels
             NodeViewModel nodeVm = canvasViewModel.CreateNode();
             nodeVm.Position.Value = mousePosition;
         }
+        public NodeViewModel AddNode(NodeData nodeData, Vector2 mousePosition, Vector2 offset)
+        {
+            NodeViewModel nodeVm = canvasViewModel.AddNode(nodeData);
+            nodeVm.Position.Value = mousePosition + offset;
+            return nodeVm;
+        }
 
         public void DeleteNode(NodeViewModel nodeViewModel) =>
             canvasViewModel.DeleteNode(nodeViewModel.DataProperty.Value);
@@ -54,6 +60,12 @@ namespace ControlCanvas.Editor.ViewModels
         public EdgeViewModel CreateEdge(NodeViewModel outputNodeNodeViewModel, NodeViewModel inputNodeNodeViewModel, PortType outputPortType, PortType inputPortType)
         {
             return canvasViewModel.CreateEdge(outputNodeNodeViewModel, inputNodeNodeViewModel, outputPortType, inputPortType);
+        }
+        public EdgeViewModel AddEdge(EdgeData edgeData)
+        {
+            EdgeViewModel edgeVm = canvasViewModel.AddEdge(edgeData);
+            //edgeVm.Position.Value = mousePosition;
+            return edgeVm;
         }
         
         public void CreateRoutingNode(NodeViewModel startNodeNodeViewModel, NodeViewModel endNodeNodeViewModel,

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ControlCanvas.Editor.Extensions;
 using ControlCanvas.Editor.ViewModels;
+using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
 using UniRx;
@@ -68,9 +69,7 @@ namespace ControlCanvas.Editor.Views
         {
             this.viewModel = viewModel;
 
-            graphViewChanged += OnGraphViewChanged;
-            OnSelectionChanged += OnSelectionChangedHandler;
-            viewTransformChanged += OnViewTransformChanged;
+            BindViewCallbacks();
             viewDataKey = "ControlGraphView";
 
             this.viewModel.CanvasViewModel.DataProperty.DoWithLast(x =>
@@ -85,6 +84,101 @@ namespace ControlCanvas.Editor.Views
                 }
             });
         }
+
+        private void BindViewCallbacks()
+        {
+            graphViewChanged += OnGraphViewChanged;
+            OnSelectionChanged += OnSelectionChangedHandler;
+            viewTransformChanged += OnViewTransformChanged;
+            
+            //register ctrl + c and ctrl + v
+            RegisterCallback<KeyDownEvent>(evt =>
+            {
+                if (evt.keyCode == KeyCode.C && evt.ctrlKey)
+                {
+                    CopySelection();
+                }
+                else if (evt.keyCode == KeyCode.V && evt.ctrlKey)
+                {
+                    Paste();
+                }else if (evt.keyCode == KeyCode.D && evt.ctrlKey)
+                {
+                    DuplicateSelection();
+                }else if (evt.keyCode == KeyCode.X)
+                {
+                    CutSelection();
+                }
+            });
+        }
+
+
+        private void CopySelection()
+        {
+            CanvasData canvasDataSelection = new CanvasData();
+            selection.ToList().ForEach(x =>
+            {
+                if (x is IVisualNode node)
+                {
+                    canvasDataSelection.Nodes.Add(node.GetViewModel().DataProperty.Value);
+                }
+                else if (x is Edge edge)
+                {
+                    if (edge.input.node is IVisualNode inputNode && edge.output.node is IVisualNode outputNode)
+                    {
+                        canvasDataSelection.Edges.Add(viewModel.CanvasViewModel.GetEdgeViewModel(inputNode.GetViewModel(),
+                            outputNode.GetViewModel()).DataProperty.Value);
+                    }
+                }
+            });
+            string selectionXML = XMLHelper.SerializeToXML(canvasDataSelection);
+            EditorGUIUtility.systemCopyBuffer = selectionXML;
+        }
+        private void Paste(bool changeGuid = true, Vector2 generalOffset = default)
+        {
+            string selectionXML = EditorGUIUtility.systemCopyBuffer;
+            CanvasData canvasDataSelection = XMLHelper.DeserializeFromXML(selectionXML);
+            if (changeGuid)
+            {
+                canvasDataSelection.ReassignGuids();
+            }
+            float centerX = canvasDataSelection.Nodes.Average(x => x.position.x);
+            float centerY = canvasDataSelection.Nodes.Average(x => x.position.y);
+            Vector2 average = new Vector2(centerX, centerY);
+            List<IViewModel> viewModels = new List<IViewModel>();
+            canvasDataSelection.Nodes.ForEach(nodeData =>
+            {
+                Vector2 localOffset = nodeData.position - average;
+                viewModels.Add(viewModel.AddNode(nodeData, mousePosition, localOffset + generalOffset));
+            });
+            canvasDataSelection.Edges.ForEach(edgeData =>
+            {
+                viewModels.Add(viewModel.AddEdge(edgeData));
+            });
+            
+            ClearSelection();
+            foreach (IViewModel model in viewModels)
+            {
+                if (model is NodeViewModel nodeViewModel)
+                {
+                    AddToSelection(FindVisualNode(nodeViewModel) as Node);
+                }else if (model is EdgeViewModel edgeViewModel)
+                {
+                    AddToSelection(FindVisualEdge(edgeViewModel) as Edge);
+                }
+            }
+        }
+        private void CutSelection()
+        {
+            CopySelection();
+            DeleteSelection();
+        }
+
+        private void DuplicateSelection()
+        {
+            CopySelection();
+            Paste(true, new Vector2(10,-10));
+        }
+
 
         public void UnsetViewModel()
         {
@@ -104,7 +198,7 @@ namespace ControlCanvas.Editor.Views
 
                         if (typeChange)
                         {
-                            RemoveVisualNode(nodeViewModel.DataProperty.Value);
+                            RemoveVisualNode(FindVisualNode(nodeViewModel));
                             CreateVisualNode(nodeViewModel.DataProperty.Value);
                         }
                     }).AddTo(disposables);
@@ -112,7 +206,7 @@ namespace ControlCanvas.Editor.Views
                 
                 
             }).AddTo(disposables);
-            viewModel.Nodes.ObserveRemove().Subscribe(x => RemoveVisualNode(x.Value)).AddTo(disposables);
+            viewModel.Nodes.ObserveRemove().Subscribe(x => RemoveVisualNode(FindVisualNode(x.Value))).AddTo(disposables);
             
             viewModel.Edges.SubscribeAndProcessExisting(x => CreateVisualEdge(x)).AddTo(disposables);
             viewModel.Edges.ObserveRemove().Subscribe(x => RemoveVisualEdge(x.Value)).AddTo(disposables);
@@ -122,6 +216,13 @@ namespace ControlCanvas.Editor.Views
         {
             disposables.Clear();
         }
+
+        //Override to disable to allow for own implementation
+        protected override bool canPaste { get; } = false;
+        protected override bool canCopySelection { get; } = false;
+        protected override bool canCutSelection { get; } = false;
+        //protected override bool canDeleteSelection { get; } = false;
+        protected override bool canDuplicateSelection { get; } = false;
 
         ~ControlGraphView()
         {
@@ -210,7 +311,7 @@ namespace ControlCanvas.Editor.Views
             return viewModel.CreateEdge(getViewModel, nodeViewModel, outputPortType, inputPortType);
         }
 
-        //TODO only create new view if necessary
+        
         private void CreateVisualNode(NodeData nodeData)
         {
             NodeViewModel nodeViewModel = (NodeViewModel)viewModel.GetChildViewModel(nodeData);
@@ -228,15 +329,24 @@ namespace ControlCanvas.Editor.Views
             }
         }
 
-        private void RemoveVisualNode(NodeData nodeData)
+        private IVisualNode FindVisualNode(NodeViewModel nodeViewModel)
         {
-            var node = nodes.ToList().Find(x => x is IVisualNode node && node.GetVmGuid() == nodeData.guid);
-            if (node != null)
+            return nodes.ToList().Find(x => x is IVisualNode node && node.GetViewModel() == nodeViewModel) as IVisualNode;
+        }
+        
+        private IVisualNode FindVisualNode(NodeData nodeData)
+        {
+            return nodes.ToList().Find(x => x is IVisualNode node && node.GetVmGuid() == nodeData.guid) as IVisualNode;
+        }
+        
+        private void RemoveVisualNode(IVisualNode iNode)
+        {
+            if (iNode != null && iNode is Node node)
             {
                 IView<NodeViewModel> visualNode = node as IView<NodeViewModel>;
                 if (visualNode == null)
                 {
-                    Debug.LogWarning($"Could not find node {nodeData.guid} as visual node");
+                    Debug.LogWarning($"Could not find node {iNode.GetVmGuid()} as visual node");
                 }
                 else
                 {
@@ -258,6 +368,16 @@ namespace ControlCanvas.Editor.Views
             AddElement(edgeView);
         }
 
+        private Edge FindVisualEdge(EdgeViewModel edgeViewModel)
+        {
+            return FindVisualEdge(edgeViewModel.DataProperty.Value);
+        }
+        
+        private Edge FindVisualEdge(EdgeData edgeData)
+        {
+            return _visualEdgeMap.TryGetValue(edgeData, out Edge edge) ? edge : null;
+        }
+        
         private void SetEdgeViewModel(Edge edgeView, EdgeViewModel edgeViewModel)
         {
             IVisualNode startNode = nodes.ToList().Find(x =>
@@ -297,30 +417,6 @@ namespace ControlCanvas.Editor.Views
             }
         }
 
-        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
-        {
-            //base.BuildContextualMenu(evt);
-            // if (currentCanvas == null)
-            // {
-            //     evt.menu.AppendAction("No Canvas selected", a => {}, DropdownMenuAction.AlwaysDisabled);
-            //     return;
-            // }
-            evt.menu.AppendAction("Create Node", (a) => viewModel.CreateNode(mousePosition),
-                DropdownMenuAction.AlwaysEnabled);
-            if (selection.All(x => x is Edge))
-            {
-                evt.menu.AppendAction("CreateRoutingNode", (a) =>
-                    {
-                        List<ISelectable> selectablesCopy = new List<ISelectable>(selection);
-                        foreach (var selectable in selectablesCopy)
-                        {
-                            var edge = (Edge)selectable;
-                            CreateRoutingNode(edge);
-                        }
-                    },
-                    DropdownMenuAction.AlwaysEnabled);
-            }
-        }
 
         private void CreateRoutingNode(Edge edge)
         {
@@ -346,12 +442,25 @@ namespace ControlCanvas.Editor.Views
                         port.node != startPort.node).ToList();
         }
 
-        // private void CreateNode()
-        // {
-        //     var node = ;
-        //     //CreateVisualNode(node);
-        // }
-
+        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
+        {
+            evt.menu.AppendAction("Create Node", (a) => viewModel.CreateNode(mousePosition),
+                DropdownMenuAction.AlwaysEnabled);
+            if (selection.All(x => x is Edge))
+            {
+                evt.menu.AppendAction("CreateRoutingNode", (a) =>
+                    {
+                        List<ISelectable> selectablesCopy = new List<ISelectable>(selection);
+                        foreach (var selectable in selectablesCopy)
+                        {
+                            var edge = (Edge)selectable;
+                            CreateRoutingNode(edge);
+                        }
+                    },
+                    DropdownMenuAction.AlwaysEnabled);
+            }
+        }
+        
         public void ClearView()
         {
             _ignoreChanges = true;

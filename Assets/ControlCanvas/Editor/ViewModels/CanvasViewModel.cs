@@ -209,6 +209,11 @@ namespace ControlCanvas.Editor.ViewModels
             NodeViewModel cvm = AddChildViewModel<NodeViewModel, NodeData>(new NodeViewModel(), Nodes);
             return cvm;
         }
+        public NodeViewModel AddNode(NodeData nodeData)
+        {
+            Nodes.Value.Add(nodeData);
+            return GetChildViewModel<NodeViewModel>(nodeData);
+        }
 
         public void DeleteNode(NodeData nodeData)
         {
@@ -232,6 +237,12 @@ namespace ControlCanvas.Editor.ViewModels
                     DeleteEdge(edge);
                 }
             }
+        }
+        
+        public EdgeViewModel AddEdge(EdgeData edgeData)
+        {
+            Edges.Value.Add(edgeData);
+            return GetChildViewModel<EdgeViewModel>(edgeData);
         }
         
         public void DeleteEdge(EdgeData edgeData)
@@ -291,5 +302,6 @@ namespace ControlCanvas.Editor.ViewModels
             LoadData(new CanvasData());
             CanvasPath.Value = "";
         }
+
     }
 }

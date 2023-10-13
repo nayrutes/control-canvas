@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
-using ControlCanvas.Runtime;
 
 namespace ControlCanvas.Serialization
 {
@@ -21,5 +20,30 @@ namespace ControlCanvas.Serialization
         
         //Save all IStates here
         //public List<IState> States = new ();
+        public void ReassignGuids()
+        {
+            //Get all used guids
+            Dictionary<string, string> usedGuids = new Dictionary<string, string>();
+            foreach (NodeData nodeData in Nodes)
+            {
+                usedGuids.Add(nodeData.guid, Guid.NewGuid().ToString());
+            }
+            foreach (EdgeData edgeData in Edges)
+            {
+                usedGuids.Add(edgeData.Guid, Guid.NewGuid().ToString());
+            }
+            
+            //Reassign guids
+            foreach (NodeData nodeData in Nodes)
+            {
+                nodeData.guid = usedGuids[nodeData.guid];
+            }
+            foreach (EdgeData edgeData in Edges)
+            {
+                edgeData.Guid = usedGuids[edgeData.Guid];
+                edgeData.StartNodeGuid = usedGuids[edgeData.StartNodeGuid];
+                edgeData.EndNodeGuid = usedGuids[edgeData.EndNodeGuid];
+            }
+        }
     }
 }

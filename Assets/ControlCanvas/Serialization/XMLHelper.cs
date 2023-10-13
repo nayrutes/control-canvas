@@ -10,19 +10,23 @@ namespace ControlCanvas.Serialization
 {
     public class XMLHelper
     {
-        public static void SerializeToXML(string path, CanvasData data)
+        public static string SerializeToXML(CanvasData data)
         {
             IExtendedXmlSerializer serializerEx = new ConfigurationContainer()
-                    .UseAutoFormatting()
-                    .EnableImplicitTyping(typeof(CanvasData))
-                    .UseOptimizedNamespaces()
-                    .AllowMultipleReferences()
-                    .Create();
+                .UseAutoFormatting()
+                .EnableImplicitTyping(typeof(CanvasData))
+                .UseOptimizedNamespaces()
+                .AllowMultipleReferences()
+                .Create();
             
             XmlWriterSettings settings = new XmlWriterSettings();
             settings.Indent = true;
             
-            string xml = serializerEx.Serialize(settings, data);
+            return serializerEx.Serialize(settings, data);
+        }
+        public static void SerializeToXML(string path, CanvasData data)
+        {
+            string xml = SerializeToXML(data);
            
             try
             {
@@ -38,10 +42,10 @@ namespace ControlCanvas.Serialization
             }
             
         }
-        
-        public static void DeserializeFromXML(string path, out CanvasData data)
+
+        public static CanvasData DeserializeFromXML(string xml)
         {
-            data = new CanvasData();
+            CanvasData data = new CanvasData();
             IExtendedXmlSerializer serializerEx = new ConfigurationContainer()
                 .Type<EdgeData>()
                 .AddMigration(new EdgeDataMigration())
@@ -57,16 +61,33 @@ namespace ControlCanvas.Serialization
 
             try
             {
+                data = serializerEx.Deserialize<CanvasData>(xml);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
+            return data;
+        }
+        
+        public static void DeserializeFromXML(string path, out CanvasData data)
+        {
+            string xml = "";
+            data = new CanvasData();
+            try
+            {
                 using (StreamReader reader = new StreamReader(path))
                 {
-                    data = serializerEx.Deserialize<CanvasData>(reader);
+                    //data = serializerEx.Deserialize<CanvasData>(reader);
+                    xml = reader.ReadToEnd();
                 }
+                data = DeserializeFromXML(xml);
             }
             catch (Exception e)
             {
                 Debug.LogError(e);
             }
-            
         }
     }
 }

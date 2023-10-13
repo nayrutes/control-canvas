@@ -7,6 +7,7 @@ using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
 using UniRx;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -386,7 +387,7 @@ namespace ControlCanvas.Editor.Views
             {
                 if (evt.clickCount == 2)
                 {
-                    GUIUtility.systemCopyBuffer = nodeViewModel.Guid.Value;
+                    EditorGUIUtility.systemCopyBuffer = nodeViewModel.Guid.Value;
                 }
             });
             
