@@ -10,6 +10,7 @@ using UnityEditor.Compilation;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Debug = ControlCanvas.Editor.Debug;
 
 public class ControlCanvasEditorWindow : EditorWindow, IDisposable
 {

@@ -9,20 +9,6 @@ namespace ControlCanvas.Serialization
 {
     public class NodeDataMigration : IEnumerable<Action<XElement>>
     {
-        private static List<Type> allTypes;
-        public static List<Type> AllTypes
-        {
-            get
-            {
-                if (allTypes == null)
-                {
-                    allTypes = AppDomain.CurrentDomain.GetAssemblies()
-                        .SelectMany(a => a.GetTypes()).ToList();
-                }
-                return allTypes;
-            }
-        }
-
         public static void MigrationV0(XElement node)
         {
             XNamespace ns = "clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts";
@@ -78,7 +64,7 @@ namespace ControlCanvas.Serialization
         
         private static bool TypeExists(string className)
         {
-            var type = AllTypes.FirstOrDefault(t => t.Name == className);
+            var type = ReflectionHelper.AllTypes.FirstOrDefault(t => t.Name == className);
             return type != null;
         }
 

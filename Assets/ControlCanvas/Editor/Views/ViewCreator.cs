@@ -6,6 +6,7 @@ using ControlCanvas.Editor.Extensions;
 using ControlCanvas.Editor.ReactiveInspector;
 using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Runtime;
+using ControlCanvas.Serialization;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -20,9 +21,7 @@ namespace ControlCanvas.Editor.Views
 
         public static void Initialize()
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            var attributesTypes = assembly
-                .GetTypes()
+            var attributesTypes = ReflectionHelper.AllTypes
                 .Where(t => t.GetCustomAttributes<NodeContentAttribute>().Any()).ToList();
             
             var nodeContentTypes = attributesTypes.Where(t=>typeof(INodeContent).IsAssignableFrom(t))

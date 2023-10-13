@@ -5,6 +5,7 @@ using System.Reflection;
 using ControlCanvas.Editor.Extensions;
 using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Runtime;
+using ControlCanvas.Serialization;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -22,7 +23,7 @@ namespace ControlCanvas.Editor.Views
                 if (specialTypes == null)
                 {
                     specialTypes = new ();
-                    var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(s => s.GetTypes())
+                    var types = ReflectionHelper.AllTypes
                         .Where(t => t.IsClass && !t.IsAbstract && t.GetCustomAttribute<CustomViewAttribute>() != null
                                     //&& t.GetInterfaces().Contains(typeof(IView<>))
                                     );

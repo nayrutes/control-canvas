@@ -33,7 +33,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
                 if (fieldToPropertyMapper.TryGetValue(dataField.Key, out var reactivePropertyName))
                 {
                     var reactiveProperty = reactivePropertyManager.GetReactiveProperty(reactivePropertyName);
-                    SetupDataSaving(reactiveProperty, dataField.Key, data);
+                    SetupDataSaving(reactiveProperty, dataField.Key, data, dataFields);
                 }
                 else
                 {
@@ -44,11 +44,11 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
         // ReSharper disable once MemberCanBePrivate.Global
         //protected is needed for the reflection
-        protected void SetupDataSaving(IDisposable property, string dataFieldName, object data)
+        protected void SetupDataSaving(IDisposable property, string dataFieldName, object data, Dictionary<string, FieldInfo> dataFields)
         {
             FieldInfo fieldInfo; // = DataProperty.Value.GetType().GetField(dataVariableName);
 
-            fieldInfo = DataFieldManager.GetDataFields(data)[dataFieldName];
+            fieldInfo = dataFields[dataFieldName];
 
             // Get the type of T in ReactiveProperty<T>
             Type valueType = property.GetType().GetGenericArguments()[0];

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels.Base
 {
@@ -15,10 +14,6 @@ namespace ControlCanvas.Editor.ViewModels.Base
             if (dataType.IsInterface)
             {
                 Debug.LogError($"Cannot gather data fields for interface {dataType}");
-            }
-            else
-            {
-                Debug.LogWarning($"Gathering data fields for {dataType} which is no interface, so this could be optimized");
             }
             GatherDataFields(dataType);
         }
@@ -79,4 +74,6 @@ namespace ControlCanvas.Editor.ViewModels.Base
         //     return collectionData;
         // }
     }
+
+    
 }

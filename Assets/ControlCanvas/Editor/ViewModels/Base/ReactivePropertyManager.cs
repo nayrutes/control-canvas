@@ -87,7 +87,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
             }
             else if (fieldType.IsGenericType)
             {
-                Debug.LogWarning("Generic types in ReactiveProperties are not fully supported (yet)");
+                Debug.Log($"Generic types in ReactiveProperties are not fully tested. Type: {fieldType}");
                 //throw new Exception("Generic types are not supported (yet)");
                 return fieldType;
             }
@@ -115,7 +115,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
             {
                 if (!fieldToPropertyMap.ContainsValue(keyValuePair.Key))
                 {
-                    Debug.LogWarning($"Could not find data field for {keyValuePair.Key}");
+                    Debug.Log($"Could not find data field for {keyValuePair.Key}");
                 }
             }
         }

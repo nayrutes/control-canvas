@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ControlCanvas.Editor.Extensions;
+using ControlCanvas.Serialization;
 using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels.Base
@@ -16,10 +17,8 @@ namespace ControlCanvas.Editor.ViewModels.Base
         {
             //viewModelTypes.Add(typeof(object), typeof(DynamicViewModel));
             var baseViewModelType = typeof(BaseViewModel<>);
-            //var assembly = Assembly.GetExecutingAssembly();
-            var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(s => s.GetTypes());
 
-            foreach (var type in types)
+            foreach (var type in ReflectionHelper.AllTypes)
             {
                 if(type == typeof(DynamicViewModel<>))
                     continue;
@@ -59,7 +58,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
                     Type dataTypeGeneric = dataType.GetGenericTypeDefinition();
                     if (viewModelTypes.TryGetValue(dataTypeGeneric, out viewModelType))
                     {
-                        Debug.LogWarning("Usage of ViewModel for Generic types is not fully tested!");
+                        Debug.Log($"Creation of ViewModel for Generic types is not fully tested! {dataType}");
                         if (viewModelType.IsGenericTypeDefinition)
                         {
                             viewModelType = viewModelType.MakeGenericType(dataType.GetGenericArguments());   
@@ -90,14 +89,14 @@ namespace ControlCanvas.Editor.ViewModels.Base
         public static bool IsTypeSupported(Type type)
         {
             return (type.IsClass || type.IsInterface) && !type.IsPrimitive && type != typeof(string);
-            if (type.IsGenericType)
-            {
-                type = type.GetGenericTypeDefinition();
-            }
-            if(!isInitialized)
-                Initialize();
-            bool result = viewModelTypes.ContainsKey(type);
-            return result;
+            // if (type.IsGenericType)
+            // {
+            //     type = type.GetGenericTypeDefinition();
+            // }
+            // if(!isInitialized)
+            //     Initialize();
+            // bool result = viewModelTypes.ContainsKey(type);
+            // return result;
         }
     }
 

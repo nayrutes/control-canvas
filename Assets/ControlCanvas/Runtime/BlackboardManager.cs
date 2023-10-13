@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ControlCanvas.Serialization;
 using UniRx;
 
 namespace ControlCanvas.Runtime
@@ -26,10 +27,8 @@ namespace ControlCanvas.Runtime
 
         private static List<Type> GatherBlackboardTypes()
         {
-            return AppDomain.CurrentDomain.GetAssemblies().SelectMany(s => s.GetTypes())
+            return ReflectionHelper.AllTypes
                 .Where(x => x.GetInterfaces().Contains(typeof(IBlackboard))).ToList();
-            // return Assembly.GetExecutingAssembly().GetTypes()
-            //     .Where(x => x.GetInterfaces().Contains(typeof(IBlackboard))).ToList();
         }
 
 

@@ -60,7 +60,7 @@ namespace ControlCanvas.Runtime
         //private IControl nextSuggestedControl;
         //private IControl initInMainFlow;
         private bool stopped = false;
-        private bool startedComplete;
+        //private bool startedComplete;
         private bool _autoRestart = true;
 
         private RunInstance currentRunInstance;
@@ -137,7 +137,7 @@ namespace ControlCanvas.Runtime
 
         private IControl InitializeControlFlow(string currentPath)
         {
-            CanvasData initControlFlow = null;
+            //CanvasData initControlFlow = null;
             
             _flowManager.SetCurrentFlow(currentPath);
             IControl initControl = _nodeManager.GetInitControl(CurrentFlow);
@@ -206,7 +206,7 @@ namespace ControlCanvas.Runtime
                 }
                 
             }
-            startedComplete = false;
+            //startedComplete = false;
             PreviewNext();
         }
 

@@ -90,7 +90,7 @@ namespace ControlCanvas.Tests.EditorTests
         public void TestGenericDecision()
         {
             SetUpTest("Assets/ControlFlows/Tests/DecisionTests/GenericDecisionTest.xml");
-            string guidNode1 = "edeab331-4a6a-42fa-8d20-f97923bdaf67";
+            //string guidNode1 = "edeab331-4a6a-42fa-8d20-f97923bdaf67";
             string guidNode2 = "68a7577d-420f-4802-aad3-bfcdd8b11fa9";
             string guidNode3 = "dbecbe85-e661-4376-8431-7d5754051ba7";
 

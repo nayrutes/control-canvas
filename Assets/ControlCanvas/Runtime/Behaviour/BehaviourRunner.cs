@@ -197,7 +197,6 @@ namespace ControlCanvas.Runtime
         public bool CheckIfDone()
         {
             return _blackboard.LastDirection == ExDirection.Backward && _blackboard.behaviourStack.Count == 0;
-            return false;
         }
         
         public void InstanceUpdateDone(IControlAgent agentContext)

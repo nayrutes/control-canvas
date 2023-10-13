@@ -25,8 +25,9 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
         public bool AutoDataFieldToReactivePropertyNameMapping(object data)
         {
-            MapDataFieldsToReactiveProperties(DataFieldManager.GetDataFields(data));
-            bool error = CheckTypeMatch(DataFieldManager.GetDataFields(data));
+            Dictionary<string,FieldInfo> dataFields = DataFieldManager.GetDataFields(data);
+            MapDataFieldsToReactiveProperties(dataFields);
+            bool error = CheckTypeMatch(dataFields);
             reactivePropertyManager.WarnForUnmappedReactiveProperties(DataFieldToReactivePropertyName);
             return error;
         }

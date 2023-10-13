@@ -96,7 +96,7 @@ namespace ControlCanvas.Tests.EditorTests
             string guidNode2 = "5a36113b-41cb-4602-8ccc-5fba1de84c71";
             string guidNode3 = "7cfdb323-0c54-4ab9-ad22-0cfd632b1541";
             string guidNode4 = "01b7e967-a263-4fc8-b0bc-f4f955a86dcb";
-            string guidNode5 = "f661caab-058e-483c-acb3-b338c9214452";
+            //string guidNode5 = "f661caab-058e-483c-acb3-b338c9214452";
             string guidNode6 = "1d3490fa-bf1f-4e6d-8db5-0c24b2789166";
 
             controlRunner.RunningUpdate(1);
@@ -258,7 +258,7 @@ namespace ControlCanvas.Tests.EditorTests
             string guidNode2 = "a1698699-bda9-49a2-97f3-80698790eff6";
             string guidNode3 = "19465efa-417b-4c5a-9a12-277499491a6a";
             string guidNode4 = "2bdf6cc8-52a3-4c43-9e29-bb8336c5715e";
-            string guidNode5 = "6db6562a-65be-4701-bf08-d3b50276601e";
+            //string guidNode5 = "6db6562a-65be-4701-bf08-d3b50276601e";
 
             controlRunner.RunningUpdate(0);
             AssertExecutionOrderByGUIDOnly(new List<string>()

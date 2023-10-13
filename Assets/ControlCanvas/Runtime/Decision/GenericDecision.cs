@@ -31,9 +31,6 @@ namespace ControlCanvas.Runtime
             IBlackboard blackboard1 = blackboardType1 != null ? agentContext.GetBlackboard(blackboardType1) : null;
             IBlackboard blackboard2 = blackboardType2 != null ? agentContext.GetBlackboard(blackboardType2) : null;
             return IsSameType(out Type vType) && Compare(vType, blackboard1, blackboard2);
-            
-
-            return false;
         }
 
         private bool Compare(Type vType, IBlackboard blackboard1, IBlackboard blackboard2)
@@ -45,10 +42,8 @@ namespace ControlCanvas.Runtime
             {
                 case DecisionType.Equal:
                     return Equals(variable1, variable2);
-                    break;
                 case DecisionType.NotEqual:
                     return !Equals(variable1, variable2);
-                    break;
                 case DecisionType.GreaterThan:
                     if(vType == typeof(int))
                         return (int)variable1 > (int)variable2;
@@ -110,10 +105,8 @@ namespace ControlCanvas.Runtime
             {
                 case VariableType.Constant:
                     return ValueTypeToType(valueType);
-                    break;
                 case VariableType.Reference:
                     return BlackboardManager.GetTypeOfProperty(blackboardType, blackboardKey);
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(variableType), variableType, null);
             }
@@ -125,16 +118,12 @@ namespace ControlCanvas.Runtime
             {
                 case ValueType.Bool:
                     return typeof(bool);
-                    break;
                 case ValueType.Int:
                     return typeof(int);
-                    break;
                 case ValueType.Float:
                     return typeof(float);
-                    break;
                 case ValueType.String:
                     return typeof(string);
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(valueType), valueType, null);
             }

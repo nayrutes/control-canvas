@@ -50,7 +50,7 @@ namespace ControlCanvas.Editor.ViewModels
             disposables.Add(GraphViewModel);
             disposables.Add(InspectorViewModel);
 
-            string fieldName = "InitialNode";
+            //string fieldName = "InitialNode";
 
             //Example of how to get a ReactiveProperty from a dataField
             //var rp = GetReactiveProperty<ReactiveProperty<string>>(fieldName);
