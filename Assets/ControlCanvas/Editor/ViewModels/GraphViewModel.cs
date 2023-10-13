@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using ControlCanvas.Editor.ViewModels.Base;
-using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
 using UniRx;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels
@@ -18,6 +16,8 @@ namespace ControlCanvas.Editor.ViewModels
             this.canvasViewModel = canvasViewModel;
         }
 
+
+        public Subject<Unit> OnDispose { get; }
 
         public IViewModel GetChildViewModel(object data)
         {

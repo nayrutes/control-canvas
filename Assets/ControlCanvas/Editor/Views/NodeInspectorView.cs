@@ -38,11 +38,17 @@ namespace ControlCanvas.Editor.Views
         
         public void SetViewModel(NodeViewModel nodeViewModel)
         {
-            UnbindViewFromViewModel();
-            UnbindViewModelFromView();
+            UnsetViewModel();
             this.nodeViewModel = nodeViewModel;
             BindViewToViewModel();
             BindViewModelToView();
+        }
+
+        public void UnsetViewModel()
+        {
+            UnbindViewFromViewModel();
+            UnbindViewModelFromView();
+            nodeViewModel = null;
         }
 
         private void BindViewToViewModel()

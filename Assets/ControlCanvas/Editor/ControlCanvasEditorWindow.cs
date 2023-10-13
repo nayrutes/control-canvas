@@ -32,6 +32,9 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
     private Button playButton;
     private Button stopButton;
     private Button stepButton;
+    private ToolbarMenu toolbarMenu;
+    private bool _currentCoreDebugging;
+    private bool _currentExpandContent = true;
 
     [MenuItem("Window/UI Toolkit/ControlCanvasEditorWindow")]
     public static void OpenWindow()
@@ -67,6 +70,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         rootVisualElement.Q<ToolbarButton>("save-button").clicked += () => SerializeDataAsXML(true);
         rootVisualElement.Q<ToolbarButton>("load-button").clicked += () => DeserializeDataFromXML();
         rootVisualElement.Q<ToolbarButton>("new-button").clicked += () => NewXML();
+        toolbarMenu = rootVisualElement.Q<ToolbarMenu>("ToolbarMenu");
         canvasNameLabel = rootVisualElement.Q<Label>("canvas-name");
         canvasPathLabel = rootVisualElement.Q<Label>("canvas-path");
         debugRunnerField = rootVisualElement.Q<ObjectField>("debug-runner");
@@ -86,8 +90,8 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         {
             if (x != null)
             {
-                m_CanvasViewModel.canvasName.Subscribe(x => { canvasNameLabel.text = x; }).AddTo(disposables);
-                m_CanvasViewModel.canvasPath.Subscribe(x => { canvasPathLabel.text = x; }).AddTo(disposables);
+                m_CanvasViewModel.CanvasName.Subscribe(x => { canvasNameLabel.text = x; }).AddTo(disposables);
+                m_CanvasViewModel.CanvasPath.Subscribe(x => { canvasPathLabel.text = x; }).AddTo(disposables);
             }
         });
         
@@ -116,6 +120,24 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
                 SerializeDataAsXML(evt.shiftKey);
                 evt.StopPropagation();
             }
+        });
+        
+        toolbarMenu.menu.AppendAction("ToggleCoreDebug", action =>
+        {
+            _currentCoreDebugging = !_currentCoreDebugging;
+            m_CanvasViewModel.SetCoreDebuggingCommand.Execute(_currentCoreDebugging);
+        }, action =>
+        {
+            return _currentCoreDebugging ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal;
+        });
+        
+        toolbarMenu.menu.AppendAction("ToggleExpandContent", action =>
+        {
+            _currentExpandContent = !_currentExpandContent;
+            m_CanvasViewModel.ExpandContent.Execute(_currentExpandContent);
+        }, action =>
+        {
+            return _currentExpandContent ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal;
         });
     }
 
@@ -201,13 +223,13 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         string directory = "";
         string fileName = "ControlCanvasSO";
         string path = "";
-        if (!String.IsNullOrEmpty(m_CanvasViewModel.canvasPath.Value))
+        if (!String.IsNullOrEmpty(m_CanvasViewModel.CanvasPath.Value))
         {
             try
             {
-                path = m_CanvasViewModel.canvasPath.Value;
-                directory = System.IO.Path.GetDirectoryName(m_CanvasViewModel.canvasPath.Value);
-                fileName = System.IO.Path.GetFileNameWithoutExtension(m_CanvasViewModel.canvasPath.Value);
+                path = m_CanvasViewModel.CanvasPath.Value;
+                directory = System.IO.Path.GetDirectoryName(m_CanvasViewModel.CanvasPath.Value);
+                fileName = System.IO.Path.GetFileNameWithoutExtension(m_CanvasViewModel.CanvasPath.Value);
             }
             catch (Exception e)
             {

@@ -6,37 +6,40 @@ using ControlCanvas.Editor.Views;
 using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
 using UniRx;
-using UnityEditor.Experimental.GraphView;
-using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels
 {
     public class CanvasViewModel : BaseViewModel<CanvasData>
     {
-        public GraphViewModel GraphViewModel { get; private set; }
-
-        public InspectorViewModel InspectorViewModel { get; private set; }
-
-        public ReactiveProperty<string> canvasName = new();
-        public ReactiveProperty<string> canvasPath = new();
-
-        //defining the ReactiveProperty as a property allows referencing it easier
+        //Reactive properties with equivalent field in CanvasData
         public ReactiveProperty<ReactiveCollection<NodeData>> Nodes { get; private set; } = new();
         public ReactiveProperty<ReactiveCollection<EdgeData>> Edges { get; private set; } = new();
-
-        public ReactiveCommand<NodeViewModel> MakeInitialNodeCommand { get; private set; } = new();
-        
         public ReactiveProperty<string> InitialNode { get; private set; } = new();
-        public ReactiveProperty<string> CurrentDebugNode { get; private set; } = new();
-        
-        protected override Dictionary<string, string> InitializeMappingDictionary()
+        public ReactiveProperty<string> CanvasName { get; set; } = new();
+
+        protected override Dictionary<string, string> InitializeMappingDictionary()//TODO: change to use attributes instead
         {
+            //Manual definition of mapping between field names and reactive property names
             return new Dictionary<string, string>()
             {
-                { nameof(DataProperty.Value.Name), nameof(canvasName) },
+                { nameof(DataProperty.Value.Name), nameof(CanvasName) },
             };
         }
+        
+        //Special child view models TODO: check why/how they are explicit tracked and not over viewmodelTracker
+        public GraphViewModel GraphViewModel { get; private set; }
+        public InspectorViewModel InspectorViewModel { get; private set; }
 
+        //Reactive properties for internal functions
+        public ReactiveProperty<string> CanvasPath { get; set; } = new();
+
+        //Reactive properties for debugging
+        public ReactiveProperty<string> CurrentDebugNode { get; private set; } = new();
+        
+        //Commands
+        public ReactiveCommand<NodeViewModel> MakeInitialNodeCommand { get; private set; } = new();
+        public ReactiveCommand<bool> SetCoreDebuggingCommand { get; private set; } = new();
+        public ReactiveCommand<bool> ExpandContent { get; set; } = new();
 
         public CanvasViewModel() : base()
         {
@@ -50,11 +53,6 @@ namespace ControlCanvas.Editor.ViewModels
             disposables.Add(GraphViewModel);
             disposables.Add(InspectorViewModel);
 
-            //string fieldName = "InitialNode";
-
-            //Example of how to get a ReactiveProperty from a dataField
-            //var rp = GetReactiveProperty<ReactiveProperty<string>>(fieldName);
-
             Nodes.Subscribe(x =>
             {
                 x.SubscribeAndProcessExisting(y =>
@@ -64,6 +62,7 @@ namespace ControlCanvas.Editor.ViewModels
                     {
                         MakeInitialNodeCommand.Execute(z);
                     }).AddTo(disposables);
+                    
                 }).AddTo(disposables);
                 
                 x.ObserveRemove().Subscribe(RemoveEdgesOfNode).AddTo(disposables);
@@ -74,7 +73,25 @@ namespace ControlCanvas.Editor.ViewModels
             {
                 InitialNode.Value = x.DataProperty.Value.guid;
             });
-
+            
+            SetCoreDebuggingCommand.Subscribe(x =>
+            {
+                foreach (var node in Nodes.Value)
+                {
+                    var cvm = GetChildViewModel<NodeViewModel>(node);
+                    cvm.CoreDebugging.Value = x;
+                }
+            });
+            
+            ExpandContent.Subscribe(x =>
+            {
+                foreach (var node in Nodes.Value)
+                {
+                    var cvm = GetChildViewModel<NodeViewModel>(node);
+                    cvm.ExpandContent.Value = x;
+                }
+            });
+            
             DataProperty.Where(nn => nn != null).Subscribe(c =>
             {
                 InitialNode.DoWithLast(x =>
@@ -167,14 +184,14 @@ namespace ControlCanvas.Editor.ViewModels
         public void SerializeData(string path)
         {
             XMLHelper.SerializeToXML(path, DataProperty.Value);
-            canvasPath.Value = path;
+            CanvasPath.Value = path;
         }
 
         public void DeserializeData(string path)
         {
             XMLHelper.DeserializeFromXML(path, out var canvasData);
             LoadData(canvasData);
-            canvasPath.Value = path;
+            CanvasPath.Value = path;
         }
 
         private void LoadData(CanvasData canvasData)
@@ -260,7 +277,7 @@ namespace ControlCanvas.Editor.ViewModels
             {
                 DeleteEdge(oldEdge);
                 NodeViewModel routingNode = CreateNode();
-                routingNode.specificControl.Value = NodeManager.GetControlInstance(typeof(RoutingControl));
+                routingNode.SpecificControl.Value = NodeManager.GetControlInstance(typeof(RoutingControl));
                 
                 CreateEdge(node1, routingNode, oldEdge.StartPortType.Value, PortType.InOut);
                 CreateEdge(routingNode, node2, PortType.InOut, oldEdge.EndPortType.Value);
@@ -272,7 +289,7 @@ namespace ControlCanvas.Editor.ViewModels
         public void NewData()
         {
             LoadData(new CanvasData());
-            canvasPath.Value = "";
+            CanvasPath.Value = "";
         }
     }
 }

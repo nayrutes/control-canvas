@@ -86,20 +86,30 @@ namespace ControlCanvas.Editor.Views
             });
         }
 
+        public void UnsetViewModel()
+        {
+            
+        }
+
         private void BindViewToVM()
         {
             viewModel.Nodes.SubscribeAndProcessExisting(x =>
             {
                 if (viewModel.GetChildViewModel(x) is NodeViewModel nodeViewModel)
                 {
-                    nodeViewModel.specificControl
-                        .DoWithLastWithNull(cLast =>
+                    CreateVisualNode(nodeViewModel.DataProperty.Value);
+                    nodeViewModel.SpecificControl.Pairwise().Subscribe(pair =>
+                    {
+                        bool typeChange = pair.Previous is IRouting ^ pair.Current is IRouting;
+
+                        if (typeChange)
                         {
                             RemoveVisualNode(nodeViewModel.DataProperty.Value);
-                        })
-                        .Subscribe(c => CreateVisualNode(nodeViewModel.DataProperty.Value));
+                            CreateVisualNode(nodeViewModel.DataProperty.Value);
+                        }
+                    }).AddTo(disposables);
                 }
-                //CreateVisualNode(x);
+                
                 
             }).AddTo(disposables);
             viewModel.Nodes.ObserveRemove().Subscribe(x => RemoveVisualNode(x.Value)).AddTo(disposables);
@@ -200,10 +210,11 @@ namespace ControlCanvas.Editor.Views
             return viewModel.CreateEdge(getViewModel, nodeViewModel, outputPortType, inputPortType);
         }
 
+        //TODO only create new view if necessary
         private void CreateVisualNode(NodeData nodeData)
         {
             NodeViewModel nodeViewModel = (NodeViewModel)viewModel.GetChildViewModel(nodeData);
-            if (nodeData.specificControl is IRouting)
+            if (nodeViewModel.SpecificControl.Value is IRouting)
             {
                 RoutingNodeView routingNodeView = new RoutingNodeView();
                 routingNodeView.SetViewModel(nodeViewModel);
@@ -222,6 +233,15 @@ namespace ControlCanvas.Editor.Views
             var node = nodes.ToList().Find(x => x is IVisualNode node && node.GetVmGuid() == nodeData.guid);
             if (node != null)
             {
+                IView<NodeViewModel> visualNode = node as IView<NodeViewModel>;
+                if (visualNode == null)
+                {
+                    Debug.LogWarning($"Could not find node {nodeData.guid} as visual node");
+                }
+                else
+                {
+                    visualNode.UnsetViewModel();
+                }
                 RemoveElement(node);
             }
         }

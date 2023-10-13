@@ -23,6 +23,11 @@ namespace ControlCanvas.Editor.Views
             //this.Add(ViewCreator.CreateLinkedGenericField(viewModel, nameof(BlackboardVariable<Vector3>.blackboardKey)));
         }
 
+        public void UnsetViewModel()
+        {
+            throw new NotImplementedException();
+        }
+
         private void SetReferenceContent(VisualElement content, BlackboardVariableVm<T> viewModel, Type type)
         {
             content.Clear();

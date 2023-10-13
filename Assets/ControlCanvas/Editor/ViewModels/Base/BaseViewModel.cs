@@ -8,6 +8,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
 {
     public interface IViewModel : IDisposable
     {
+        public Subject<Unit> OnDispose { get;}
         public IViewModel GetChildViewModel(object data);
         public Dictionary<string, IDisposable> GetAllReactiveProperties();
         public IDisposable GetReactiveProperty(string fieldName);
@@ -16,6 +17,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
     public abstract class BaseViewModel<TData> : IViewModel
     {
         protected CompositeDisposable disposables = new();
+        public Subject<Unit> OnDispose { get;} = new();
 
         public ReactiveProperty<TData> DataProperty { get; private set; } = new();
 
@@ -160,6 +162,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
 
         protected virtual void Dispose(bool disposing)
         {
+            OnDispose.OnNext(Unit.Default);
             ReleaseUnmanagedResources();
             if (disposing)
             {

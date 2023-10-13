@@ -35,6 +35,8 @@ namespace ControlCanvas.Editor.ViewModels
             
         }
 
+        public Subject<Unit> OnDispose { get; }
+
         public IViewModel GetChildViewModel(object data)
         {
             throw new NotImplementedException();

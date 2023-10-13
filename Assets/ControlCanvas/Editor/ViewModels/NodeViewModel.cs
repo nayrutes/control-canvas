@@ -1,39 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
 using UniRx;
-using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels
 {
     public class NodeViewModel : BaseViewModel<NodeData>
     {
-        public ReactiveProperty<string> Name { get; } = new ReactiveProperty<string>();
-        public ReactiveProperty<string> Guid { get; } = new ReactiveProperty<string>();
-        public ReactiveProperty<SerializableVector2> Position { get; set; } = new ReactiveProperty<SerializableVector2>();
-        public ReactiveProperty<SerializableVector2> Size { get; set; } = new ReactiveProperty<SerializableVector2>();
-        public ReactiveCommand<NodeViewModel> MakeStartNodeCommand { get; set; } = new();
-
-        public ReactiveProperty<string> ClassName { get;} = new();
-        public List<string> ClassChoices { get;} = new();
-
-        public ReactiveProperty<IControl> specificControl { get; } = new();
-        public ReactiveProperty<bool> IsInitialNode { get; private set; } = new();
+        //Reactive properties with equivalent field in NodeData
+        public ReactiveProperty<string> Name { get; } = new ();
+        public ReactiveProperty<string> Guid { get; } = new ();
+        public ReactiveProperty<SerializableVector2> Position { get; set; } = new ();
+        public ReactiveProperty<SerializableVector2> Size { get; set; } = new ();
+        public ReactiveProperty<IControl> SpecificControl { get; } = new();
         
+        //Reactive properties for internal functions
+        public ReactiveProperty<bool> IsInitialNode { get; private set; } = new();
+        public ReactiveProperty<string> ClassName { get;} = new();
+        public ReactiveProperty<bool> CoreDebugging { get; private set; } = new();
+        public ReactiveProperty<bool> ExpandContent { get; private set; } = new(true);
+        
+        //Reactive properties for debugging
         public ReactiveProperty<bool> IsCurrentDebugNode { get; private set; } = new();
         public ReactiveProperty<bool> IsNextDebugNode { get; private set; } = new();
-
         public ReactiveProperty<State?> CurrentDebugBehaviourState { get; private set; } = new();
         
-        //[NonSerialized]
-        //public Blackboard blackboardCanvas;
+        //Commands
+        public ReactiveCommand<NodeViewModel> MakeStartNodeCommand { get; set; } = new();
 
-        //[NonSerialized]
-        public ControlAgent controlAgent;
+        //Internal properties
+        public List<string> ClassChoices { get;} = new();
+        
 
-        //public ReactiveProperty<NodeType> NodeType = new();
 
         public NodeViewModel(NodeData nodeData) : base(nodeData)
         {
@@ -56,7 +55,7 @@ namespace ControlCanvas.Editor.ViewModels
             ClassChoices.Add("None");
             ClassChoices.AddRange(NodeManager.GetSpecificTypes());
             
-            specificControl.Subscribe(control =>
+            SpecificControl.Subscribe(control =>
             {
                 if (control != null)
                 {
@@ -69,18 +68,18 @@ namespace ControlCanvas.Editor.ViewModels
             {
                 if (className == null || className == "None")
                 {
-                    specificControl.Value = null;
+                    SpecificControl.Value = null;
                 }
-                else if(specificControl.Value == null || specificControl.Value.GetType().Name != className)
+                else if(SpecificControl.Value == null || SpecificControl.Value.GetType().Name != className)
                 {
                     if (NodeManager.TryGetInstance(className, out var instance))
                     {
-                        specificControl.Value = instance;
+                        SpecificControl.Value = instance;
                     }
                     else
                     {
                         Debug.LogError($"Could not get instance of {className}");
-                        specificControl.Value = null;
+                        SpecificControl.Value = null;
                     }
                 }
             }).AddTo(disposables);

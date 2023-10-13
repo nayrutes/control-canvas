@@ -128,7 +128,7 @@
     height: 36px;
 }
 
-#title-label {
+.title-label {
     color: rgb(193, 193, 193);
     font-size: 12px;
     -unity-text-align: middle-left;
@@ -251,4 +251,20 @@
     border-right-width: 2px;
     border-top-width: 2px;
     border-bottom-width: 2px;
+}
+
+.hide-tf-label > Label {
+    display: none;
+    visibility: hidden;
+}
+
+.title-label-input > #unity-text-input > TextElement {
+    color: rgb(193, 193, 193);
+    font-size: 12px;
+    -unity-text-align: middle-center;
+    margin-top: 6px;
+    margin-left: 6px;
+    margin-bottom: 6px;
+    margin-right: 0;
+    padding-left: 2px;
 }

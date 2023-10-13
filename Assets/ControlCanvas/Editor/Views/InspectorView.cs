@@ -26,7 +26,12 @@ namespace ControlCanvas.Editor.Views
             mInspectorViewModel = inspectorViewModel;
             Initialize();
         }
-        
+
+        public void UnsetViewModel()
+        {
+            throw new NotImplementedException();
+        }
+
         private void Initialize()
         {
             mInspectorViewModel.displayType.Subscribe(OnTypeChanged).AddTo(disposables);

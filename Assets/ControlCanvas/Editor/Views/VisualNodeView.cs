@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using ControlCanvas.Editor.Extensions;
 using ControlCanvas.Editor.ViewModels;
 using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Runtime;
@@ -31,6 +32,10 @@ namespace ControlCanvas.Editor.Views
         private VisualElement m_DynamicContent;
         private CompositeDisposable disposables = new();
         private VisualNodeSettings _visualNodeSettings = new();
+        private readonly Label titleLabel;
+        private readonly TextField titleTextField;
+        private readonly Label titleDebugLabel;
+        private readonly Foldout dynamicContentFoldout;
 
         public VisualNodeView() : base("Assets/ControlCanvas/Editor/VisualNodeUXML.uxml")
         {
@@ -41,61 +46,60 @@ namespace ControlCanvas.Editor.Views
             
             //WriteStyleSheetToFile(styleSheet, "Assets/ControlCanvas/Editor/Node.uss");
             
-            
-        }
-
-        public void SetViewModel(NodeViewModel viewModel)
-        {
-            UnbindViewFromViewModel();
-            UnbindViewModelFromView();
-            
+         
             m_DynamicContent = this.Q<VisualElement>("dynamic-content");
             portInVisualElementContainer = this.Q<VisualElement>("input");
             portOutVisualElementContainer = this.Q<VisualElement>("output");
             portOut2VisualElementContainer = this.Q<VisualElement>("output-2");
             portOutParallelVisualElementContainer = this.Q<VisualElement>("output-p");
+            titleLabel = titleContainer.Q<Label>("title-label");
+            titleTextField = titleContainer.Q<TextField>("title-textfield");
+            titleDebugLabel = titleContainer.Q<Label>("title-debug");
+            dynamicContentFoldout = this.Q<Foldout>("dynamic-content-foldout");
+        }
+
+        public void SetViewModel(NodeViewModel viewModel)
+        {
+            if(nodeViewModel != null){
+                UnsetViewModel();
+            }
             nodeViewModel = viewModel;
+
+            nodeViewModel.OnDispose.Subscribe(x =>
+            {
+                disposables.Dispose();
+            });
+            
 
             
             this.Q<DropdownField>("class-dropdown").choices = viewModel.ClassChoices;
+            
+            //TODO test if destroy ports is needed
+            CreatePorts();
             
             BindViewToViewModel();
             BindViewModelToView();
             //this.viewDataKey = nodeViewModel.Guid;
 
-            //TODO test if destroy ports is needed
-            CreatePorts();
         }
-        
-        // private void OnTypeChanged(ChangeEvent<Enum> evt)
-        // {
-        //     nodeViewModel.NodeType.Value = (NodeType)evt.newValue;
-        // }
-        
-        // private void SetNewType(NodeType type)
-        // {
-        //     m_DynamicContent.Clear();
-        //     m_DynamicContent.Add(new Label($"This is a {type} node"));
-        //     this.Q<EnumField>("type-enum").SetValueWithoutNotify(type);
-        //     _visualNodeSettings = new VisualNodeSettings();
-        //     switch (type)
-        //     {
-        //         case NodeType.State:
-        //             _visualNodeSettings.portOut2Visible = false;
-        //             break;
-        //         case NodeType.Behaviour:
-        //             break;
-        //         case NodeType.Decision:
-        //             _visualNodeSettings.portParallelVisible = false;
-        //             break;
-        //         default:
-        //             throw new ArgumentOutOfRangeException(nameof(type), type, null);
-        //     }
-        // }
+        public void UnsetViewModel()
+        {
+            UnbindViewFromViewModel();
+            UnbindViewModelFromView();
+            ClearClass();
+            //TODO test if destroy ports is needed
+            //DestroyPorts();
+            nodeViewModel = null;
+        }
+
+
+        private void ClearClass()
+        {
+            m_DynamicContent.Clear();
+        }
         
         private void SetNewClass(IControl control, IViewModel viewModel)
         {
-            m_DynamicContent.Clear();
             var label = new Label($"This Node represents class {control?.GetType()}");
             m_DynamicContent.Add(label);
 
@@ -108,12 +112,24 @@ namespace ControlCanvas.Editor.Views
             ApplyVisualNodeSettings(ViewCreator.GetVisualSettings(control, _visualNodeSettings));
         }
 
-        private void ApplyVisualNodeSettings(VisualNodeSettings getVisualSettings)
+        private void ApplyVisualNodeSettings(List<VisualNodeSettings> settings)
+        {
+            foreach (VisualNodeSettings setting in settings)
+            {
+                ApplyVisualNodeSetting(setting);
+            }
+        }
+        
+        private void ApplyVisualNodeSetting(VisualNodeSettings getVisualSettings)
         {
             HidePortContainer(portInVisualElementContainer, !getVisualSettings.portInVisible);
             HidePortContainer(portOutVisualElementContainer, !getVisualSettings.portOutVisible);
             HidePortContainer(portOut2VisualElementContainer, !getVisualSettings.portOut2Visible);
             HidePortContainer(portOutParallelVisualElementContainer, !getVisualSettings.portParallelVisible);
+            
+            portOut.portName = getVisualSettings.portOutName;
+            portOut2.portName = getVisualSettings.portOut2Name;
+            titleContainer.style.backgroundColor = getVisualSettings.backgroundColor;
         }
 
         public void CreatePorts()
@@ -227,19 +243,27 @@ namespace ControlCanvas.Editor.Views
 
         private void BindViewToViewModel()
         {
-            nodeViewModel.Name
-                .CombineLatest(nodeViewModel.Guid, (name, guid) => $"{name} {guid}")
-                .Subscribe(name => this.title = name).AddTo(disposables);
+            nodeViewModel.Name.Subscribe(name =>
+                {
+                    titleLabel.text = name;
+                    titleTextField.value = name;
+                }).AddTo(disposables);
+            
+            nodeViewModel.Guid.Subscribe(guid => titleDebugLabel.text = guid).AddTo(disposables);
             
             nodeViewModel.Position.CombineLatest(nodeViewModel.Size, (position, size) => new Rect(position, size))
                 .Subscribe(rect => this.SetPosition(rect)).AddTo(disposables);
             
-            //nodeViewModel.NodeType.Subscribe(type => SetNewType(type)).AddTo(disposables);
-            
-            nodeViewModel.specificControl.Subscribe(control =>
-            {
-                SetNewClass(control, nodeViewModel.GetChildViewModel(control));
-            }).AddTo(disposables);
+            nodeViewModel.SpecificControl
+                .DoWithLastWithNull(x=>
+                {
+                    ClearClass();
+                })
+                .Subscribe(control =>
+                {
+                    IViewModel childViewModel = control == null ? null : nodeViewModel.GetChildViewModel(control);
+                    SetNewClass(control, childViewModel);
+                }).AddTo(disposables);
             
             nodeViewModel.IsInitialNode.Subscribe(x =>
             {
@@ -299,6 +323,16 @@ namespace ControlCanvas.Editor.Views
                     this.RemoveFromClassList("debug-node-next");
                 }
             }).AddTo(disposables);
+
+            nodeViewModel.CoreDebugging.Subscribe(x =>
+            {
+                titleDebugLabel.style.display = x ? DisplayStyle.Flex : DisplayStyle.None;
+            }).AddTo(disposables);
+            
+            nodeViewModel.ExpandContent.Subscribe(x =>
+            {
+                dynamicContentFoldout.value = x;
+            }).AddTo(disposables);
         }
 
         private void HidePortContainer(VisualElement container, bool hide)
@@ -323,6 +357,42 @@ namespace ControlCanvas.Editor.Views
             this.Q<DropdownField>("class-dropdown").RegisterValueChangedCallback(evt =>
             {
                 nodeViewModel.ClassName.Value = evt.newValue;
+            });
+            
+            titleTextField.RegisterValueChangedCallback(evt =>
+            {
+                nodeViewModel.Name.Value = evt.newValue;
+            });
+            
+            titleLabel.RegisterCallback<MouseDownEvent>(evt =>
+            {
+                if (evt.clickCount == 2)
+                {
+                    //titleTextField.value = titleLabel.text;
+                    titleTextField.style.display = DisplayStyle.Flex;
+                    titleLabel.style.display = DisplayStyle.None;
+                    titleTextField.Focus();
+                    titleTextField.SelectAll();
+                }
+            });
+            
+            titleTextField.RegisterCallback<FocusOutEvent>(evt =>
+            {
+                titleTextField.style.display = DisplayStyle.None;
+                titleLabel.style.display = DisplayStyle.Flex;
+            });
+            
+            titleDebugLabel.RegisterCallback<MouseDownEvent>(evt =>
+            {
+                if (evt.clickCount == 2)
+                {
+                    GUIUtility.systemCopyBuffer = nodeViewModel.Guid.Value;
+                }
+            });
+            
+            dynamicContentFoldout.RegisterValueChangedCallback(evt =>
+            {
+                nodeViewModel.ExpandContent.Value = evt.newValue;
             });
         }
         
@@ -370,8 +440,11 @@ namespace ControlCanvas.Editor.Views
     {
         public bool portInVisible = true;
         public bool portOutVisible = true;
+        public string portOutName = "Out";
         public bool portOut2Visible = true;
+        public string portOut2Name = "Out2";
         public bool portParallelVisible = true;
-        
+        //color
+        public Color backgroundColor = Color.white;
     }
 }

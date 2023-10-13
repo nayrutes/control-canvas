@@ -32,5 +32,24 @@ namespace ControlCanvas.Serialization
                 return allTypes;
             }
         }
+        
+        public static IEnumerable<Type> GetAllAncestors(Type type)
+        {
+            // Recursively go through interfaces first
+            foreach (var interfaceType in type.GetInterfaces())
+            {
+                foreach (var ancestor in GetAllAncestors(interfaceType))
+                {
+                    yield return ancestor;
+                }
+            }
+
+            // Then go up the parent class hierarchy
+            while (type != null && type != typeof(object))
+            {
+                yield return type;
+                type = type.BaseType;
+            }
+        }
     }
 }

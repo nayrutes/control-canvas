@@ -9,6 +9,7 @@ namespace ControlCanvas.Editor.Views
     {
         //void Initialize();
         void SetViewModel(TViewModel viewModel);
+        void UnsetViewModel();
         // void BindViewToViewModel();
         // void UnbindViewFromViewModel();
         // void BindViewModelToView();
@@ -17,6 +18,7 @@ namespace ControlCanvas.Editor.Views
         {
             return this as VisualElement;
         }
+
     }
 
 }

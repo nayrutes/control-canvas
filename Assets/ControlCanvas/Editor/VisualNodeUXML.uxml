@@ -5,21 +5,28 @@
             <ui:VisualElement name="input" />
             <ui:VisualElement name="output" class="output-port" />
         </ui:VisualElement>
-        <ui:VisualElement name="title">
-            <ui:Label name="title-label" text="289bd32534ef2654d93dc931908cc938" class="unity-text-element unity-label" />
+        <ui:VisualElement name="title" style="height: auto;">
             <ui:VisualElement name="title-button-container" style="display: none; visibility: hidden;">
                 <ui:VisualElement name="collapse-button">
                     <ui:VisualElement name="icon" />
                 </ui:VisualElement>
             </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">
+                <ui:Label name="title-label" text="289bd32534ef2654d93dc931908cc938" class="unity-text-element unity-label title-label" style="-unity-text-align: middle-center;" />
+                <ui:TextField picking-mode="Ignore" label="Text Field" value="filler text" name="title-textfield" class="hide-tf-label title-label-input" style="visibility: visible; display: none;" />
+                <ui:Label name="title-debug" text="guid" class="unity-text-element unity-label" style="padding-left: 2px; padding-top: 1px; padding-bottom: 1px; -unity-text-align: upper-center;" />
+            </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="contents" style="background-color: rgb(76, 76, 76);">
             <ui:VisualElement name="divider" class="horizontal" />
-            <ui:Label tabindex="-1" text="This is a description" display-tooltip-when-elided="true" name="description" />
-            <ui:VisualElement name="node-definer" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); flex-direction: row;">
-                <ui:DropdownField label="Class" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="class-dropdown" />
+            <ui:Label tabindex="-1" text="This is a description" display-tooltip-when-elided="true" name="description" style="display: none;" />
+            <ui:VisualElement name="node-definer" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); flex-direction: row; padding-left: 5px; padding-right: 5px; padding-top: 2px; padding-bottom: 2px;">
+                <ui:DropdownField label="Class" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="class-dropdown" class="hide-tf-label" />
             </ui:VisualElement>
-            <ui:VisualElement name="dynamic-content" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);" />
+            <ui:Foldout text="Content" name="dynamic-content-foldout">
+                <ui:VisualElement name="dynamic-content" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);" />
+            </ui:Foldout>
+            <ui:VisualElement name="debug-content" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);" />
             <ui:VisualElement name="divider" class="horizontal" />
             <ui:VisualElement name="bottom" style="flex-direction: row; justify-content: flex-end;">
                 <ui:VisualElement name="output-2" class="output-port" style="flex-direction: row; align-items: auto; justify-content: flex-start;" />

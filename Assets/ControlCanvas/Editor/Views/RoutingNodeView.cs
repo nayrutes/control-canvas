@@ -22,15 +22,21 @@ namespace ControlCanvas.Editor.Views
 
         public void SetViewModel(NodeViewModel nodeViewModel)
         {
-            UnbindViewFromViewModel();
-            UnbindViewModelFromView();
+            UnsetViewModel();
             
             this.nodeViewModel = nodeViewModel;
             CreatePorts();
             BindViewToViewModel();
             BindViewModelToView();
         }
-        
+
+        public void UnsetViewModel()
+        {
+            UnbindViewFromViewModel();
+            UnbindViewModelFromView();
+            nodeViewModel = null;
+        }
+
         public void CreatePorts()
         {
             inOutPort = InstantiatePort(Orientation.Vertical, Direction.Input, Port.Capacity.Multi, typeof(bool));

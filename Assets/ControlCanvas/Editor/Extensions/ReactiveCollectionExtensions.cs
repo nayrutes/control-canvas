@@ -60,6 +60,20 @@ namespace ControlCanvas.Editor.Extensions
                 }, observer.OnError, observer.OnCompleted)
             );
         }
+        
+        public static IObservable<T> PairwiseWithDefaultStart<T>(this IObservable<T> source, Action<T, T> doOnLast)
+        {
+            T previous = default(T);
+            return Observable.Create<T>(observer =>
+            {
+                return source.Subscribe(value =>
+                {
+                    doOnLast(previous, value);
+                    previous = value;
+                    observer.OnNext(value);
+                }, observer.OnError, observer.OnCompleted);
+            });
+        }
 
     }
 }

@@ -192,17 +192,21 @@ namespace ControlCanvas.Editor.Views
             enumField.label = labelName;
         }
 
-        public static VisualNodeSettings GetVisualSettings(IControl control, VisualNodeSettings visualNodeSettings)
+        public static List<VisualNodeSettings> GetVisualSettings(IControl control, VisualNodeSettings visualNodeSettings)
         {
             if (control == null)
-                return visualNodeSettings;
+                return new List<VisualNodeSettings>(){visualNodeSettings};
             if(!isInitialized)
                 Initialize();
-            if(viewSettingsTypes.TryGetValue(control.GetType(), out var settings))
-            {
-                return settings.GetSettings(visualNodeSettings);
-            }
-            return visualNodeSettings;
+
+            var ancestors = ReflectionHelper.GetAllAncestors(control.GetType()).ToList();
+            
+            List<VisualNodeSettings> result = ancestors
+                .Where(ancestor => viewSettingsTypes.ContainsKey(ancestor))
+                .Select(ancestor => viewSettingsTypes[ancestor].GetSettings(visualNodeSettings)).ToList();
+            
+            result.Insert(0,visualNodeSettings);
+            return result;
         }
 
         public static VisualElement CreateLinkedDropDownField<T>(ReactiveProperty<T> rp, string name, List<T> choices)
