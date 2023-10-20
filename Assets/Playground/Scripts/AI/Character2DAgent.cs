@@ -7,10 +7,8 @@ using UnityEngine;
 
 namespace Playground.Scripts.AI
 {
-    public class Character2DAgent : ControlAgentMonoBase, IControlAgent
+    public class Character2DAgent : ControlAgentMonoBase
     {
-        public BlackboardFlowControl BlackboardFlowControl { get; set; } = new();
-        
         public EntityTypes EntityType;
 
         private void Start()
