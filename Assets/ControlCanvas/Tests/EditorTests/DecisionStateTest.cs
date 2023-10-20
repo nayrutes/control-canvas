@@ -104,5 +104,40 @@ namespace ControlCanvas.Tests.EditorTests
             
             CleanUpTest();
         }
+        
+        [Test]
+        public void TestDecisionFailToLastState()
+        {
+            SetUpTest("Assets/ControlFlows/Tests/DecisionStateTests/TestDecisionFailingToLastState.xml");
+            string guidNode1 = "0f30aed9-1604-4b5f-89f6-1ec981f425aa";
+            string guidNode2 = "f929f7e3-42d3-48b8-ae2b-28b05a790a2c";
+            string guidNode3 = "b1be16c0-0210-4f7f-b74d-edaf39f3f299";
+
+            controlRunner.RunningUpdate(0);
+            AssertExecutionOrderByGUIDOnly(new List<string>()
+            {
+                guidNode1,
+            });
+            
+            controlAgent.DebugBlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlRunner.RunningUpdate(0);
+            AssertExecutionOrderByGUIDOnly(new List<string>()
+            {
+                guidNode1,
+                guidNode2,
+            });
+            
+            controlAgent.DebugBlackboardAgent.ExitEvent.OnNext(Unit.Default);
+            controlRunner.RunningUpdate(0);
+            AssertExecutionOrderByGUIDOnly(new List<string>()
+            {
+                guidNode1,
+                guidNode2,
+                guidNode3,
+                guidNode2,
+            });
+            
+            CleanUpTest();
+        }
     }
 }

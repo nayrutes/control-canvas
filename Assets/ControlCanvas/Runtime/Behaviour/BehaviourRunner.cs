@@ -68,7 +68,7 @@ namespace ControlCanvas.Runtime
             _nodeManager = instance;
         }
         
-        public void DoUpdate(IBehaviour behaviour, IControlAgent agentContext, float deltaTime)
+        public void DoUpdate(IBehaviour behaviour, IControlAgent agentContext, float deltaTime, IControl lastControl)
         {
             CurrentBehaviourWrapper.Value = GetOrSetWrapper(behaviour);
             //_blackboard = _tmpBlackboard;

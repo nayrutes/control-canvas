@@ -11,7 +11,7 @@ namespace ControlCanvas.Editor.Views.NodeContents
         public VisualElement CreateView(IControl control, IViewModel viewModel)
         {
             //var vm = ViewModelCreator.CreateViewModel(control.GetType(), control);
-            var vmBase = viewModel as BaseViewModel<DebugState>;
+            var vmBase = viewModel as BaseViewModel<IControl>;
             
             VisualElement view = new();
             

@@ -14,6 +14,7 @@ namespace ControlCanvas.Runtime
         private bool _decision;
         private readonly FlowManager _flowManager;
         private readonly NodeManager _nodeManager;
+        private IControl _controlBeforeDecision;
 
         public DecisionRunner(FlowManager flowManager, NodeManager instance)
         {
@@ -21,8 +22,13 @@ namespace ControlCanvas.Runtime
             _nodeManager = instance;
         }
         
-        public void DoUpdate(IDecision decision, IControlAgent agentContext, float deltaTime)
+        public void DoUpdate(IDecision decision, IControlAgent agentContext, float deltaTime, IControl lastControl)
         {
+            if (lastControl is not IDecision)
+            {
+                _controlBeforeDecision = lastControl;
+            }
+            
             CurrentDecision.Value = decision;
             if (_decisionsTracker.Contains(CurrentDecision.Value))
             {
@@ -40,6 +46,10 @@ namespace ControlCanvas.Runtime
             // {
             //     //CompleteUpdateDone(null);
             // }
+            if (next == null)
+            {
+                return _controlBeforeDecision;
+            }
             return next;
         }
 
@@ -55,6 +65,7 @@ namespace ControlCanvas.Runtime
         public void InstanceUpdateDone(IControlAgent agentContext)
         {
             _decisionsTracker.Clear();
+            _controlBeforeDecision = null;
         }
 
     }
