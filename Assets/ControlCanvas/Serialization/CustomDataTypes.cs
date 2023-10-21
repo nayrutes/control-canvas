@@ -28,5 +28,36 @@ namespace ControlCanvas.Serialization
         {
             return new SerializableVector2(v.x, v.y);
         }
+        
+        public override string ToString()
+        {
+            return $"SerializableVector2:({x}, {y})";
+        }
+        
+        //override comparison operators
+        public static bool operator ==(SerializableVector2 v1, SerializableVector2 v2)
+        {
+            return Math.Abs(v1.x - v2.x) < 0.001f && Math.Abs(v1.y - v2.y) < 0.001f;
+        }
+        public static bool operator !=(SerializableVector2 v1, SerializableVector2 v2)
+        {
+            return !(v1 == v2);
+        }
+        
+        //override the Object.Equals(object o) method
+        public override bool Equals(object o)
+        {
+            if (o == null || GetType() != o.GetType())
+            {
+                return false;
+            }
+            return this == (SerializableVector2)o;
+        }
+        
+        //override the Object.GetHashCode() method
+        public override int GetHashCode()
+        {
+            return x.GetHashCode() ^ y.GetHashCode();
+        }
     }
 }

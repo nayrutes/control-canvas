@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ControlCanvas.Editor.Extensions;
+using ControlCanvas.Editor.ViewModels.UndoRedo;
 using UniRx;
 using UnityEngine;
 
@@ -25,6 +26,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
         private FieldToPropertyMapper<TData> fieldToPropertyMapper;
         private AutoDataSaving<TData> autoDataSaving;
         private ViewModelTracker<TData> viewModelTracker;
+        private UndoRedoManager undoRedoManager;
 
         /// <summary>
         /// This should be self contained and don't rely on members of the class
@@ -49,6 +51,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
             fieldToPropertyMapper = new FieldToPropertyMapper<TData>(reactivePropertyManager);
             autoDataSaving = new AutoDataSaving<TData>(DataProperty, reactivePropertyManager, fieldToPropertyMapper);
             viewModelTracker = new ViewModelTracker<TData>(reactivePropertyManager);
+            undoRedoManager = new UndoRedoManager(CommandManager.Instance);
 
             fieldToPropertyMapper.Init(InitializeMappingDictionary());
             DataProperty.Value = data;
@@ -68,7 +71,9 @@ namespace ControlCanvas.Editor.ViewModels.Base
                 {
                     return;
                 }
-
+                
+                undoRedoManager.SetupUndoRedo(reactivePropertyManager);
+                
                 viewModelTracker.SetupDataBindingForPropertiesInsideClass();
                 disposables.Add(viewModelTracker);
 

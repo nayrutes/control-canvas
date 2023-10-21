@@ -4,6 +4,7 @@ using System.Linq;
 using ControlCanvas.Editor.Extensions;
 using ControlCanvas.Editor.ViewModels;
 using ControlCanvas.Editor.ViewModels.Base;
+using ControlCanvas.Editor.ViewModels.UndoRedo;
 using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
 using UniRx;
@@ -91,7 +92,7 @@ namespace ControlCanvas.Editor.Views
             OnSelectionChanged += OnSelectionChangedHandler;
             viewTransformChanged += OnViewTransformChanged;
             
-            //register ctrl + c and ctrl + v
+            
             RegisterCallback<KeyDownEvent>(evt =>
             {
                 if (evt.keyCode == KeyCode.C && evt.ctrlKey)
@@ -108,6 +109,15 @@ namespace ControlCanvas.Editor.Views
                 {
                     CutSelection();
                 }
+                
+                else if (evt.keyCode == KeyCode.Z && evt.ctrlKey)
+                {
+                    CommandManager.Instance.Undo();
+                }else if (evt.keyCode == KeyCode.Y && evt.ctrlKey)
+                {
+                    CommandManager.Instance.Redo();
+                }
+                
             });
         }
 

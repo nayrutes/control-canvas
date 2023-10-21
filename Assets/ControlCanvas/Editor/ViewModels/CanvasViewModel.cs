@@ -2,6 +2,7 @@
 using System.Linq;
 using ControlCanvas.Editor.Extensions;
 using ControlCanvas.Editor.ViewModels.Base;
+using ControlCanvas.Editor.ViewModels.UndoRedo;
 using ControlCanvas.Editor.Views;
 using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
@@ -196,7 +197,10 @@ namespace ControlCanvas.Editor.ViewModels
 
         private void LoadData(CanvasData canvasData)
         {
+            CommandManager.Instance.SetInitActive(true);
             DataProperty.Value = canvasData;
+            CommandManager.Instance.SetInitActive(false);
+            CommandManager.Instance.Clear();
         }
 
         public void OnSelectionChanged(SelectedChangedArgs obj)
