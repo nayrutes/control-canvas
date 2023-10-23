@@ -4,18 +4,17 @@ using UniRx;
 
 namespace ControlCanvas.Editor.ViewModels.UndoRedo
 {
-    public interface IReactivePropertyController : IDisposable
+    public interface IReactiveUndoRedoController : IDisposable
     {
-        // public void Undo();
-        // public void Redo();
     }
     
-    public class ReactivePropertyController<T> : IReactivePropertyController
+    public class ReactivePropertyController<T> : IReactiveUndoRedoController
     {
         private ReactiveProperty<T> _property;
         private CommandManager _commandManager;
         private CompositeDisposable _disposables = new CompositeDisposable();
         private bool _wasAbleToRecord;
+        private bool _wasGroupingActive;
 
         public ReactivePropertyController(ReactiveProperty<T> property, CommandManager commandManager)
         {
@@ -25,39 +24,76 @@ namespace ControlCanvas.Editor.ViewModels.UndoRedo
             _property
                 .SkipLatestValueOnSubscribe()
                 .DistinctUntilChanged()
-                .Do(_ => _wasAbleToRecord = commandManager.CanRecord.Value == 0)
+                .Do(_ =>
+                {
+                    _wasAbleToRecord = commandManager.CanRecord.Value == 0;
+                    _wasGroupingActive = commandManager.IsGrouping;
+                })
                 .Throttle(TimeSpan.FromMilliseconds(500))
                 .Where(_ => _wasAbleToRecord && commandManager.CanRecord.Value == 0)
                 .PairwiseWithDefaultStart((o, n) =>
                 {
-                    // if (Equals(o, n))
-                    // {
-                    //     return;
-                    // }
                     var command = new ChangeValueCommand<T>(_property, o, n);
-                    _commandManager.Execute(command);
+                    _commandManager.Record(command, _wasGroupingActive);
                 })
                 .Subscribe(newValue =>
                 {
                 }).AddTo(_disposables);
         }
-
-        // public void Undo()
-        // {
-        //     _isUndoRedoActive = true;
-        //     _commandManager.Undo();
-        //     _isUndoRedoActive = false;
-        // }
-        //
-        // public void Redo()
-        // {
-        //     _isUndoRedoActive = true;
-        //     _commandManager.Redo();
-        //     _isUndoRedoActive = false;
-        // }
         public void Dispose()
         {
             _disposables.Dispose();
         }
     }
+
+    public class ReactiveCollectionController<T> : IReactiveUndoRedoController
+    {   
+        private ReactiveCollection<T> _collection;
+        private CommandManager _commandManager;
+        private CompositeDisposable _disposables = new CompositeDisposable();
+        private bool _wasAbleToRecord;
+        private bool _wasGroupingActive;
+
+        public ReactiveCollectionController(ReactiveCollection<T> collection, CommandManager commandManager)
+        {
+            _collection = collection;
+            _commandManager = commandManager;
+            
+            _collection.ObserveAdd()
+                //.SkipLatestValueOnSubscribe()
+                .Do(_ =>
+                {
+                    _wasAbleToRecord = commandManager.CanRecord.Value == 0;
+                    _wasGroupingActive = commandManager.IsGrouping;
+                })
+                //.Throttle(TimeSpan.FromMilliseconds(500))
+                .Where(_ => _wasAbleToRecord && commandManager.CanRecord.Value == 0)
+                .Subscribe(pair =>
+                {
+                    var command = new AddValueCommand<T>(_collection, pair.Value, pair.Index);
+                    _commandManager.Record(command, _wasGroupingActive);
+                }).AddTo(_disposables);
+            
+            _collection.ObserveRemove()
+                //.SkipLatestValueOnSubscribe()
+                .Do(_ =>
+                {
+                    _wasAbleToRecord = commandManager.CanRecord.Value == 0;
+                    _wasGroupingActive = commandManager.IsGrouping;
+                })
+                //.Throttle(TimeSpan.FromMilliseconds(500))
+                .Where(_ => _wasAbleToRecord && commandManager.CanRecord.Value == 0)
+                .Subscribe(pair =>
+                {
+                    var command = new RemoveValueCommand<T>(_collection, pair.Value, pair.Index);
+                    _commandManager.Record(command, _wasGroupingActive);
+                }).AddTo(_disposables);
+        }
+        public void Dispose()
+        {
+            _disposables.Dispose();
+        }
+    }
+
+    
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using NUnit.Framework;
 using UniRx;
 
 namespace ControlCanvas.Editor.ViewModels.UndoRedo
@@ -15,10 +16,34 @@ namespace ControlCanvas.Editor.ViewModels.UndoRedo
 
         //public bool CanRecord => !_initActive && !IsUndoRedoActive;
         public ReactiveProperty<int> CanRecord = new();
+
+        public bool IsGrouping { get; private set; } = false;
+        //Stack<CompositeCommand> _compositeCommands = new Stack<CompositeCommand>();
+        CompositeCommand _compositeCommand;
         
-        public void Execute(ICommand command)
+        //grouping as method parameter to capture delayed grouping
+        public void Record(ICommand command, bool groupingActive)
         {
-            command.Execute();
+            if (!groupingActive)
+            {
+                LateRecordComposite();
+            }
+            RecordInternal(command, groupingActive);
+        }
+
+        private void RecordInternal(ICommand command, bool groupingActive)
+        {
+            if (groupingActive)
+            {
+                if (_compositeCommand == null)
+                {
+                    _compositeCommand = new CompositeCommand();
+                }
+                _compositeCommand.AddCommand(command);
+                Debug.LogWarning($"added command {command} to composite command");
+                return;
+            }
+            
             _undoStack.Push(command);
             Debug.LogWarning($"pushed command {command} to undo stack");
             _redoStack.Clear();
@@ -26,6 +51,7 @@ namespace ControlCanvas.Editor.ViewModels.UndoRedo
         
         public void Undo()
         {
+            LateRecordComposite();
             if (_undoStack.Count == 0)
             {
                 return;
@@ -43,6 +69,7 @@ namespace ControlCanvas.Editor.ViewModels.UndoRedo
         
         public void Redo()
         {
+            LateRecordComposite();
             if (_redoStack.Count == 0)
             {
                 return;
@@ -78,6 +105,35 @@ namespace ControlCanvas.Editor.ViewModels.UndoRedo
         public void SetInitActive(bool p0)
         {
             CanRecord.Value = p0 ? CanRecord.Value + 1 : CanRecord.Value - 1;
+        }
+        
+        public void StartGrouping()
+        {
+            if (IsGrouping)
+            {
+                Debug.LogWarning($"already grouping");
+                return;
+            }
+            IsGrouping = true;
+        }
+        
+        public void EndGrouping()
+        {
+            if (!IsGrouping)
+            {
+                Debug.LogWarning($"not grouping");
+                return;
+            }
+            IsGrouping = false;
+        }
+
+        private void LateRecordComposite()
+        {
+            if (_compositeCommand != null)
+            {
+                RecordInternal(_compositeCommand, false);
+                _compositeCommand = null;
+            }
         }
     }
 }

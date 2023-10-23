@@ -7,6 +7,7 @@ using ControlCanvas.Editor.Views;
 using ControlCanvas.Runtime;
 using ControlCanvas.Serialization;
 using UniRx;
+using UnityEngine;
 
 namespace ControlCanvas.Editor.ViewModels
 {
@@ -208,9 +209,15 @@ namespace ControlCanvas.Editor.ViewModels
             InspectorViewModel.OnSelectionChanged(obj, DataProperty.Value);
         }
 
-        public NodeViewModel CreateNode()
+        public NodeViewModel CreateNode(Vector2? position = null)
         {
+            CommandManager.Instance.StartGrouping();
             NodeViewModel cvm = AddChildViewModel<NodeViewModel, NodeData>(new NodeViewModel(), Nodes);
+            if (position != null)
+            {
+                cvm.Position.Value = position.Value;
+            }
+            CommandManager.Instance.EndGrouping();
             return cvm;
         }
         public NodeViewModel AddNode(NodeData nodeData)
@@ -221,7 +228,9 @@ namespace ControlCanvas.Editor.ViewModels
 
         public void DeleteNode(NodeData nodeData)
         {
+            CommandManager.Instance.StartGrouping();
             Nodes.Value.Remove(nodeData);
+            CommandManager.Instance.EndGrouping();
         }
         
         public EdgeViewModel CreateEdge(NodeViewModel from, NodeViewModel to, PortType startPortType, PortType endPortType)
@@ -284,14 +293,14 @@ namespace ControlCanvas.Editor.ViewModels
             GetNodeViewModelByGuid(controlGuid)?.SetCurrentDebugBehaviourState(controlRunnerLatestBehaviourState);
         }
 
-        public NodeViewModel CreateRoutingNode(NodeViewModel node1, NodeViewModel node2)
+        public NodeViewModel CreateRoutingNode(NodeViewModel node1, NodeViewModel node2, Vector2 pos)
         {
             EdgeViewModel oldEdge = GetEdgeViewModel(node1, node2);
             //EdgeData oldEdge = Edges.Value.ToList().Find(x => x.StartNodeGuid == node1.guid && x.EndNodeGuid == node2.guid);
             if (oldEdge != null)
             {
                 DeleteEdge(oldEdge);
-                NodeViewModel routingNode = CreateNode();
+                NodeViewModel routingNode = CreateNode(pos);
                 routingNode.SpecificControl.Value = NodeManager.GetControlInstance(typeof(RoutingControl));
                 
                 CreateEdge(node1, routingNode, oldEdge.StartPortType.Value, PortType.InOut);

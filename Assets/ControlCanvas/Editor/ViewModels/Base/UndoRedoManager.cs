@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
+using ControlCanvas.Editor.Extensions;
 using ControlCanvas.Editor.ViewModels.UndoRedo;
 using UniRx;
 
@@ -8,8 +10,10 @@ namespace ControlCanvas.Editor.ViewModels.Base
     public class UndoRedoManager : IDisposable
     {
         private readonly CommandManager _commandManager;
-        private List<IReactivePropertyController> _reactivePropertyControllers = new List<IReactivePropertyController>();
+        private List<IReactiveUndoRedoController> _reactivePropertyControllers = new List<IReactiveUndoRedoController>();
         private CompositeDisposable _disposables = new CompositeDisposable();
+        private Dictionary<Type, MethodInfo> methodCacheCollection = new();
+
         public UndoRedoManager(CommandManager commandManager)
         {
             _commandManager = commandManager;
@@ -18,9 +22,9 @@ namespace ControlCanvas.Editor.ViewModels.Base
         public void SetupUndoRedo(ReactivePropertyManager reactivePropertyManager)
         {
             Dictionary<string, IDisposable> rps = reactivePropertyManager.GetAllReactiveProperties();
-            foreach (var rp in rps)
+            foreach (var rpKV in rps)
             {
-                Type type = rp.Value.GetType();
+                Type type = rpKV.Value.GetType();
                 if (type.IsGenericType)
                 {
                     Type genericType = type.GetGenericTypeDefinition();
@@ -29,14 +33,49 @@ namespace ControlCanvas.Editor.ViewModels.Base
                         Type[] genericArguments = type.GetGenericArguments();
                         Type genericArgument = genericArguments[0];
                         Type reactivePropertyControllerType = typeof(ReactivePropertyController<>).MakeGenericType(genericArgument);
-                        IReactivePropertyController reactivePropertyController = (IReactivePropertyController)Activator.CreateInstance(reactivePropertyControllerType, rp.Value, _commandManager);
-                        _reactivePropertyControllers.Add(reactivePropertyController);
-                        _disposables.Add(reactivePropertyController);
+                        IReactiveUndoRedoController reactiveUndoRedoController = (IReactiveUndoRedoController)Activator.CreateInstance(reactivePropertyControllerType, rpKV.Value, _commandManager);
+                        _reactivePropertyControllers.Add(reactiveUndoRedoController);
+                        _disposables.Add(reactiveUndoRedoController);
+
+                        //TODO
+                        if (genericArgument.IsGenericType)
+                        {
+                            var genericArgumentType = genericArgument.GetGenericTypeDefinition();
+                            if (genericArgumentType == typeof(ReactiveCollection<>))
+                            {
+                                Type[] innerGenericArguments = genericArgument.GetGenericArguments();
+                                Type innerGenericArgument = innerGenericArguments[0];
+                                if (!methodCacheCollection.TryGetValue(innerGenericArgument, out var genericHelperMethod))
+                                {
+                                    var helperMethod = GetType().GetMethod(nameof(SubscribeHelperCollection),
+                                        BindingFlags.NonPublic | BindingFlags.Instance);
+                                    genericHelperMethod = helperMethod.MakeGenericMethod(genericArgument, innerGenericArgument);
+                                    methodCacheCollection[innerGenericArgument] = genericHelperMethod;
+                                }
+                                genericHelperMethod.Invoke(this, new object[] { rpKV.Value });
+                            }
+                        }
                     }
                 }
             }
         }
 
+        
+        private void SubscribeHelperCollection<T, TInner>(IDisposable property) where T : ReactiveCollection<TInner>
+        {
+            var typedProperty = (ReactiveProperty<T>)property;
+            typedProperty.DoWithLast(last =>
+                {
+                    //TODO check for memory leaks (disposing of subscriptions)
+                })
+                .Where(x=>x != null).Subscribe(next =>
+                {
+                    IReactiveUndoRedoController redoController = new ReactiveCollectionController<TInner>(next, _commandManager);
+                    _reactivePropertyControllers.Add(redoController);
+                    _disposables.Add(redoController);
+                }).AddTo(_disposables);
+        }
+        
         public void Dispose()
         {
             _disposables.Dispose();
