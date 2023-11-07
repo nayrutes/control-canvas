@@ -51,7 +51,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
             fieldToPropertyMapper = new FieldToPropertyMapper<TData>(reactivePropertyManager);
             autoDataSaving = new AutoDataSaving<TData>(DataProperty, reactivePropertyManager, fieldToPropertyMapper);
             viewModelTracker = new ViewModelTracker<TData>(reactivePropertyManager);
-            undoRedoManager = new UndoRedoManager(CommandManager.Instance);
+            undoRedoManager = new UndoRedoManager();
 
             fieldToPropertyMapper.Init(InitializeMappingDictionary());
             DataProperty.Value = data;

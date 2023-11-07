@@ -12,6 +12,7 @@ namespace ControlCanvas.Editor.ViewModels.Base
     public class ReactivePropertyManager
     {
         private Dictionary<string, IDisposable> VmReactivePropertiesTyped = new();
+        private Dictionary<string, bool> _propertyHasDataField = new();
         private static Dictionary<Type, Type> reactivePropertyTypeCache = new();
         private static Dictionary<Type, Type> reactiveCollectionTypeCache = new();
 
@@ -113,10 +114,13 @@ namespace ControlCanvas.Editor.ViewModels.Base
         {
             foreach (KeyValuePair<string, IDisposable> keyValuePair in VmReactivePropertiesTyped)
             {
+                bool b = true;
                 if (!fieldToPropertyMap.ContainsValue(keyValuePair.Key))
                 {
                     Debug.Log($"Could not find data field for {keyValuePair.Key}");
+                    b = false;
                 }
+                _propertyHasDataField[keyValuePair.Key] = b;
             }
         }
 
@@ -163,9 +167,12 @@ namespace ControlCanvas.Editor.ViewModels.Base
             }
         }
 
-        public Dictionary<string, IDisposable> GetAllReactiveProperties()
+        public Dictionary<string, IDisposable> GetAllReactiveProperties(bool onlyWithField = false)
         {
-            return VmReactivePropertiesTyped;
+            if(!onlyWithField)
+                return VmReactivePropertiesTyped;
+            
+            return VmReactivePropertiesTyped.Where(x => _propertyHasDataField[x.Key]).ToDictionary(x => x.Key, x => x.Value);
         }
 
         public bool ContainsKey(string fieldName)

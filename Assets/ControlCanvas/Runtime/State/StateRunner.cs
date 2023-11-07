@@ -50,11 +50,18 @@ namespace ControlCanvas.Runtime
                 
                 currentState.Value = behaviour;
                 ExitEvent = currentState.Value.RegisterExitEvent(agentContext);
-                disposable = ExitEvent.Subscribe(x =>
+                if (ExitEvent == null)
                 {
-                    //Debug.Log($"Exit event called for {currentState.Value}");
-                    _exitCalled = true;
-                });
+                    Debug.LogError($"Exit event is null for {currentState.Value}");
+                }
+                else
+                {
+                    disposable = ExitEvent.Subscribe(x =>
+                    {
+                        //Debug.Log($"Exit event called for {currentState.Value}");
+                        _exitCalled = true;
+                    });
+                }
                 currentState.Value?.OnEnter(agentContext);
             }
             currentState.Value?.Execute(agentContext, deltaTime);

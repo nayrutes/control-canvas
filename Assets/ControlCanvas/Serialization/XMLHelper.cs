@@ -34,7 +34,7 @@ namespace ControlCanvas.Serialization
                 {
                     writer.Write(xml);
                 }
-                AssetDatabase.Refresh();
+                //AssetDatabase.Refresh();
             }
             catch (Exception e)
             {

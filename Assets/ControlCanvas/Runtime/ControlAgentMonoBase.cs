@@ -25,6 +25,11 @@ namespace ControlCanvas.Runtime
 
         public IBlackboard GetBlackboard(Type blackboardType)
         {
+            if (blackboardType == null)
+            {
+                Debug.LogError($"Blackboard type is null");
+                return null;
+            }
             if (Blackboards.TryGetValue(blackboardType, out var blackboard))
             {
                 return blackboard;

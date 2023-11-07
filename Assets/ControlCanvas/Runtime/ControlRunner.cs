@@ -212,7 +212,6 @@ namespace ControlCanvas.Runtime
 
         private bool SingleUpdate()
         {
-            //Debug.Log($"----Single update");
             if (_wasDone)
             {
                 _wasDone = false;
@@ -223,6 +222,11 @@ namespace ControlCanvas.Runtime
             if (next == null)
             {
                 //Debug.Log("No next control (single update)");
+            }
+            if (currentRunInstance == null)
+            {
+                Debug.LogWarning("No current run instance");
+                return true;
             }
             SubUpdate(next);
             currentRunInstance.LastControl = next;

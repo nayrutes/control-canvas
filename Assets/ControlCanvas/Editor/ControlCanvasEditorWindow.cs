@@ -2,6 +2,7 @@ using System;
 using ControlCanvas.Editor;
 using ControlCanvas.Editor.Extensions;
 using ControlCanvas.Editor.ViewModels;
+using ControlCanvas.Editor.ViewModels.UndoRedo;
 using ControlCanvas.Editor.Views;
 using ControlCanvas.Runtime;
 using UniRx;
@@ -189,6 +190,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         else if (state == PlayModeStateChange.ExitingPlayMode)
         {
             debugLinker?.Unlink();
+            CommandManager.Clear();
             //Debug.Log($"OnPlayModeStateChanged: {state}");
             //Dispose();
         }

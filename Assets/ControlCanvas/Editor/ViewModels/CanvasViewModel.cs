@@ -198,10 +198,10 @@ namespace ControlCanvas.Editor.ViewModels
 
         private void LoadData(CanvasData canvasData)
         {
-            CommandManager.Instance.SetInitActive(true);
+            CommandManager.SetInitActive(true);
             DataProperty.Value = canvasData;
-            CommandManager.Instance.SetInitActive(false);
-            CommandManager.Instance.Clear();
+            CommandManager.SetInitActive(false);
+            CommandManager.Clear();
         }
 
         public void OnSelectionChanged(SelectedChangedArgs obj)
@@ -211,13 +211,13 @@ namespace ControlCanvas.Editor.ViewModels
 
         public NodeViewModel CreateNode(Vector2? position = null)
         {
-            CommandManager.Instance.StartGrouping();
+            CommandManager.StartGrouping();
             NodeViewModel cvm = AddChildViewModel<NodeViewModel, NodeData>(new NodeViewModel(), Nodes);
             if (position != null)
             {
                 cvm.Position.Value = position.Value;
             }
-            CommandManager.Instance.EndGrouping();
+            CommandManager.EndGrouping();
             return cvm;
         }
         public NodeViewModel AddNode(NodeData nodeData)
@@ -228,9 +228,9 @@ namespace ControlCanvas.Editor.ViewModels
 
         public void DeleteNode(NodeData nodeData)
         {
-            CommandManager.Instance.StartGrouping();
+            CommandManager.StartGrouping();
             Nodes.Value.Remove(nodeData);
-            CommandManager.Instance.EndGrouping();
+            CommandManager.EndGrouping();
         }
         
         public EdgeViewModel CreateEdge(NodeViewModel from, NodeViewModel to, PortType startPortType, PortType endPortType)

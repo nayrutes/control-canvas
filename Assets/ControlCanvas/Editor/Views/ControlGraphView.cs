@@ -112,10 +112,10 @@ namespace ControlCanvas.Editor.Views
                 
                 else if (evt.keyCode == KeyCode.Z && evt.ctrlKey)
                 {
-                    CommandManager.Instance.Undo();
+                    CommandManager.Undo();
                 }else if (evt.keyCode == KeyCode.Y && evt.ctrlKey)
                 {
-                    CommandManager.Instance.Redo();
+                    CommandManager.Redo();
                 }
                 
             });
