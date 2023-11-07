@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using ControlCanvas.Runtime;
+using Playground.Scripts.AI;
 using UnityEngine;
 
 namespace Playground.Scripts
@@ -15,6 +17,7 @@ namespace Playground.Scripts
         
         private List<Vector3> subSpotPositions = new ();
         private List<bool> subSpotOccupied = new ();
+        private List<Character2DAgent> agentsOnSpot = new ();
         
         private int freeSpots = 1;
         
@@ -25,9 +28,24 @@ namespace Playground.Scripts
             for (var i = 0; i < subSpots; i++)
             {
                 subSpotOccupied.Add(false);
+                agentsOnSpot.Add(null);
             }
         }
-        
+
+        private void Update()
+        {
+            for (int i = 0; i < agentsOnSpot.Count; i++)
+            {
+                if(agentsOnSpot[i] == null)
+                    continue;
+                if (Vector2.Distance(subSpotPositions[i], agentsOnSpot[i].transform.position) > 2f)
+                {
+                    agentsOnSpot[i] = null;
+                    subSpotOccupied[i] = false;
+                }
+            }
+        }
+
         public bool HasFreeSpot()
         {
             return freeSpots > 0;
@@ -61,7 +79,7 @@ namespace Playground.Scripts
         {
             for (var i = 0; i < subSpotOccupied.Count; i++)
             {
-                if (subSpotOccupied[i])
+                if (!subSpotOccupied[i])
                 {
                     return i;
                 }
@@ -103,6 +121,24 @@ namespace Playground.Scripts
             foreach (var position in CalculateSubSpots())
             {
                 Gizmos.DrawWireSphere(position, 0.3f);
+            }
+        }
+
+        public void OccupySpot(Vector2 spotPosition, Character2DAgent agent)
+        {
+            var index = subSpotPositions.IndexOf(spotPosition);
+            if (index == -1)
+            {
+                throw new ArgumentException("Position is not a sub spot");
+            }
+            if(agent == null)
+                throw new ArgumentException("Agent is null");
+
+            if (!subSpotOccupied[index])
+            {
+                subSpotOccupied[index] = true;
+                agentsOnSpot[index] = agent;
+                freeSpots--;
             }
         }
     }

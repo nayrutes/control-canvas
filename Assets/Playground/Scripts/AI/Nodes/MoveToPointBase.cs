@@ -34,16 +34,16 @@ namespace Playground.Scripts.AI.Nodes
             {
                 bb.TargetPosition.Value = TargetPosition;
             }
-            // if (bb.TargetPosition.Value != TargetPosition)
-            // {
-            //     return State.Failure;
-            // }
-            //else 
+            
             if (Vector3.Distance(TargetPosition, bb.CurrentPosition) < 0.5f)
             {
                 agentContext.BlackboardFlowControl.Set(control,true);
                 return State.Success;
             }
+            // else if (bb.TargetUnreachabel)
+            // {
+            //     return State.Failure;
+            // }
             else
             {
                 return State.Running;

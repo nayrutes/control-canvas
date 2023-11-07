@@ -21,5 +21,9 @@ namespace Playground.Scripts
         private Transform SwordSpot;
         public Vector3 SwordSpotPosition => SwordSpot.position;
         public bool IsSwordAvailable => SwordSpot.gameObject.activeSelf;
+
+        [SerializeField]
+        private PoiSpot _stand1BuyerSpot;
+        public PoiSpot Stand1BuyerSpot => _stand1BuyerSpot;
     }
 }
