@@ -1,20 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ControlCanvas;
 using ControlCanvas.Runtime;
 using UniRx;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace Playground.Scripts.AI
 {
     public class Character2DAgent : ControlAgentMonoBase
     {
         public EntityTypes EntityType;
+        [SerializeField] private PoiSpot HomePoi;
+        [SerializeField] private float _interactionRange = 2;
 
         private void Start()
         {
             var bb = new SensorBlackboard();
             AddBlackboard(bb);
+            bb.HomePoi = HomePoi;
         }
 
         private void Update()
@@ -32,6 +37,7 @@ namespace Playground.Scripts.AI
             {
                 sensorBlackboard.Target = null;
             }
+            sensorBlackboard.lastPosition = transform.position;
         }
 
         public GameObject GetNearestEnemy(out float neDistance)
@@ -44,6 +50,24 @@ namespace Playground.Scripts.AI
         public void PickupClosestItem()
         {
             GetComponent<Hero>()?.PickupClosestItem();
+        }
+
+        public bool Interact()
+        {
+            var bb = GetBlackboard<WorldInfo>();
+            bb.GetNearestInteractable(transform.position, out IInteractable nearestInteractable, out float nearestDistance);
+            if(nearestInteractable != null && nearestDistance < _interactionRange && nearestInteractable.CanInteract)
+            {
+                return nearestInteractable.Interact();
+                
+            }
+            return false;
+        }
+
+        public void MakeInVisibleAndFixed(bool b)
+        {
+            GetComponent<NavMeshAgent>().enabled = !b;
+            GetComponentsInChildren<SpriteRenderer>().ToList().ForEach(x => x.enabled = !b);
         }
     }
 }

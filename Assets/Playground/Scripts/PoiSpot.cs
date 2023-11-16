@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Playground.Scripts
 {
-    public class PoiSpot : MonoBehaviour
+    public class PoiSpot : MonoBehaviour, IInteractable
     {
         [SerializeField]
         private int subSpots = 1;
@@ -20,8 +20,9 @@ namespace Playground.Scripts
         private List<Character2DAgent> agentsOnSpot = new ();
         
         private int freeSpots = 1;
-        
-        
+        [SerializeField] private bool _interactionPossible;
+
+
         private void Start()
         {
             subSpotPositions.AddRange(CalculateSubSpots());
@@ -140,6 +141,12 @@ namespace Playground.Scripts
                 agentsOnSpot[index] = agent;
                 freeSpots--;
             }
+        }
+
+        public bool CanInteract  => _interactionPossible;
+        public bool Interact()
+        {
+            return true;
         }
     }
 }

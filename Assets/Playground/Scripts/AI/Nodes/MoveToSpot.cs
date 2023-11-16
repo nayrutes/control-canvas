@@ -12,6 +12,8 @@ namespace Playground.Scripts.AI.Nodes
         public void OnStart(IControlAgent agentContext)
         {
             PoiSpot spot = targetSpot.GetValue(agentContext);
+            if(spot == null)
+                return;
             if(spot.GetFreeSpotPosition(out spotPosition))
             {
                 TargetPosition = spotPosition;
@@ -25,6 +27,10 @@ namespace Playground.Scripts.AI.Nodes
         public State OnUpdate(IControlAgent agentContext, float deltaTime)
         {
             PoiSpot spot = targetSpot.GetValue(agentContext);
+            if (spot == null)
+            {
+                return State.Failure;
+            }
             if (_noSpot || !spot.IsSpotFree(spotPosition))
             {
                 if(spot.GetFreeSpotPosition(out spotPosition))

@@ -5,7 +5,7 @@ using UnityEngine.Rendering.Universal;
 namespace Playground.Scripts
 {
     [RequireComponent(typeof(Light2D))]
-    public class LanternLight : MonoBehaviour
+    public class LanternLight : MonoBehaviour, IInteractable
     {
         [SerializeField]
         private Light2D light2D;
@@ -22,6 +22,8 @@ namespace Playground.Scripts
         
         [SerializeField]
         private bool startLightOn = true;
+        
+        public bool IsOn => light2D.enabled;
         private void Start()
         {
             light2D = GetComponent<Light2D>();
@@ -53,6 +55,16 @@ namespace Playground.Scripts
         public void TurnOn()
         {
             light2D.enabled = true;
+        }
+
+        public bool CanInteract { get; } = true;
+        public bool Interact()
+        {
+            if(light2D.enabled)
+                TurnOff();
+            else
+                TurnOn();
+            return true;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using ControlCanvas.Runtime;
+using ControlCanvas.Serialization;
 using UnityEngine;
 
 namespace Playground.Scripts.AI.Nodes
