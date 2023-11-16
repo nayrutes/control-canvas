@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ControlCanvas.Editor.ViewModels.Base;
 using ControlCanvas.Runtime;
+using ControlCanvas.Serialization;
 using UniRx;
 using UnityEngine.UIElements;
 using ValueType = ControlCanvas.Runtime.ValueType;

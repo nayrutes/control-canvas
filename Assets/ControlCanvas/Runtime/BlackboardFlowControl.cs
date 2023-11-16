@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ControlCanvas.Serialization;
 
 namespace ControlCanvas.Runtime
 {

@@ -72,6 +72,8 @@ namespace ControlCanvas.Runtime
         //I want to return an IObservable<T2>
         public static T GetValueOfProperty<T, T2>(Type blackboardType, string blackboardKey, object instance) where T : IObservable<T2>
         {
+            if (blackboardKey == null)
+                return default;
             var property = blackboardType.GetProperty(blackboardKey);
             var value = property.GetValue(instance); //Example value: Subject<bool>
 

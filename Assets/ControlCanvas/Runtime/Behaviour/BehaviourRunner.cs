@@ -59,6 +59,7 @@ namespace ControlCanvas.Runtime
         private readonly DefaultRunnerExecuter _behaviourRunnerExecuter = new ();
         private readonly FlowManager _flowManager;
         private readonly NodeManager _nodeManager;
+        //private IControl _controlBeforeBehaviour;
 
         //private BehaviourRunnerBlackboard _tmpBlackboard = new();
 
@@ -73,6 +74,11 @@ namespace ControlCanvas.Runtime
             CurrentBehaviourWrapper.Value = GetOrSetWrapper(behaviour);
             //_blackboard = _tmpBlackboard;
 
+            // if (lastControl is not IBehaviour)
+            // {
+            //     _controlBeforeBehaviour = lastControl;
+            // }
+            
             if (_blackboard.LastDirection == ExDirection.Forward)
             {
                 TryAddToStack(CurrentBehaviourWrapper.Value.Behaviour);
@@ -94,7 +100,7 @@ namespace ControlCanvas.Runtime
         }
 
         //TODO: split this up to have a GetNext which changes nothing of the flow and a one that does if needed
-        public IControl GetNext(IBehaviour behaviour, CanvasData controlFlow, IControlAgent agentContext)
+        public IControl GetNext(IBehaviour behaviour, CanvasData controlFlow, IControlAgent agentContext, IControl lastToStayIn)
         {
             if (CurrentBehaviourWrapper.Value == null)
             {
@@ -126,6 +132,11 @@ namespace ControlCanvas.Runtime
                 {
                     nextControl = CurrentBehaviourWrapper.Value.Behaviour;
                 }
+            }
+
+            if (nextControl == null)
+            {
+                return lastToStayIn;
             }
             return nextControl;
         }
@@ -211,6 +222,7 @@ namespace ControlCanvas.Runtime
             _blackboard.LastDirection = ExDirection.Forward;
             _blackboard.LastCombinedResult = State.Success;
             _blackboard.parallelStarted.Clear();
+            //_controlBeforeBehaviour = null;
         }
 
 

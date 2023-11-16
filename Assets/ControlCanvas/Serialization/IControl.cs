@@ -1,7 +1,6 @@
-﻿namespace ControlCanvas.Runtime
+﻿namespace ControlCanvas.Serialization
 {
     public interface IControl
     {
-        
     }
 }

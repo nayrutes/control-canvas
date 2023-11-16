@@ -14,7 +14,7 @@ namespace ControlCanvas.Runtime
         private bool _decision;
         private readonly FlowManager _flowManager;
         private readonly NodeManager _nodeManager;
-        private IControl _controlBeforeDecision;
+        //private IControl _controlBeforeDecision;
 
         public DecisionRunner(FlowManager flowManager, NodeManager instance)
         {
@@ -24,10 +24,10 @@ namespace ControlCanvas.Runtime
         
         public void DoUpdate(IDecision decision, IControlAgent agentContext, float deltaTime, IControl lastControl)
         {
-            if (lastControl is not IDecision)
-            {
-                _controlBeforeDecision = lastControl;
-            }
+            // if (lastControl is not IDecision)
+            // {
+            //     _controlBeforeDecision = lastControl;
+            // }
             
             CurrentDecision.Value = decision;
             if (_decisionsTracker.Contains(CurrentDecision.Value))
@@ -39,7 +39,7 @@ namespace ControlCanvas.Runtime
             _decision = CurrentDecision.Value.Decide(agentContext);
         }
 
-        public IControl GetNext(IDecision decision, CanvasData controlFlow, IControlAgent agentContext)
+        public IControl GetNext(IDecision decision, CanvasData controlFlow, IControlAgent agentContext, IControl lastToStayIn)
         {
             IControl next = _nodeManager.GetNextForNode(decision, _decision, controlFlow);
             // if (_nodeManager.GetExecutionTypeOfNode(next, controlFlow) != typeof(IDecision))
@@ -48,7 +48,7 @@ namespace ControlCanvas.Runtime
             // }
             if (next == null)
             {
-                return _controlBeforeDecision;
+                return lastToStayIn;
             }
             return next;
         }
@@ -65,7 +65,7 @@ namespace ControlCanvas.Runtime
         public void InstanceUpdateDone(IControlAgent agentContext)
         {
             _decisionsTracker.Clear();
-            _controlBeforeDecision = null;
+            //_controlBeforeDecision = null;
         }
 
     }

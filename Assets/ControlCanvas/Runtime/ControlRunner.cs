@@ -12,11 +12,12 @@ namespace ControlCanvas.Runtime
         public Dictionary<Type, IRunnerBase> runnerDict = new ();
         
         public Dictionary<Type, Action<IControl, float, IControl>> updateByType = new ();
-        public Dictionary<Type, Func<IControl, IControl>> nextByType = new ();
+        public Dictionary<Type, Func<IControl, IControl, IControl>> nextByType = new ();
         public Dictionary<Type, Func<bool>> checkIfDoneByType = new ();
 
         public IControl InitControl { get; private set; }
         public IControl LastControl { get; set; }
+        public IControl LastToStayIn { get; set; }
         public IControl RunStartControl { get; set; }
         
         public RunInstance(int i, IControl initControl)
@@ -255,13 +256,17 @@ namespace ControlCanvas.Runtime
                 return null;
             }
             last = currentRunInstance.LastControl;
-
+            if (last != null && last is ICanStayBetweenUpdates)
+            {
+                currentRunInstance.LastToStayIn = last;
+            }
+            IControl lastToStayIn = currentRunInstance.LastToStayIn;
             if (last != null)
             {
                 Type executionType = _nodeManager.GetExecutionTypeOfNode(last, CurrentFlow);
                 if (executionType != null)
                 {
-                    next = currentRunInstance.nextByType[executionType](last);
+                    next = currentRunInstance.nextByType[executionType](last, lastToStayIn);
                 }
             }
             else
@@ -337,14 +342,14 @@ namespace ControlCanvas.Runtime
                 .ForEach(AddRunInstanceToQueue);
         }
 
-        private IControl RunnerGetNext<T>(IControl current) where T : class, IControl
+        private IControl RunnerGetNext<T>(IControl current, IControl lastToStayIn) where T : class, IControl
         {
             IRunner<T> runner = currentRunInstance.runnerDict[typeof(T)] as IRunner<T>;
             if (current is ISubFlow subFlow)
             {
                 _flowManager.CacheFlow(subFlow.GetSubFlowPath(agentContext));
             }
-            IControl next = runner.GetNext(current as T, CurrentFlow, agentContext);
+            IControl next = runner.GetNext(current as T, CurrentFlow, agentContext, lastToStayIn);
             return next;
         }
         

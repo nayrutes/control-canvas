@@ -67,7 +67,7 @@ namespace ControlCanvas.Runtime
             currentState.Value?.Execute(agentContext, deltaTime);
         }
 
-        public IControl GetNext(IState state, CanvasData controlFlow, IControlAgent agentContext)
+        public IControl GetNext(IState state, CanvasData controlFlow, IControlAgent agentContext, IControl lastToStayIn)
         {
             if (_exitCalled)
             {

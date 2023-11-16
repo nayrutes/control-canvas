@@ -16,7 +16,7 @@ namespace ControlCanvas.Runtime
         
         void DoUpdate(T control, IControlAgent agentContext, float deltaTime, IControl lastControl);
 
-        IControl GetNext(T control, CanvasData currentFlow, IControlAgent agentContext);
+        IControl GetNext(T control, CanvasData currentFlow, IControlAgent agentContext, IControl lastToStayIn);
         List<IControl> GetParallel(IControl current, CanvasData currentFlow);
     }
 }
