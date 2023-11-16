@@ -33,13 +33,17 @@ namespace ControlCanvas.Runtime
             {
                 return exitSubject;
             }
-            IObservable<object> observable = exitEvent.GetValue(agentContext);
-            if (observable != null)
+            else
             {
-                return exitSubject.CombineLatest(observable, (x, y) => y);
+                return exitEvent.GetValue(agentContext);
             }
-
-            return null;
+            // IObservable<object> observable = exitEvent.GetValue(agentContext);
+            // if (observable != null)
+            // {
+            //     return exitSubject.CombineLatest(observable, (x, y) => y);
+            // }
+            //
+            // return null;
         }
     }
 }
