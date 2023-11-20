@@ -84,6 +84,8 @@ namespace ControlCanvas.Editor.ViewModels.Base
                             // Handle addition to the collection
                             // For example, you can update the field value
                             fieldInfo.SetValue(DataProperty.Value, reactiveCollection.ToList());
+                            AutoSaver.AddChanged();
+                            Debug.Log($"Added {addEvent.Value} to {fieldInfo.Name}");
                         }).AddTo(disposables);
 
                         reactiveCollection.ObserveRemove().Subscribe(removeEvent =>
@@ -91,13 +93,20 @@ namespace ControlCanvas.Editor.ViewModels.Base
                             // Handle removal from the collection
                             // For example, you can update the field value
                             fieldInfo.SetValue(DataProperty.Value, reactiveCollection.ToList());
+                            AutoSaver.AddChanged();
+                            Debug.Log($"Removed {removeEvent.Value} from {fieldInfo.Name}");
                         }).AddTo(disposables);
                     }
                 }).AddTo(disposables);
             }
             else
             {
-                typedProperty.Subscribe(value => { fieldInfo.SetValue(DataProperty.Value, value); }).AddTo(disposables);
+                typedProperty.Subscribe(value =>
+                {
+                    fieldInfo.SetValue(DataProperty.Value, value);
+                    AutoSaver.AddChanged();
+                    Debug.Log($"Set {fieldInfo.Name} to {value}");
+                }).AddTo(disposables);
             }
         }
 

@@ -334,6 +334,18 @@ namespace ControlCanvas.Editor.Views
             {
                 dynamicContentFoldout.value = x;
             }).AddTo(disposables);
+            
+            nodeViewModel.IsCurrentState.Subscribe(x =>
+            {
+                if (x)
+                {
+                    this.AddToClassList("current-state");
+                }
+                else
+                {
+                    this.RemoveFromClassList("current-state");
+                }
+            }).AddTo(disposables);
         }
 
         private void HidePortContainer(VisualElement container, bool hide)

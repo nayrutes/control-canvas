@@ -42,6 +42,7 @@ namespace ControlCanvas.Editor.ViewModels
         public ReactiveCommand<NodeViewModel> MakeInitialNodeCommand { get; private set; } = new();
         public ReactiveCommand<bool> SetCoreDebuggingCommand { get; private set; } = new();
         public ReactiveCommand<bool> ExpandContent { get; set; } = new();
+        public ReactiveProperty<bool> AutoSaveEnabled { get; set; } = new();
 
         public CanvasViewModel() : base()
         {
@@ -291,6 +292,18 @@ namespace ControlCanvas.Editor.ViewModels
         public void SetDebugBehaviourState(string controlGuid, State? controlRunnerLatestBehaviourState)
         {
             GetNodeViewModelByGuid(controlGuid)?.SetCurrentDebugBehaviourState(controlRunnerLatestBehaviourState);
+        }
+        
+        
+        string lastStateGuid = null;
+        public void SetDebugLastState(string currentControlGuid)
+        {
+            if (lastStateGuid != null && lastStateGuid != currentControlGuid)
+            {
+                GetNodeViewModelByGuid(lastStateGuid)?.SetDebugLastState(false);
+            }
+            lastStateGuid = currentControlGuid;
+            GetNodeViewModelByGuid(currentControlGuid)?.SetDebugLastState(true);
         }
 
         public NodeViewModel CreateRoutingNode(NodeViewModel node1, NodeViewModel node2, Vector2 pos)

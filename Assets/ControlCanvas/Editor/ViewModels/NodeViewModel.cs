@@ -24,6 +24,7 @@ namespace ControlCanvas.Editor.ViewModels
         //Reactive properties for debugging
         public ReactiveProperty<bool> IsCurrentDebugNode { get; private set; } = new();
         public ReactiveProperty<bool> IsNextDebugNode { get; private set; } = new();
+        public ReactiveProperty<bool> IsCurrentState { get; private set; } = new();
         public ReactiveProperty<State?> CurrentDebugBehaviourState { get; private set; } = new();
         
         //Commands
@@ -106,6 +107,11 @@ namespace ControlCanvas.Editor.ViewModels
         public void SetNextDebugControl(bool active)
         {
             IsNextDebugNode.Value = active;
+        }
+
+        public void SetDebugLastState(bool active)
+        {
+            IsCurrentState.Value = active;
         }
     }
 }

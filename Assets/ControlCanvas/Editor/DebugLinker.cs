@@ -67,6 +67,11 @@ namespace ControlCanvas.Editor
             {
                 canvasViewModel.SetDebugBehaviourState(currentControlGuid, controlRunner.LatestBehaviourState);
             }
+
+            if (currentControl is IState)
+            {
+                canvasViewModel.SetDebugLastState(currentControlGuid);
+            }
         }
         private void OnStepDoneNext(IControl nextControl, bool active)
         {

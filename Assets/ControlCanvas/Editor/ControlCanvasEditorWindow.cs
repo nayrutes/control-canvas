@@ -5,6 +5,7 @@ using ControlCanvas.Editor.ViewModels;
 using ControlCanvas.Editor.ViewModels.UndoRedo;
 using ControlCanvas.Editor.Views;
 using ControlCanvas.Runtime;
+using ControlCanvas.Serialization;
 using UniRx;
 using UnityEditor;
 using UnityEditor.Compilation;
@@ -17,6 +18,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
 {
     [SerializeField] private VisualTreeAsset m_VisualTreeAsset = default;
     private const string ControlFlowPlayerPrefsKey = "ControlFlowPath";
+    private const string ControlFlowPlayerPrefsKeyAutoSave = "ControlFlowAutoSave";
 
     private CanvasViewModel m_CanvasViewModel;
     private ControlGraphView graphView;
@@ -36,6 +38,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
     private ToolbarMenu toolbarMenu;
     private bool _currentCoreDebugging;
     private bool _currentExpandContent = true;
+    private Toggle autoSaveToggle;
 
     [MenuItem("Window/UI Toolkit/ControlCanvasEditorWindow")]
     public static void OpenWindow()
@@ -50,6 +53,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
 
         SetUpViewModel();
         SetUpView();
+        LoadPlayerPrefs();
         SetUpSubscriptions();
         AutoLoadLastFile();
         
@@ -61,6 +65,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
 
         //Debug.Log("SetUpViewModel");
         m_CanvasViewModel = new CanvasViewModel();
+        AutoSaver.Setup(m_CanvasViewModel);
     }
     
     private void SetUpView()
@@ -75,6 +80,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         canvasNameLabel = rootVisualElement.Q<Label>("canvas-name");
         canvasPathLabel = rootVisualElement.Q<Label>("canvas-path");
         debugRunnerField = rootVisualElement.Q<ObjectField>("debug-runner");
+        autoSaveToggle = rootVisualElement.Q<Toggle>("auto-save");
         
         playButton = rootVisualElement.Q<Button>("Play");
         stopButton = rootVisualElement.Q<Button>("Stop");
@@ -96,7 +102,18 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
             }
         });
         
-        
+        autoSaveToggle.value = m_CanvasViewModel.AutoSaveEnabled.Value;
+        m_CanvasViewModel.AutoSaveEnabled.Subscribe(x => { autoSaveToggle.value = x; }).AddTo(disposables);
+        autoSaveToggle.RegisterValueChangedCallback(evt =>
+        {
+            m_CanvasViewModel.AutoSaveEnabled.Value = evt.newValue;
+            //Debug.Log($"Set AutoSave VM from toggle. Value: {evt.newValue}");
+        });
+        m_CanvasViewModel.AutoSaveEnabled.Subscribe(x =>
+        {
+            EditorPrefs.SetBool(ControlFlowPlayerPrefsKeyAutoSave, x);
+            Debug.Log($"Set PlayerPrefs AutoSave. Value: {x}");
+        });
         
         debugRunnerField.RegisterValueChangedCallback(evt =>
         {
@@ -160,6 +177,13 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         m_CanvasViewModel.DeserializeData(lastFile);
     }
 
+    private void LoadPlayerPrefs()
+    {
+        var autoSave = EditorPrefs.GetBool(ControlFlowPlayerPrefsKeyAutoSave);
+        Debug.Log($"Load PlayerPrefs AutoSave. Value: {autoSave}");
+        m_CanvasViewModel.AutoSaveEnabled.Value = autoSave;
+    }
+    
     private void OnEnable()
     {
         //Debug.Log("OnEnable");
@@ -191,6 +215,7 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         {
             debugLinker?.Unlink();
             CommandManager.Clear();
+            AutoSaver.Setup(m_CanvasViewModel);
             //Debug.Log($"OnPlayModeStateChanged: {state}");
             //Dispose();
         }
@@ -248,8 +273,8 @@ public class ControlCanvasEditorWindow : EditorWindow, IDisposable
         }
         if (path.Length != 0)
         {
-            m_CanvasViewModel.SerializeData(path);
             EditorPrefs.SetString(ControlFlowPlayerPrefsKey, path);
+            m_CanvasViewModel.SerializeData(path);
         }
     }
 

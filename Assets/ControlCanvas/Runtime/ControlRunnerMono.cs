@@ -22,10 +22,10 @@ namespace ControlCanvas.Runtime
         {
             _controlRunner = new ControlRunner();
             //For debugging last loaded flow
-            if (String.IsNullOrEmpty(startPath))
-            {
-                startPath = EditorPrefs.GetString("ControlFlowPath");
-            }
+            // if (String.IsNullOrEmpty(startPath))
+            // {
+            //     startPath = EditorPrefs.GetString("ControlFlowPath");
+            // }
             
         }
 

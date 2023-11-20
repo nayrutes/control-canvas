@@ -98,26 +98,31 @@ namespace ControlCanvas.Editor.Views
                 if (evt.keyCode == KeyCode.C && evt.ctrlKey)
                 {
                     CopySelection();
+                    evt.StopPropagation();
                 }
                 else if (evt.keyCode == KeyCode.V && evt.ctrlKey)
                 {
                     Paste();
+                    evt.StopPropagation();
                 }else if (evt.keyCode == KeyCode.D && evt.ctrlKey)
                 {
                     DuplicateSelection();
+                    evt.StopPropagation();
                 }else if (evt.keyCode == KeyCode.X)
                 {
                     CutSelection();
+                    evt.StopPropagation();
                 }
                 
                 else if (evt.keyCode == KeyCode.Z && evt.ctrlKey)
                 {
                     CommandManager.Undo();
+                    evt.StopPropagation();
                 }else if (evt.keyCode == KeyCode.Y && evt.ctrlKey)
                 {
                     CommandManager.Redo();
+                    evt.StopPropagation();
                 }
-                
             });
         }
 

@@ -143,12 +143,17 @@ namespace ControlCanvas.Runtime
 
         public List<IControl> GetParallel(IControl current, CanvasData currentFlow)
         {
-            if (_blackboard.LastDirection == ExDirection.Forward && !_blackboard.parallelStarted.ContainsKey(current))
+            if (!_blackboard.parallelStarted.ContainsKey(current))
             {
                 List<IControl> parallelForNode = _nodeManager.GetParallelForNode(current, currentFlow);
                 _blackboard.parallelStarted[current] = true;
+                // if (parallelForNode.Count > 0)
+                // {
+                //     Debug.Log($"Starting parallel for {current}");
+                // }
                 return parallelForNode;
             }
+            //Debug.Log($"Skipping parallel for {current}");
             return null;
         }
 
