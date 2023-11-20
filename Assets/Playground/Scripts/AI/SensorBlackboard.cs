@@ -16,10 +16,16 @@ namespace Playground.Scripts.AI
         
         public Subject<Unit> ExitHomeEvent { get; } = new();
         
+        public Subject<Unit> ForceExitStateEvent { get; } = new();
+        
+        
         public SensorBlackboard()
         {
             IsNearEnemyEventRp.Subscribe(x => IsNearEnemyEvent.OnNext(Unit.Default));
             IsNearEnemyEventRp.Subscribe(x => IsNearEnemyEventBool = x);
+            
+            AssignNewRandomPoiSpot();
+            RandomPoiSpotChangeEvent.Subscribe(x => AssignNewRandomPoiSpot());
         }
         
         public Vector3 lastPosition = Vector3.zero;
@@ -51,20 +57,31 @@ namespace Playground.Scripts.AI
         
         public PoiSpot HomePoi { get; set; } = null;
 
-        public Vector3 NearestOffLanternLightPos => NearestOffLanternLight.transform.position;
+        //public Vector3 NearestOffLanternLightPos => NearestOffLanternLight.transform.position;
+        public PoiSpot NearestOffLanternLightPos => NearestOffLanternLight != null ? NearestOffLanternLight.GetComponent<PoiSpot>() : null;
+
+        public bool LightOffNearby
+        {
+            get
+            {
+                GetNearestLanternLight(false, out float distance);
+                return distance < 7f;
+            }
+        }
+
         public LanternLight NearestOffLanternLight
         {
             get
             {
-                return GetNearestLanternLight(false);
+                return GetNearestLanternLight(false,out _);
             }
         }
 
-        private LanternLight GetNearestLanternLight(bool isOn)
+        private LanternLight GetNearestLanternLight(bool isOn, out float nearestDistance)
         {
             var lanternLights = Object.FindObjectsOfType<LanternLight>();
             LanternLight nearestLight = null;
-            float nearestDistance = float.MaxValue;
+            nearestDistance = float.MaxValue;
             foreach (var lanternLight in lanternLights)
             {
                 if (lanternLight.IsOn == isOn)
@@ -79,6 +96,23 @@ namespace Playground.Scripts.AI
             }
 
             return nearestLight;
+        }
+
+        public PoiSpot RandomPoiSpot { get; set; }
+        public Subject<Unit> RandomPoiSpotChangeEvent { get; } = new();
+        public void AssignNewRandomPoiSpot()
+        {
+            RandomPoiSpot = GetRandomPoiSpot();
+        }
+        private static PoiSpot GetRandomPoiSpot()
+        {
+            var poiSpots = Object.FindObjectsOfType<PoiSpot>();
+            if (poiSpots.Length == 0)
+            {
+                return null;
+            }
+
+            return poiSpots[Random.Range(0, poiSpots.Length)];
         }
     }
 }

@@ -55,6 +55,8 @@ namespace Playground.Scripts
             nearestInteractable = null;
             foreach (var interactable in interactables)
             {
+                if(!interactable.CanInteract)
+                    continue;
                 var distance = Vector3.Distance(((MonoBehaviour)interactable).transform.position, transformPosition);
                 if (distance < nearestDistance)
                 {

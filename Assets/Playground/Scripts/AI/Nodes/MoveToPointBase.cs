@@ -36,7 +36,7 @@ namespace Playground.Scripts.AI.Nodes
                 bb.TargetPosition.Value = TargetPosition;
             }
             
-            if (Vector3.Distance(TargetPosition, bb.CurrentPosition) < 0.5f)
+            if (Vector3.Distance(TargetPosition, bb.CurrentPosition) < 1f)
             {
                 agentContext.BlackboardFlowControl.Set(control,true);
                 return State.Success;

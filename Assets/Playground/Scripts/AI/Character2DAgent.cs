@@ -6,6 +6,7 @@ using ControlCanvas.Runtime;
 using UniRx;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 namespace Playground.Scripts.AI
 {
@@ -19,7 +20,18 @@ namespace Playground.Scripts.AI
         {
             var bb = new SensorBlackboard();
             AddBlackboard(bb);
-            bb.HomePoi = HomePoi;
+            if (HomePoi != null)
+            {
+                bb.HomePoi = HomePoi;   
+            }
+            else
+            {
+                List<PoiSpot> homeSpots = FindObjectsByType<PoiSpot>(FindObjectsInactive.Exclude,FindObjectsSortMode.None).Where(x => x.name.Contains("House")).ToList();
+                if (homeSpots.Count > 0)
+                {
+                    bb.HomePoi = homeSpots[Random.Range(0, homeSpots.Count)];
+                }
+            }
         }
 
         private void Update()

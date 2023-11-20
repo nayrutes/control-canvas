@@ -1,5 +1,4 @@
-﻿using ControlCanvas.Editor;
-using ControlCanvas.Runtime;
+﻿using ControlCanvas.Runtime;
 using UnityEngine;
 
 namespace Playground.Scripts.AI.Nodes

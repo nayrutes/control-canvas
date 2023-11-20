@@ -5,7 +5,7 @@ using UnityEngine.Rendering.Universal;
 namespace Playground.Scripts
 {
     [RequireComponent(typeof(Light2D))]
-    [ExecuteAlways]
+    //[ExecuteAlways]
     public class WorldLight : MonoBehaviour
     {
         [Range(0,1)]

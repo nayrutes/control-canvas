@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7292801411466968401}
   - component: {fileID: 3969502357749087805}
   - component: {fileID: 7592955167299022011}
+  - component: {fileID: 5376139979695758688}
   m_Layer: 0
   m_Name: PoleLight2D
   m_TagString: Untagged
@@ -98,3 +99,20 @@ MonoBehaviour:
   light2D: {fileID: 0}
   outerRadiusVariation: 0.3
   intensityVariation: 0.3
+  startLightOn: 1
+--- !u!114 &5376139979695758688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1783784235213342426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53bc03d33fb5454ca74c8ab5a675d7da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  subSpots: 1
+  subSpotRadius: 1
+  horizontalFirst: 1
+  _interactionPossible: 0

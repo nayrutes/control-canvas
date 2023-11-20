@@ -14,6 +14,7 @@ namespace Playground.Scripts.AI.Nodes
             PoiSpot spot = targetSpot.GetValue(agentContext);
             if(spot == null)
                 return;
+            
             if(spot.GetFreeSpotPosition(out spotPosition))
             {
                 TargetPosition = spotPosition;
@@ -31,6 +32,12 @@ namespace Playground.Scripts.AI.Nodes
             {
                 return State.Failure;
             }
+
+            if (spot.IsMySpot(agentContext as Character2DAgent))
+            {
+                return State.Success;
+            }
+            
             if (_noSpot || !spot.IsSpotFree(spotPosition))
             {
                 if(spot.GetFreeSpotPosition(out spotPosition))
@@ -55,6 +62,7 @@ namespace Playground.Scripts.AI.Nodes
         public void OnReset(IControlAgent agentContext, State blackboardLastCombinedResult)
         {
             OnResetBase(agentContext, blackboardLastCombinedResult, this);
+            //_noSpot = true;
         }
     }
 }

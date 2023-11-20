@@ -1,4 +1,6 @@
-﻿using ControlCanvas.Editor;
+﻿#if UNITY_EDITOR
+using ControlCanvas.Editor;
+#endif
 using ControlCanvas.Runtime;
 
 namespace Playground.Scripts.AI.Nodes
@@ -8,7 +10,9 @@ namespace Playground.Scripts.AI.Nodes
         public string message;
         public void OnStart(IControlAgent agentContext)
         {
-            Debug.Log(message);
+#if UNITY_EDITOR
+            Debug.Log(message);      
+#endif
         }
 
         public State OnUpdate(IControlAgent agentContext, float deltaTime)

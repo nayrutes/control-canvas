@@ -57,7 +57,8 @@ namespace Playground.Scripts
             var index = subSpotPositions.IndexOf(position);
             if (index == -1)
             {
-                throw new ArgumentException("Position is not a sub spot");
+                //throw new ArgumentException("Position is not a sub spot");
+                return false;
             }
 
             return !subSpotOccupied[index];
@@ -146,6 +147,17 @@ namespace Playground.Scripts
         public bool CanInteract  => _interactionPossible;
         public bool Interact()
         {
+            return true;
+        }
+
+        public bool IsMySpot(Character2DAgent character2DAgent)
+        {
+            var index = agentsOnSpot.IndexOf(character2DAgent);
+            if (index == -1)
+            {
+                return false;
+            }
+
             return true;
         }
     }

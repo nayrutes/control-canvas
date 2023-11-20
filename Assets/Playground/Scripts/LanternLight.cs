@@ -23,6 +23,13 @@ namespace Playground.Scripts
         [SerializeField]
         private bool startLightOn = true;
         
+        [SerializeField]
+        private float burnTime = 30f;
+        [SerializeField]
+        private float burnTimeVariation = 10f;
+        
+        private float _burnTime;
+        
         public bool IsOn => light2D.enabled;
         private void Start()
         {
@@ -38,6 +45,7 @@ namespace Playground.Scripts
             {
                 TurnOff();
             }
+            SetBurnTime();
         }
 
         private void Update()
@@ -45,8 +53,27 @@ namespace Playground.Scripts
             //let the light flicker smoothed over time
             light2D.pointLightOuterRadius = Mathf.Lerp(_defaultOuterRadius - outerRadiusVariation, _defaultOuterRadius + outerRadiusVariation, Mathf.PerlinNoise(Time.time, _noiseOffset));
             light2D.intensity = Mathf.Lerp(_defaultIntensity - intensityVariation, _defaultIntensity + intensityVariation, Mathf.PerlinNoise(Time.time, _noiseOffset));
+            
+            //burn out the light
+            if (light2D.enabled)
+            {
+                _burnTime -= Time.deltaTime;
+                if (_burnTime <= 0)
+                {
+                    TurnOff();
+                }
+            }
+            else
+            {
+                SetBurnTime();
+            }
         }
-        
+
+        private void SetBurnTime()
+        {
+            _burnTime = burnTime + UnityEngine.Random.Range(-burnTimeVariation, burnTimeVariation);
+        }
+
         public void TurnOff()
         {
             light2D.enabled = false;

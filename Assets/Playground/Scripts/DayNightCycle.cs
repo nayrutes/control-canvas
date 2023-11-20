@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Playground.Scripts
 {
-    [ExecuteAlways]
+    //[ExecuteAlways]
     public class DayNightCycle : MonoBehaviour
     {
         [SerializeField] private float duration = 60f;
@@ -13,8 +13,8 @@ namespace Playground.Scripts
 
         [SerializeField, Range(0,1)]
         private float fractionManual = 0.5f;
-
-        public float Fraction { get; private set; } = 0.5f;
+        
+        public float Fraction { get; private set; } = 0.3f;
         private WorldInfo worldInfo;
         private void Start()
         {
@@ -35,10 +35,10 @@ namespace Playground.Scripts
             
             if (worldInfo != null)
             {
-                worldInfo.Night.Value = Fraction < 0.25f || Fraction > 0.75f;
-                worldInfo.Day.Value = Fraction > 0.25f && Fraction < 0.75f;
-                worldInfo.Dawn.Value = Fraction > 0.25f && Fraction < 0.5f;
-                worldInfo.Dusk.Value = Fraction > 0.5f && Fraction < 0.75f;
+                worldInfo.Night.Value = Fraction < 0.15f || Fraction > 0.85f;
+                worldInfo.Day.Value = Fraction > 0.15f && Fraction < 0.85f;
+                worldInfo.Dawn.Value = Fraction > 0.15f && Fraction < 0.35f;
+                worldInfo.Dusk.Value = Fraction > 0.65f && Fraction < 0.85f;
             }
         }
     }
