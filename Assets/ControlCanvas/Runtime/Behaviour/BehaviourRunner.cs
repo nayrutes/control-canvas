@@ -59,6 +59,8 @@ namespace ControlCanvas.Runtime
         private readonly DefaultRunnerExecuter _behaviourRunnerExecuter = new ();
         private readonly FlowManager _flowManager;
         private readonly NodeManager _nodeManager;
+
+        private bool _done;
         //private IControl _controlBeforeBehaviour;
 
         //private BehaviourRunnerBlackboard _tmpBlackboard = new();
@@ -127,17 +129,19 @@ namespace ControlCanvas.Runtime
             if (newDirection == ExDirection.Backward)
             {
                 CurrentBehaviourWrapper.Value.Behaviour.OnReset(agentContext, _blackboard.LastCombinedResult);
-                //Remember to start at the behaviour group again if it was running 
-                if (nextControl == null && _blackboard.LastCombinedResult == State.Running)
-                {
-                    nextControl = CurrentBehaviourWrapper.Value.Behaviour;
-                }
+                // //Remember to start at the behaviour group again if it was running 
+                // if (nextControl == null && _blackboard.LastCombinedResult == State.Running)
+                // {
+                //     nextControl = CurrentBehaviourWrapper.Value.Behaviour;
+                // }
             }
 
             if (nextControl == null)
             {
-                return lastToStayIn;
+                //nextControl = lastToStayIn;
+                _done = true;
             }
+            //Debug.Log($"Next control is {nextControl} (is last to stay in: {nextControl == lastToStayIn}))");
             return nextControl;
         }
 
@@ -212,7 +216,11 @@ namespace ControlCanvas.Runtime
 
         public bool CheckIfDone()
         {
-            return _blackboard.LastDirection == ExDirection.Backward && _blackboard.behaviourStack.Count == 0;
+            //bool done = _blackboard.LastDirection == ExDirection.Backward && _blackboard.behaviourStack.Count == 0;
+            //Debug.Log($"Done: {done}, last direction: {_blackboard.LastDirection}, stack count: {_blackboard.behaviourStack.Count}");
+            //return done;
+            return _done;
+            return false;
         }
         
         public void InstanceUpdateDone(IControlAgent agentContext)

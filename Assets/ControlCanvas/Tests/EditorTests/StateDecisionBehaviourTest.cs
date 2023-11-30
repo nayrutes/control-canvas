@@ -39,7 +39,7 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode4,
             });
             
-            //Now that the last behaviour had only a null transition, the flow should restart automatically from init node
+            //Now that the last behaviour had only a null transition, the flow should restart automatically from the last state
             controlRunner.RunningUpdate(0);
             AssertExecutionOrderByGUIDOnly(new List<string>()
             {
@@ -47,7 +47,7 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode2,
                 guidNode3,
                 guidNode4,
-                guidNode1,
+                guidNode2,
             });
             
             CleanUpTest();

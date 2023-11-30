@@ -27,6 +27,7 @@ namespace ControlCanvas.Runtime
         }
 
         public string Id { get; set; }
+        public IControl CurrentControl { get; set; }
 
         public bool CheckIfDone(NodeManager nodeManager, CanvasData currentFlow)
         {
@@ -112,6 +113,8 @@ namespace ControlCanvas.Runtime
                 return;
             }
             _initQueue.Enqueue(_runInstanceDict[initControl]);
+            // var runInstance = _runInstanceDict[initControl];
+            // runInstance.LastControl = runInstance.LastToStayIn;
         }
         private void CreateRunInstance(IControl initControl)
         {
@@ -180,6 +183,7 @@ namespace ControlCanvas.Runtime
 
         private void CompleteUpdate()
         {
+            //Debug.Log("Starting Complete update");
             _running = true;
             _safetyCounter = 0;
             while (_running)
@@ -220,6 +224,7 @@ namespace ControlCanvas.Runtime
             }
             
             IControl next = GetNext();
+            //Debug.Log($"Next control {next}");
             if (next == null)
             {
                 //Debug.Log("No next control (single update)");
@@ -241,6 +246,9 @@ namespace ControlCanvas.Runtime
                     Restart();
                 }
             }
+            else
+            {
+            }
 
             return isCompleteDone;
         }
@@ -253,13 +261,14 @@ namespace ControlCanvas.Runtime
             currentRunInstance ??= GetNextRunInstanceFromQueue();
             if (currentRunInstance == null)
             {
+                Debug.LogWarning("No current run instance");
                 return null;
             }
             last = currentRunInstance.LastControl;
-            if (last != null && last is ICanStayBetweenUpdates)
-            {
-                currentRunInstance.LastToStayIn = last;
-            }
+            // if (last != null && last is ICanStayBetweenUpdates)
+            // {
+            //     currentRunInstance.LastToStayIn = last;
+            // }
             IControl lastToStayIn = currentRunInstance.LastToStayIn;
             if (last != null)
             {
@@ -271,12 +280,20 @@ namespace ControlCanvas.Runtime
             }
             else
             {
-                if (currentRunInstance.InitControl == restartInitControl)
+                // if (currentRunInstance.InitControl == restartInitControl)
+                // {
+                //     Debug.LogWarning("Restarting run instance with init control");
+                // }
+                //Debug.LogWarning("Restarting run instance with run instance start control");
+                next = currentRunInstance.RunStartControl;
+
+                if (next == null)
                 {
-                    Debug.LogWarning("Restarting main flow with init control");
+                    //Debug.LogWarning("Restarting run instance with run instance init control");
+                    next = currentRunInstance.InitControl;
                 }
-                next = currentRunInstance.InitControl;
             }
+            //currentRunInstance.CurrentControl = next;
             
             
             
@@ -291,9 +308,18 @@ namespace ControlCanvas.Runtime
             isInstanceDone = false;
             if (!isCompleteDone)
             {
-                isInstanceDone = currentRunInstance.CheckIfDone(_nodeManager, CurrentFlow);
+                var last = currentRunInstance.LastControl;
+                if (last != null && last is ICanStayBetweenUpdates)
+                {
+                    currentRunInstance.LastToStayIn = last;
+                }
+                //isInstanceDone = currentRunInstance.CheckIfDone(_nodeManager, CurrentFlow);
+                isInstanceDone = currentRunInstance.LastControl == null ||
+                                 currentRunInstance.LastControl == currentRunInstance.LastToStayIn;
+                //Debug.Log($"Instance done {isInstanceDone}, last control {currentRunInstance.LastControl}, last to stay in {currentRunInstance.LastToStayIn}");
                 if (isInstanceDone)
                 {
+                    currentRunInstance.RunStartControl = currentRunInstance.LastToStayIn;
                     InstanceUpdateDone(currentRunInstance);
                     currentRunInstance = null;
                     if (_initQueue.Count == 0)
@@ -316,7 +342,8 @@ namespace ControlCanvas.Runtime
             }
 
             RunInstance nextRunInstanceFromQueue = _initQueue.Dequeue();
-            nextRunInstanceFromQueue.RunStartControl = nextRunInstanceFromQueue.LastControl;
+            //nextRunInstanceFromQueue.RunStartControl = nextRunInstanceFromQueue.LastControl;
+            //runInstance.LastControl = runInstance.LastToStayIn;
             return nextRunInstanceFromQueue;
         }
       

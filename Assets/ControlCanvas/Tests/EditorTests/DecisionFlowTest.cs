@@ -91,8 +91,8 @@ namespace ControlCanvas.Tests.EditorTests
         {
             SetUpTest("Assets/ControlFlows/Tests/DecisionTests/GenericDecisionTest.xml");
             //string guidNode1 = "edeab331-4a6a-42fa-8d20-f97923bdaf67";
-            string guidNode2 = "68a7577d-420f-4802-aad3-bfcdd8b11fa9";
-            string guidNode3 = "dbecbe85-e661-4376-8431-7d5754051ba7";
+            string guidNode2 = "0633a630-757d-4213-9964-37ad3d6d6d1f";
+            string guidNode3 = "1d5d5a3c-2075-402b-8d23-8ac076f9d4f5";
 
             controlRunner.RunningUpdate(0);
             
