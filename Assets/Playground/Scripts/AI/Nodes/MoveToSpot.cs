@@ -33,10 +33,10 @@ namespace Playground.Scripts.AI.Nodes
                 return State.Failure;
             }
 
-            if (spot.IsMySpot(agentContext as Character2DAgent))
-            {
-                return State.Success;
-            }
+            // if (spot.IsMySpot(agentContext as Character2DAgent))
+            // {
+            //     return State.Success;
+            // }
             
             if (_noSpot || !spot.IsSpotFree(spotPosition))
             {

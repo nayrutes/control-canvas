@@ -18,6 +18,8 @@ namespace Playground.Scripts
         public Subject<Unit> DawnEvent { get; } = new();
         public ReactiveProperty<bool> Dusk { get; } = new();
         public Subject<Unit> DuskEvent { get; } = new();
+        
+        public bool TimeToBeAtHome => Dusk.Value || Night.Value;
         private void Start()
         {
             interactables = FindObjectsOfType<MonoBehaviour>().OfType<IInteractable>().ToArray();
