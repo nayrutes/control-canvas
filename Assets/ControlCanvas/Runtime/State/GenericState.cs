@@ -1,5 +1,6 @@
 ﻿using System;
 using UniRx;
+using UnityEngine;
 
 namespace ControlCanvas.Runtime
 {
@@ -21,12 +22,12 @@ namespace ControlCanvas.Runtime
 
         public void OnEnter(IControlAgent agentContext)
         {
-            
+            //Debug.Log($"Entered {this}");
         }
 
         public void OnExit(IControlAgent agentContext)
         {
-            
+            //Debug.Log($"Exited {this}");
         }
 
         public IObservable<object> RegisterExitEvent(IControlAgent agentContext)

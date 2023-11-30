@@ -3,27 +3,22 @@
   <Nodes Capacity="5">
     <NodeData Name="Start Node - State 0" Guid="0f30aed9-1604-4b5f-89f6-1ec981f425aa" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
       <Position x="2554" y="224" />
-      <Size x="359" y="181" />
       <specificControl exs:type="ns1:DebugState" exitEventIndex="0" />
     </NodeData>
     <NodeData Name="Test Decision null to last" Guid="b1be16c0-0210-4f7f-b74d-edaf39f3f299" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
       <Position x="3434" y="224" />
-      <Size x="376" y="160" />
       <specificControl exs:type="ns1:DebugDecision" decision="false" />
     </NodeData>
     <NodeData Name="State 1" Guid="f929f7e3-42d3-48b8-ae2b-28b05a790a2c" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
       <Position x="2979" y="224" />
-      <Size x="359" y="181" />
       <specificControl exs:type="ns1:DebugState" exitEventIndex="0" />
     </NodeData>
     <NodeData Name="New Node" Guid="57df2a52-99ba-48ce-837a-eaf39f359fd4" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
       <Position x="3810" y="79" />
-      <Size x="73" y="32" />
       <specificControl exs:type="ns1:RoutingControl" />
     </NodeData>
     <NodeData Name="New Node" Guid="d013f5f1-47db-49a1-9e62-99894e0cd18a" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
       <Position x="2518" y="111" />
-      <Size x="73" y="32" />
       <specificControl exs:type="ns1:RoutingControl" />
     </NodeData>
   </Nodes>

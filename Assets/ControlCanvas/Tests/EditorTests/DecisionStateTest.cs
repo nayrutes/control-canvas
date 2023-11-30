@@ -134,6 +134,14 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode1,
                 guidNode2,
                 guidNode3,
+            });
+            
+            controlRunner.RunningUpdate(0);
+            AssertExecutionOrderByGUIDOnly(new List<string>()
+            {
+                guidNode1,
+                guidNode2,
+                guidNode3,
                 guidNode2,
             });
             

@@ -213,15 +213,6 @@ namespace ControlCanvas.Runtime
             //     _blackboard.behaviourStack.Push(behaviour);
             // }
         }
-
-        public bool CheckIfDone()
-        {
-            //bool done = _blackboard.LastDirection == ExDirection.Backward && _blackboard.behaviourStack.Count == 0;
-            //Debug.Log($"Done: {done}, last direction: {_blackboard.LastDirection}, stack count: {_blackboard.behaviourStack.Count}");
-            //return done;
-            return _done;
-            return false;
-        }
         
         public void InstanceUpdateDone(IControlAgent agentContext)
         {

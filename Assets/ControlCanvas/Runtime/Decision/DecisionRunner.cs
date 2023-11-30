@@ -42,14 +42,10 @@ namespace ControlCanvas.Runtime
         public IControl GetNext(IDecision decision, CanvasData controlFlow, IControlAgent agentContext, IControl lastToStayIn)
         {
             IControl next = _nodeManager.GetNextForNode(decision, _decision, controlFlow);
-            // if (_nodeManager.GetExecutionTypeOfNode(next, controlFlow) != typeof(IDecision))
+            // if (next == null)
             // {
-            //     //CompleteUpdateDone(null);
+            //     return lastToStayIn;
             // }
-            if (next == null)
-            {
-                return lastToStayIn;
-            }
             return next;
         }
 
@@ -58,10 +54,6 @@ namespace ControlCanvas.Runtime
             return null;
         }
 
-        public bool CheckIfDone()
-        {
-            return false;
-        }
         public void InstanceUpdateDone(IControlAgent agentContext)
         {
             _decisionsTracker.Clear();

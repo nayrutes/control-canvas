@@ -7,7 +7,6 @@ namespace ControlCanvas.Runtime
 {
     public interface IRunnerBase : IControl
     {
-        bool CheckIfDone();
         void InstanceUpdateDone(IControlAgent agentContext);
     }
     

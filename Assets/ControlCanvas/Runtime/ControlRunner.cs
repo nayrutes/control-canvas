@@ -131,10 +131,6 @@ namespace ControlCanvas.Runtime
             runInstance.nextByType.Add(typeof(IState), RunnerGetNext<IState>);
             runInstance.nextByType.Add(typeof(IDecision), RunnerGetNext<IDecision>);
             runInstance.nextByType.Add(typeof(IBehaviour), RunnerGetNext<IBehaviour>);
-            
-            runInstance.checkIfDoneByType.Add(typeof(IState), RunnerCheckIfDone<IState>);
-            runInstance.checkIfDoneByType.Add(typeof(IDecision), RunnerCheckIfDone<IDecision>);
-            runInstance.checkIfDoneByType.Add(typeof(IBehaviour), RunnerCheckIfDone<IBehaviour>);
         }
 
 
@@ -265,10 +261,7 @@ namespace ControlCanvas.Runtime
                 return null;
             }
             last = currentRunInstance.LastControl;
-            // if (last != null && last is ICanStayBetweenUpdates)
-            // {
-            //     currentRunInstance.LastToStayIn = last;
-            // }
+            
             IControl lastToStayIn = currentRunInstance.LastToStayIn;
             if (last != null)
             {
@@ -280,11 +273,6 @@ namespace ControlCanvas.Runtime
             }
             else
             {
-                // if (currentRunInstance.InitControl == restartInitControl)
-                // {
-                //     Debug.LogWarning("Restarting run instance with init control");
-                // }
-                //Debug.LogWarning("Restarting run instance with run instance start control");
                 next = currentRunInstance.RunStartControl;
 
                 if (next == null)
@@ -293,11 +281,6 @@ namespace ControlCanvas.Runtime
                     next = currentRunInstance.InitControl;
                 }
             }
-            //currentRunInstance.CurrentControl = next;
-            
-            
-            
-            //currentRunInstance.LastControl = next;
            
             return next;
         }
@@ -313,10 +296,7 @@ namespace ControlCanvas.Runtime
                 {
                     currentRunInstance.LastToStayIn = last;
                 }
-                //isInstanceDone = currentRunInstance.CheckIfDone(_nodeManager, CurrentFlow);
-                isInstanceDone = currentRunInstance.LastControl == null ||
-                                 currentRunInstance.LastControl == currentRunInstance.LastToStayIn;
-                //Debug.Log($"Instance done {isInstanceDone}, last control {currentRunInstance.LastControl}, last to stay in {currentRunInstance.LastToStayIn}");
+                isInstanceDone = currentRunInstance.LastControl == null || currentRunInstance.LastControl == currentRunInstance.LastToStayIn;
                 if (isInstanceDone)
                 {
                     currentRunInstance.RunStartControl = currentRunInstance.LastToStayIn;
@@ -378,12 +358,6 @@ namespace ControlCanvas.Runtime
             }
             IControl next = runner.GetNext(current as T, CurrentFlow, agentContext, lastToStayIn);
             return next;
-        }
-        
-        private bool RunnerCheckIfDone<T>() where T : class, IControl
-        {
-            IRunner<T> runner = currentRunInstance.runnerDict[typeof(T)] as IRunner<T>;
-            return runner.CheckIfDone();
         }
         
         private void InstanceUpdateDone(RunInstance runInstance)
