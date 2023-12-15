@@ -60,7 +60,7 @@ namespace ControlCanvas.Runtime
         private readonly FlowManager _flowManager;
         private readonly NodeManager _nodeManager;
 
-        private bool _done;
+        //private bool _done;
         //private IControl _controlBeforeBehaviour;
 
         //private BehaviourRunnerBlackboard _tmpBlackboard = new();
@@ -71,7 +71,7 @@ namespace ControlCanvas.Runtime
             _nodeManager = instance;
         }
         
-        public void DoUpdate(IBehaviour behaviour, IControlAgent agentContext, float deltaTime, IControl lastControl)
+        public void Execute(IBehaviour behaviour, IControlAgent agentContext, float deltaTime, IControl lastControl)
         {
             CurrentBehaviourWrapper.Value = GetOrSetWrapper(behaviour);
             //_blackboard = _tmpBlackboard;
@@ -102,7 +102,7 @@ namespace ControlCanvas.Runtime
         }
 
         //TODO: split this up to have a GetNext which changes nothing of the flow and a one that does if needed
-        public IControl GetNext(IBehaviour behaviour, CanvasData controlFlow, IControlAgent agentContext, IControl lastToStayIn)
+        public IControl GetNext(IBehaviour behaviour, CanvasData controlFlow, IControlAgent agentContext)
         {
             if (CurrentBehaviourWrapper.Value == null)
             {
@@ -136,11 +136,11 @@ namespace ControlCanvas.Runtime
                 // }
             }
 
-            if (nextControl == null)
-            {
-                //nextControl = lastToStayIn;
-                _done = true;
-            }
+            // if (nextControl == null)
+            // {
+            //     //nextControl = lastToStayIn;
+            //     //_done = true;
+            // }
             //Debug.Log($"Next control is {nextControl} (is last to stay in: {nextControl == lastToStayIn}))");
             return nextControl;
         }

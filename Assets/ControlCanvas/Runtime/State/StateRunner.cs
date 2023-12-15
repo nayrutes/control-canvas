@@ -37,7 +37,7 @@ namespace ControlCanvas.Runtime
         //     // currentState.Value?.OnEnter(agentContext);
         // }
 
-        public void DoUpdate(IState behaviour, IControlAgent agentContext, float deltaTime, IControl lastControl)
+        public void Execute(IState behaviour, IControlAgent agentContext, float deltaTime, IControl lastControl)
         {
             if(behaviour == null)
                 return;
@@ -67,7 +67,7 @@ namespace ControlCanvas.Runtime
             currentState.Value?.Execute(agentContext, deltaTime);
         }
 
-        public IControl GetNext(IState state, CanvasData controlFlow, IControlAgent agentContext, IControl lastToStayIn)
+        public IControl GetNext(IState state, CanvasData controlFlow, IControlAgent agentContext)
         {
             if (_exitCalled)
             {

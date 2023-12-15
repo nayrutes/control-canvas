@@ -11,7 +11,7 @@ namespace ControlCanvas.Runtime
     {
         public Dictionary<Type, IRunnerBase> runnerDict = new ();
         
-        public Dictionary<Type, Action<IControl, float, IControl>> updateByType = new ();
+        public Dictionary<Type, Action<IControl, float, IControl>> executeByType = new ();
         public Dictionary<Type, Func<IControl, IControl, IControl>> nextByType = new ();
         public Dictionary<Type, Func<bool>> checkIfDoneByType = new ();
 
@@ -124,9 +124,9 @@ namespace ControlCanvas.Runtime
             runInstance.runnerDict.Add(typeof(IDecision), new DecisionRunner(_flowManager, _nodeManager));
             runInstance.runnerDict.Add(typeof(IBehaviour), new BehaviourRunner(_flowManager, _nodeManager));
             
-            runInstance.updateByType.Add(typeof(IState), RunnerRun<IState>);
-            runInstance.updateByType.Add(typeof(IDecision), RunnerRun<IDecision>);
-            runInstance.updateByType.Add(typeof(IBehaviour), RunnerRun<IBehaviour>);
+            runInstance.executeByType.Add(typeof(IState), RunnerExecute<IState>);
+            runInstance.executeByType.Add(typeof(IDecision), RunnerExecute<IDecision>);
+            runInstance.executeByType.Add(typeof(IBehaviour), RunnerExecute<IBehaviour>);
             
             runInstance.nextByType.Add(typeof(IState), RunnerGetNext<IState>);
             runInstance.nextByType.Add(typeof(IDecision), RunnerGetNext<IDecision>);
@@ -230,7 +230,7 @@ namespace ControlCanvas.Runtime
                 Debug.LogWarning("No current run instance");
                 return true;
             }
-            SubUpdate(next);
+            ExecuteControl(next);
             currentRunInstance.LastControl = next;
             CheckDone(out bool isCompleteDone, out bool isInstanceDone);
             if (isCompleteDone)
@@ -327,23 +327,23 @@ namespace ControlCanvas.Runtime
             return nextRunInstanceFromQueue;
         }
       
-        private void SubUpdate(IControl current)
+        private void ExecuteControl(IControl current)
         {
             if(current == null || currentRunInstance == null)
                 return;
             _flowManager.SetCurrentControlAndFlow(current, _nodeManager);
             
             Type executionType = _nodeManager.GetExecutionTypeOfNode(current, CurrentFlow);
-            currentRunInstance.updateByType[executionType](current, _currentDeltaTimeForSubUpdate, currentRunInstance.LastControl);
+            currentRunInstance.executeByType[executionType](current, _currentDeltaTimeForSubUpdate, currentRunInstance.LastControl);
 
             //currentRunInstance.runnerDict[executionType].StepDone();
             StepDoneCurrent.OnNext(current);
         }
         
-        private void RunnerRun<T>(IControl current, float deltaTime, IControl lastControl) where T : class, IControl
+        private void RunnerExecute<T>(IControl current, float deltaTime, IControl lastControl) where T : class, IControl
         {
             IRunner<T> runner = currentRunInstance.runnerDict[typeof(T)] as IRunner<T>;
-            runner.DoUpdate(current as T, agentContext, deltaTime, lastControl);
+            runner.Execute(current as T, agentContext, deltaTime, lastControl);
 
             runner.GetParallel(current, CurrentFlow)?
                 .ForEach(AddRunInstanceToQueue);
@@ -356,7 +356,7 @@ namespace ControlCanvas.Runtime
             {
                 _flowManager.CacheFlow(subFlow.GetSubFlowPath(agentContext));
             }
-            IControl next = runner.GetNext(current as T, CurrentFlow, agentContext, lastToStayIn);
+            IControl next = runner.GetNext(current as T, CurrentFlow, agentContext);
             return next;
         }
         

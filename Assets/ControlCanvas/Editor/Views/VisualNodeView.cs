@@ -36,6 +36,7 @@ namespace ControlCanvas.Editor.Views
         private readonly Label titleLabel;
         private readonly TextField titleTextField;
         private readonly Label titleDebugLabel;
+        private Label contentDebugLabel;
         private readonly Foldout dynamicContentFoldout;
 
         public VisualNodeView() : base("Assets/ControlCanvas/Editor/VisualNodeUXML.uxml")
@@ -101,8 +102,8 @@ namespace ControlCanvas.Editor.Views
         
         private void SetNewClass(IControl control, IViewModel viewModel)
         {
-            var label = new Label($"This Node represents class {control?.GetType()}");
-            m_DynamicContent.Add(label);
+            contentDebugLabel = new Label($"class: {control?.GetType()}");
+            m_DynamicContent.Add(contentDebugLabel);
 
             this.Q<DropdownField>("class-dropdown").value = control?.GetType().Name ?? "None";
             
@@ -328,6 +329,7 @@ namespace ControlCanvas.Editor.Views
             nodeViewModel.CoreDebugging.Subscribe(x =>
             {
                 titleDebugLabel.style.display = x ? DisplayStyle.Flex : DisplayStyle.None;
+                contentDebugLabel.style.display = x ? DisplayStyle.Flex : DisplayStyle.None;
             }).AddTo(disposables);
             
             nodeViewModel.ExpandContent.Subscribe(x =>

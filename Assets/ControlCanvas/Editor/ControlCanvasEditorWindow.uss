@@ -24,3 +24,8 @@ GridBackground {
 .small-toggle > Label {
     min-width: auto;
 }
+
+.small-selection > Label {
+    visibility: hidden;
+    display: none;
+}

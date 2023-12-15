@@ -9,16 +9,18 @@
             <ui:Label tabindex="-1" text="Paths: " display-tooltip-when-elided="true" name="canvas-path" style="align-self: center;" />
         </ui:VisualElement>
         <ui:VisualElement name="spacer" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); height: 100%;" />
-        <ui:VisualElement name="right" style="flex-grow: 0; background-color: rgba(0, 0, 0, 0); align-items: flex-start; flex-shrink: 0;">
-            <ui:Toggle label="AutoSave" name="auto-save" value="true" class="small-toggle" style="flex-direction: row-reverse;" />
+        <ui:VisualElement name="right" style="flex-grow: 0; background-color: rgba(0, 0, 0, 0); align-items: flex-start; flex-shrink: 0; flex-direction: column;">
+            <ui:VisualElement style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); flex-direction: row;">
+                <ui:Toggle label="AutoSave" name="auto-save" value="true" class="small-toggle" style="flex-direction: row-reverse;" />
+                <uie:ObjectField label="DebugRunnerMono" type="ControlCanvas.Runtime.ControlRunnerMono, RuntimeScripts" name="debug-runner" class="small-selection" />
+            </ui:VisualElement>
         </ui:VisualElement>
     </uie:Toolbar>
-    <ControlCanvas.Editor.SplitView fixed-pane-initial-dimension="300">
-        <ui:VisualElement name="left-panel" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">
+    <ControlCanvas.Editor.SplitView fixed-pane-initial-dimension="0">
+        <ui:VisualElement name="left-panel" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); width: 0;">
             <ControlCanvas.Editor.SplitView orientation="Vertical" fixed-pane-initial-dimension="244">
                 <ui:VisualElement name="inspector-container" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">
                     <uie:ObjectField label="ControlCanvas" name="currentCanvas" style="display: none;" />
-                    <uie:ObjectField label="DebugRunnerMono" type="ControlCanvas.Runtime.ControlRunnerMono, RuntimeScripts" name="debug-runner" />
                     <ui:Label tabindex="-1" text="Inspector" display-tooltip-when-elided="true" style="display: none;" />
                     <ControlCanvas.Editor.Views.InspectorView />
                 </ui:VisualElement>

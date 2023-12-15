@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using ControlCanvas.Runtime;
 using NUnit.Framework;
 using UniRx;
-using UnityEngine;
+//using UnityEngine;
 
 public class EditorTestBase
 {
@@ -13,7 +13,7 @@ public class EditorTestBase
     protected string testMessage = "";
     public void SetUpTest(string path)
     {
-        Debug.Log("Testing on path: " + path);
+        //Debug.Log("Testing on path: " + path);
         testMessage = GetTestMessage();
         disposables = new CompositeDisposable();
         controlRunner = new ControlRunner();
@@ -36,10 +36,12 @@ public class EditorTestBase
     }
     public void AssertLogExecutionOrder(List<string> expected, List<string> actual)
     {
-        Assert.AreEqual(expected.Count, actual.Count);
+        //Assert.AreEqual(expected.Count, actual.Count);
+        Assert.True(expected.Count == actual.Count, $"Expected count {expected.Count} but was {actual.Count}");
         for (int i = 0; i < expected.Count; i++)
         {
-            Assert.AreEqual($"{testMessage}{expected[i]}", actual[i]);
+            //Assert.AreEqual($"{testMessage}{expected[i]}", actual[i]);
+            Assert.True($"{testMessage}{expected[i]}" == actual[i], $"Expected {testMessage}{expected[i]} but was {actual[i]}");
         }
     }
 

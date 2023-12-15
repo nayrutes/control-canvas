@@ -3,6 +3,11 @@ using NUnit.Framework;
 
 namespace ControlCanvas.Tests.EditorTests
 {
+    public class StanaloneTest
+    {
+        
+    }
+    
     public class BehaviourFlowTest : EditorTestBase
     {
         protected override string GetTestMessage()
@@ -122,6 +127,14 @@ namespace ControlCanvas.Tests.EditorTests
                 guidNode1,
             });
             CleanUpTest();
+        }
+
+        [Test]
+        public void EmptyTest()
+        {
+            int i = 1;
+            Assert.True(i == 1);
+            //Assert.AreEqual(i, 1);
         }
         
         [Test]

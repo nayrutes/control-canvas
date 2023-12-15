@@ -4,7 +4,7 @@ using UniRx;
 namespace ControlCanvas.Runtime
 {
     [ControlName("MoveToBehaviour", typeof(IBehaviour))]
-    public class MoveToControl : IBehaviour, IState
+    public class MoveToControl : IBehaviour//, IState
     {
         public int index; 
         public void OnStart(IControlAgent agentContext)

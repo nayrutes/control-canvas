@@ -22,7 +22,7 @@ namespace ControlCanvas.Runtime
             _nodeManager = instance;
         }
         
-        public void DoUpdate(IDecision decision, IControlAgent agentContext, float deltaTime, IControl lastControl)
+        public void Execute(IDecision decision, IControlAgent agentContext, float deltaTime, IControl lastControl)
         {
             // if (lastControl is not IDecision)
             // {
@@ -39,7 +39,7 @@ namespace ControlCanvas.Runtime
             _decision = CurrentDecision.Value.Decide(agentContext);
         }
 
-        public IControl GetNext(IDecision decision, CanvasData controlFlow, IControlAgent agentContext, IControl lastToStayIn)
+        public IControl GetNext(IDecision decision, CanvasData controlFlow, IControlAgent agentContext)
         {
             IControl next = _nodeManager.GetNextForNode(decision, _decision, controlFlow);
             // if (next == null)
