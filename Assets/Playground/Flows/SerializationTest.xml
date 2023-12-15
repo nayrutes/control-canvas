@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CanvasData xmlns:sys="https://extendedxmlserializer.github.io/system" xmlns:exs="https://extendedxmlserializer.github.io/v2" xmlns:ns1="clr-namespace:ControlCanvas.Runtime;assembly=RuntimeScripts">
+  <Nodes Capacity="4">
+    <NodeData Name="Node 1" Guid="fb1c1cd3-b4e0-401a-ac64-66895b4aef1e" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="-1206.28564" y="440" />
+      <specificControl exs:type="ns1:MoveToControl" index="0" />
+    </NodeData>
+    <NodeData Name="Node 2" Guid="ad859956-ec80-4e18-8025-5a192ff556c8" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="-784.5714" y="440" />
+      <specificControl exs:type="ns1:MoveToControl" index="1" />
+    </NodeData>
+  </Nodes>
+  <Edges Capacity="4">
+    <EdgeData Guid="23974c18-20b3-4485-a307-6c3cba24186d" StartNodeGuid="fb1c1cd3-b4e0-401a-ac64-66895b4aef1e" EndNodeGuid="ad859956-ec80-4e18-8025-5a192ff556c8" StartPortType="Out" EndPortType="In" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+  </Edges>
+</CanvasData>

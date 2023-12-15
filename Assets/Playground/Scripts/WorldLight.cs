@@ -33,6 +33,12 @@ namespace Playground.Scripts
                 Debug.LogWarning("No light set for world light");
                 return;
             }
+            SetLight();
+        }
+
+        [ContextMenu("Set Light")]
+        private void SetLight()
+        {
             light2D.color = gradient.Evaluate(fraction);
         }
     }

@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <CanvasData xmlns:sys="https://extendedxmlserializer.github.io/system" xmlns:exs="https://extendedxmlserializer.github.io/v2" xmlns:ns1="clr-namespace:ControlCanvas.Runtime;assembly=RuntimeScripts" xmlns:ns2="clr-namespace:Playground.Scripts.AI.Nodes;assembly=Assembly-CSharp" InitialNode="2f6be155-c9b2-4d67-ba2a-5247c181c733">
-  <Nodes Capacity="19">
+  <Nodes Capacity="18">
     <NodeData Name="New Node" Guid="2f6be155-c9b2-4d67-ba2a-5247c181c733" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="50" y="381" />
+      <Position x="232" y="386.857147" />
       <specificControl exs:type="ns2:MoveToSpot" overrideCurrentTarget="false">
-        <targetSpot blackboardKey="Stand1BuyerSpot">
+        <targetSpot blackboardKey="CityCenterSpot">
           <blackboardType exs:type="sys:RuntimeType" xmlns:ns3="clr-namespace:Playground.Scripts;assembly=Assembly-CSharp">ns3:WorldInfo</blackboardType>
         </targetSpot>
       </specificControl>
     </NodeData>
     <NodeData Name="New Node" Guid="be7e404c-caa3-419b-9cab-14653390a39c" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="1066" y="887" />
+      <Position x="950.2857" y="944" />
       <specificControl exs:type="ns2:MoveToSpot" overrideCurrentTarget="false">
         <targetSpot blackboardKey="RandomPoiSpot">
           <blackboardType exs:type="sys:RuntimeType" xmlns:ns4="clr-namespace:Playground.Scripts.AI;assembly=Assembly-CSharp">ns4:SensorBlackboard</blackboardType>
@@ -18,96 +18,90 @@
       </specificControl>
     </NodeData>
     <NodeData Name="New Node" Guid="10f0ad42-59ba-4d1a-b89f-f5ae9cf4a242" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="714" y="387" />
+      <Position x="714.2857" y="386.857147" />
       <specificControl exs:type="ns1:GenericState" autoExit="true">
-        <exitEvent blackboardKey="DuskEvent">
-          <blackboardType exs:type="sys:RuntimeType" xmlns:ns5="clr-namespace:Playground.Scripts;assembly=Assembly-CSharp">ns5:WorldInfo</blackboardType>
-        </exitEvent>
+        <exitEvent />
         <exitEvent2 />
       </specificControl>
     </NodeData>
     <NodeData Name="New Node" Guid="7ab79ffb-4cdc-4c2d-8802-111b79558500" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="2105" y="387" />
+      <Position x="2105.14282" y="386.857147" />
       <specificControl exs:type="ns2:MoveToSpot" overrideCurrentTarget="true">
         <targetSpot blackboardKey="HomePoi">
-          <blackboardType exs:type="sys:RuntimeType" xmlns:ns6="clr-namespace:Playground.Scripts.AI;assembly=Assembly-CSharp">ns6:SensorBlackboard</blackboardType>
+          <blackboardType exs:type="sys:RuntimeType" xmlns:ns5="clr-namespace:Playground.Scripts.AI;assembly=Assembly-CSharp">ns5:SensorBlackboard</blackboardType>
         </targetSpot>
       </specificControl>
     </NodeData>
     <NodeData Name="New Node" Guid="76d4ffe9-cbf4-4acd-bd7d-4abc67386d0f" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="2817" y="387" />
+      <Position x="2656" y="386.857147" />
       <specificControl exs:type="ns2:Interact" />
     </NodeData>
     <NodeData Name="New Node" Guid="7e1e632d-443f-4e4f-8868-1d62127d17b0" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="3258" y="359" />
+      <Position x="2962.28564" y="386.857147" />
       <specificControl exs:type="ns2:InHouseState">
         <exitEvent blackboardKey="DawnEvent">
-          <blackboardType exs:type="sys:RuntimeType" xmlns:ns7="clr-namespace:Playground.Scripts;assembly=Assembly-CSharp">ns7:WorldInfo</blackboardType>
+          <blackboardType exs:type="sys:RuntimeType" xmlns:ns6="clr-namespace:Playground.Scripts;assembly=Assembly-CSharp">ns6:WorldInfo</blackboardType>
         </exitEvent>
       </specificControl>
     </NodeData>
     <NodeData Name="New Node" Guid="ab5fafd7-5d94-4f71-8032-b18f83c9090f" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="2817" y="604" />
+      <Position x="2656" y="604" />
       <specificControl exs:type="ns2:Log" message="Interact failed" />
     </NodeData>
     <NodeData Name="New Node" Guid="18a193e4-d355-45e3-8ebf-3191b9494645" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="3277" y="890" />
+      <Position x="3277.14282" y="890.2857" />
       <specificControl exs:type="ns2:MoveToSpot" overrideCurrentTarget="true">
         <targetSpot blackboardKey="NearestOffLanternLightPos">
-          <blackboardType exs:type="sys:RuntimeType" xmlns:ns8="clr-namespace:Playground.Scripts.AI;assembly=Assembly-CSharp">ns8:SensorBlackboard</blackboardType>
+          <blackboardType exs:type="sys:RuntimeType" xmlns:ns7="clr-namespace:Playground.Scripts.AI;assembly=Assembly-CSharp">ns7:SensorBlackboard</blackboardType>
         </targetSpot>
       </specificControl>
     </NodeData>
     <NodeData Name="New Node" Guid="50076b0d-b6fc-401d-b809-e61a1cca999b" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="3732" y="887" />
+      <Position x="3732" y="886.8571" />
       <specificControl exs:type="ns2:Interact" />
     </NodeData>
-    <NodeData Name="New Node" Guid="de2ab9d2-6ca6-4229-a7de-883a13605362" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="3750" y="1146" />
-      <specificControl exs:type="ns1:FixedResultBehaviour" result="Success" />
-    </NodeData>
     <NodeData Name="New Node" Guid="e99a4b3a-0966-4ed0-8c8a-a37591ef9002" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="1607" y="887" />
+      <Position x="1682.85718" y="944" />
       <specificControl exs:type="ns2:TriggerEvent">
         <triggerEvent blackboardKey="RandomPoiSpotChangeEvent">
-          <blackboardType exs:type="sys:RuntimeType" xmlns:ns9="clr-namespace:Playground.Scripts.AI;assembly=Assembly-CSharp">ns9:SensorBlackboard</blackboardType>
+          <blackboardType exs:type="sys:RuntimeType" xmlns:ns8="clr-namespace:Playground.Scripts.AI;assembly=Assembly-CSharp">ns8:SensorBlackboard</blackboardType>
         </triggerEvent>
       </specificControl>
     </NodeData>
+    <NodeData Name="New Node" Guid="de2ab9d2-6ca6-4229-a7de-883a13605362" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="3750.28564" y="1146.28577" />
+      <specificControl exs:type="ns1:FixedResultBehaviour" result="Success" />
+    </NodeData>
     <NodeData Name="New Node" Guid="5bb06171-b265-41d7-b4c2-e2fdc8a6bbdd" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="2537" y="890" />
+      <Position x="2537.14282" y="890.2857" />
       <specificControl exs:type="ns1:GenericDecision" variableType1="Reference" valueType1="Bool" bool1="false" int1="0" float1="0" blackboardKey1="LightOffNearby" variableType2="Constant" valueType2="Bool" bool2="true" int2="0" float2="0" decisionType="Equal">
-        <blackboardType1 exs:type="sys:RuntimeType" xmlns:ns10="clr-namespace:Playground.Scripts.AI;assembly=Assembly-CSharp">ns10:SensorBlackboard</blackboardType1>
+        <blackboardType1 exs:type="sys:RuntimeType" xmlns:ns9="clr-namespace:Playground.Scripts.AI;assembly=Assembly-CSharp">ns9:SensorBlackboard</blackboardType1>
       </specificControl>
     </NodeData>
     <NodeData Name="New Node" Guid="75d2c97f-f761-4a8c-bda1-1d982623d8d2" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="2105" y="616" />
+      <Position x="2129.14282" y="672" />
       <specificControl exs:type="ns2:Log" message="Moving Home Failed" />
     </NodeData>
-    <NodeData Name="New Node" Guid="fb1c1cd3-b4e0-401a-ac64-66895b4aef1e" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="-1206" y="440" />
-      <specificControl exs:type="ns1:MoveToControl" index="0" />
-    </NodeData>
-    <NodeData Name="New Node" Guid="ad859956-ec80-4e18-8025-5a192ff556c8" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="-785" y="440" />
-      <specificControl exs:type="ns1:MoveToControl" index="1" />
-    </NodeData>
     <NodeData Name="New Node" Guid="5111e18a-fd00-458a-b893-572c8a188bfe" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="1221" y="387" />
+      <Position x="1136" y="386.2857" />
       <specificControl exs:type="ns1:GenericDecision" variableType1="Reference" valueType1="Bool" bool1="false" int1="0" float1="0" blackboardKey1="TimeToBeAtHome" variableType2="Constant" valueType2="Bool" bool2="true" int2="0" float2="0" decisionType="Equal">
-        <blackboardType1 exs:type="sys:RuntimeType" xmlns:ns11="clr-namespace:Playground.Scripts;assembly=Assembly-CSharp">ns11:WorldInfo</blackboardType1>
+        <blackboardType1 exs:type="sys:RuntimeType" xmlns:ns10="clr-namespace:Playground.Scripts;assembly=Assembly-CSharp">ns10:WorldInfo</blackboardType1>
       </specificControl>
     </NodeData>
+    <NodeData Name="New Node" Guid="9cac8aa2-3471-4915-985b-2aca3a1d4e96" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="1416" y="944" />
+      <specificControl exs:type="ns1:WaitBehaviour" timeToWait="2" />
+    </NodeData>
+    <NodeData Name="New Node" Guid="3ba6bffc-657e-499e-9c58-af36d8e2028d" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
+      <Position x="1630.28577" y="1141.71423" />
+      <specificControl exs:type="ns1:RoutingControl" />
+    </NodeData>
     <NodeData Name="New Node" Guid="ed034f0e-5cd0-438e-a304-78443b2359e6" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="3615" y="122" />
+      <Position x="3314.85718" y="258.857147" />
       <specificControl exs:type="ns1:RoutingControl" />
     </NodeData>
     <NodeData Name="New Node" Guid="2b3ed0c3-4065-4610-abd2-f834e0523717" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="678" y="160" />
-      <specificControl exs:type="ns1:RoutingControl" />
-    </NodeData>
-    <NodeData Name="New Node" Guid="3ba6bffc-657e-499e-9c58-af36d8e2028d" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="1548" y="1124" />
+      <Position x="678.2857" y="309.142853" />
       <specificControl exs:type="ns1:RoutingControl" />
     </NodeData>
   </Nodes>
@@ -123,14 +117,14 @@
     <EdgeData Guid="14e0bc43-ad34-4ea5-abce-c4f97f7b9407" StartNodeGuid="7ab79ffb-4cdc-4c2d-8802-111b79558500" EndNodeGuid="5bb06171-b265-41d7-b4c2-e2fdc8a6bbdd" StartPortType="Parallel" EndPortType="In" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
     <EdgeData Guid="0fbc1191-cd50-43cf-b3ca-f5b60105e8f1" StartNodeGuid="5bb06171-b265-41d7-b4c2-e2fdc8a6bbdd" EndNodeGuid="18a193e4-d355-45e3-8ebf-3191b9494645" StartPortType="Out" EndPortType="In" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
     <EdgeData Guid="4f1de241-65bc-4faf-989e-e62473cedbbd" StartNodeGuid="7ab79ffb-4cdc-4c2d-8802-111b79558500" EndNodeGuid="75d2c97f-f761-4a8c-bda1-1d982623d8d2" StartPortType="Out2" EndPortType="In" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
-    <EdgeData Guid="23974c18-20b3-4485-a307-6c3cba24186d" StartNodeGuid="fb1c1cd3-b4e0-401a-ac64-66895b4aef1e" EndNodeGuid="ad859956-ec80-4e18-8025-5a192ff556c8" StartPortType="Out" EndPortType="In" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
     <EdgeData Guid="7e49c270-6cc2-46e7-a841-775c69ae87df" StartNodeGuid="10f0ad42-59ba-4d1a-b89f-f5ae9cf4a242" EndNodeGuid="5111e18a-fd00-458a-b893-572c8a188bfe" StartPortType="Out" EndPortType="In" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
     <EdgeData Guid="66f96472-d5e7-4e16-b7cc-b66801134537" StartNodeGuid="7e1e632d-443f-4e4f-8868-1d62127d17b0" EndNodeGuid="ed034f0e-5cd0-438e-a304-78443b2359e6" StartPortType="Out" EndPortType="InOut" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
     <EdgeData Guid="d8d7e711-5035-4355-ab91-f1d099bb38b5" StartNodeGuid="ed034f0e-5cd0-438e-a304-78443b2359e6" EndNodeGuid="2b3ed0c3-4065-4610-abd2-f834e0523717" StartPortType="InOut" EndPortType="InOut" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
     <EdgeData Guid="70bf401c-ac15-47eb-b14c-2733b0c30950" StartNodeGuid="2b3ed0c3-4065-4610-abd2-f834e0523717" EndNodeGuid="10f0ad42-59ba-4d1a-b89f-f5ae9cf4a242" StartPortType="InOut" EndPortType="In" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
     <EdgeData Guid="62fcb341-ac31-4486-9fb3-4facf0a72d72" StartNodeGuid="5111e18a-fd00-458a-b893-572c8a188bfe" EndNodeGuid="7ab79ffb-4cdc-4c2d-8802-111b79558500" StartPortType="Out" EndPortType="In" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
-    <EdgeData Guid="3f53d6e7-1f29-4cdf-80e3-fbb38fcbbc2a" StartNodeGuid="be7e404c-caa3-419b-9cab-14653390a39c" EndNodeGuid="e99a4b3a-0966-4ed0-8c8a-a37591ef9002" StartPortType="Out" EndPortType="In" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
     <EdgeData Guid="26fd4520-a39d-40a3-a2b9-a46b60cd6b73" StartNodeGuid="be7e404c-caa3-419b-9cab-14653390a39c" EndNodeGuid="3ba6bffc-657e-499e-9c58-af36d8e2028d" StartPortType="Out2" EndPortType="InOut" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
     <EdgeData Guid="c82758f8-f8c1-4365-a2ea-3cd0e75022f8" StartNodeGuid="3ba6bffc-657e-499e-9c58-af36d8e2028d" EndNodeGuid="e99a4b3a-0966-4ed0-8c8a-a37591ef9002" StartPortType="InOut" EndPortType="In" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="dbeddfdf-ffe6-40ba-a07d-4005e7bb2092" StartNodeGuid="be7e404c-caa3-419b-9cab-14653390a39c" EndNodeGuid="9cac8aa2-3471-4915-985b-2aca3a1d4e96" StartPortType="Out" EndPortType="In" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
+    <EdgeData Guid="77bec6a2-fb5c-44d4-85e9-ccebdb24c23d" StartNodeGuid="9cac8aa2-3471-4915-985b-2aca3a1d4e96" EndNodeGuid="e99a4b3a-0966-4ed0-8c8a-a37591ef9002" StartPortType="Out" EndPortType="In" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts" />
   </Edges>
 </CanvasData>

@@ -41,7 +41,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1783784235213342426}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 073797afb82c5a1438f328866b10b3f0, type: 3}
   m_Name: 
@@ -100,6 +100,8 @@ MonoBehaviour:
   outerRadiusVariation: 0.3
   intensityVariation: 0.3
   startLightOn: 1
+  burnTime: 30
+  burnTimeVariation: 10
 --- !u!114 &5376139979695758688
 MonoBehaviour:
   m_ObjectHideFlags: 0

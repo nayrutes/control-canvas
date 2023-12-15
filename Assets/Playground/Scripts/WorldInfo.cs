@@ -50,6 +50,10 @@ namespace Playground.Scripts
         [SerializeField]
         private PoiSpot _stand1BuyerSpot;
         public PoiSpot Stand1BuyerSpot => _stand1BuyerSpot;
+        
+        [SerializeField]
+        private PoiSpot _cityCenterSpot;
+        public PoiSpot CityCenterSpot => _cityCenterSpot;
 
         public void GetNearestInteractable(Vector3 transformPosition, out IInteractable nearestInteractable, out float nearestDistance)
         {

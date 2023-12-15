@@ -2,8 +2,7 @@
 <CanvasData xmlns:sys="https://extendedxmlserializer.github.io/system" xmlns:exs="https://extendedxmlserializer.github.io/v2" xmlns:ns1="clr-namespace:Playground.Scripts.AI.Nodes;assembly=Assembly-CSharp" xmlns:ns2="clr-namespace:ControlCanvas.Runtime;assembly=RuntimeScripts" InitialNode="c94d171f-bdb1-452f-b81a-12f1b8b1cff7">
   <Nodes Capacity="4">
     <NodeData Name="New Node" Guid="c94d171f-bdb1-452f-b81a-12f1b8b1cff7" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="1606" y="125" />
-      <Size x="415" y="238" />
+      <Position x="1606.28577" y="125.142853" />
       <specificControl exs:type="ns1:MoveToPointList" overrideCurrentTarget="false" index="0">
         <targetPositions blackboardKey="TargetPositions">
           <blackboardType exs:type="sys:RuntimeType" xmlns:ns3="clr-namespace:Playground.Scripts.AI;assembly=Assembly-CSharp">ns3:MovementBlackboard</blackboardType>
@@ -11,8 +10,7 @@
       </specificControl>
     </NodeData>
     <NodeData Name="New Node" Guid="1fbcc6a3-27ba-4da6-897e-d172bbe46506" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="2101" y="125" />
-      <Size x="415" y="238" />
+      <Position x="2101.14282" y="125.142853" />
       <specificControl exs:type="ns1:MoveToPointList" overrideCurrentTarget="false" index="1">
         <targetPositions blackboardKey="TargetPositions">
           <blackboardType exs:type="sys:RuntimeType" xmlns:ns4="clr-namespace:Playground.Scripts.AI;assembly=Assembly-CSharp">ns4:MovementBlackboard</blackboardType>
@@ -20,8 +18,7 @@
       </specificControl>
     </NodeData>
     <NodeData Name="New Node" Guid="29e53134-ad84-4ccb-9c2e-c94cdedb1818" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="2587" y="125" />
-      <Size x="415" y="238" />
+      <Position x="2586.85718" y="125.142853" />
       <specificControl exs:type="ns1:MoveToPointList" overrideCurrentTarget="false" index="2">
         <targetPositions blackboardKey="TargetPositions">
           <blackboardType exs:type="sys:RuntimeType" xmlns:ns5="clr-namespace:Playground.Scripts.AI;assembly=Assembly-CSharp">ns5:MovementBlackboard</blackboardType>
@@ -29,8 +26,7 @@
       </specificControl>
     </NodeData>
     <NodeData Name="New Node" Guid="122c0c26-a3f8-4333-bd8d-db4b21a9ca87" xmlns="clr-namespace:ControlCanvas.Serialization;assembly=SerializationScripts">
-      <Position x="3157" y="125" />
-      <Size x="415" y="238" />
+      <Position x="3157.14282" y="125.142853" />
       <specificControl exs:type="ns1:MoveToPointList" overrideCurrentTarget="false" index="3">
         <targetPositions blackboardKey="TargetPositions">
           <blackboardType exs:type="sys:RuntimeType" xmlns:ns6="clr-namespace:Playground.Scripts.AI;assembly=Assembly-CSharp">ns6:MovementBlackboard</blackboardType>
