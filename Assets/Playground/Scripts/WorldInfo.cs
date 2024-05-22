@@ -19,7 +19,12 @@ namespace Playground.Scripts
         public ReactiveProperty<bool> Dusk { get; } = new();
         public Subject<Unit> DuskEvent { get; } = new();
         
+        public Subject<Unit> DemoContinueEvent { get; } = new();
         public bool TimeToBeAtHome => Dusk.Value || Night.Value;
+        public bool IsDay => Day.Value || Dawn.Value;
+        public bool IsNight => Night.Value;
+        //public bool IsDawn => Dawn.Value;
+        public bool IsDusk => Dusk.Value;
         private void Start()
         {
             interactables = FindObjectsOfType<MonoBehaviour>().OfType<IInteractable>().ToArray();
@@ -69,6 +74,14 @@ namespace Playground.Scripts
                     nearestDistance = distance;
                     nearestInteractable = interactable;
                 }
+            }
+        }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                DemoContinueEvent.OnNext(Unit.Default);
             }
         }
     }

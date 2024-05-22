@@ -1,4 +1,5 @@
-﻿using ControlCanvas.Runtime;
+﻿using System.Collections.Generic;
+using ControlCanvas.Runtime;
 using UniRx;
 using UnityEngine;
 
@@ -17,7 +18,8 @@ namespace Playground.Scripts.AI
         public Subject<Unit> ExitHomeEvent { get; } = new();
         
         public Subject<Unit> ForceExitStateEvent { get; } = new();
-        
+
+        private Dictionary<string, bool> sayLines = new();
         
         public SensorBlackboard()
         {
@@ -113,6 +115,31 @@ namespace Playground.Scripts.AI
             }
 
             return poiSpots[Random.Range(0, poiSpots.Length)];
+        }
+
+        public bool IsSayLineCompleted(string textToDisplay)
+        {
+            return sayLines.ContainsKey(textToDisplay) && sayLines[textToDisplay];
+        }
+
+        public void SayLineCompleted(string textToDisplay)
+        {
+            if (!sayLines.ContainsKey(textToDisplay))
+            {
+                sayLines.Add(textToDisplay, true);
+            }
+            else
+            {
+                sayLines[textToDisplay] = true;
+            }
+        }
+        
+        public void ResetSayLine(string textToDisplay)
+        {
+            if (sayLines.ContainsKey(textToDisplay))
+            {
+                sayLines[textToDisplay] = false;
+            }
         }
     }
 }
